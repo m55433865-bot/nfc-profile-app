@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Profile</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       margin: 0;
@@ -13,7 +15,7 @@
     }
 
     .container {
-      margin-top: 50px;
+      margin-top: 40px;
     }
 
     .link {
@@ -28,40 +30,383 @@
     }
   </style>
 </head>
+
 <body>
 
-<div class="container">
-  <h1 id="name">Loading...</h1>
-  <p id="bio"></p>
-  <div id="links"></div>
-</div>
+  <div id="menuPopup" style="
+  position: fixed;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  min-width: 120px;
+  z-index: 1000;
+">
+    <div onclick="handleMenuAction('edit')" style="padding:10px; cursor:pointer;">Edit</div>
+    <div onclick="handleMenuAction('delete')" style="padding:10px; cursor:pointer;">Delete</div>
+  </div>
 
-<script>
-  const username = window.location.pathname.split('/').pop();
+  <div class="container">
+    <h1 id="name">Loading...</h1>
+    <p id="bio"></p>
+    <div id="links"></div>
+  </div>
 
-  const nameEl = document.getElementById('name');
-  const bioEl = document.getElementById('bio');
-  const linksEl = document.getElementById('links');
+  <!-- ➕ Add Button -->
+  <button onclick="showAddOptions(event)" style="
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
 
-  fetch(`/api/${username}`)
-    .then(res => res.json())
-    .then(user => {
-      nameEl.innerText = user.username;
-      bioEl.innerText = user.bio;
+    width: 60px;
+    height: 60px;
 
-      user.links.forEach(link => {
-        const a = document.createElement('a');
-        a.href = link.url;
-        a.innerText = link.name;
-        a.target = "_blank";
-        a.className = "link";
-        linksEl.appendChild(a);
-      });
-    })
-    .catch(() => {
-      nameEl.innerText = "User not found";
+    background: #1f1f1f;
+    border: 1px solid #333;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  ">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+      <path d="M12 5v14M5 12h14" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" />
+    </svg>
+  </button>
+
+  <!-- 🔐 Auth Button -->
+  <button id="authBtn" onclick="handleAuth()" style="
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+
+    width: 60px;
+    height: 60px;
+
+    background: #1f1f1f;
+    border: 1px solid #333;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  ">
+    <div id="authIcon"></div>
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+  <div id="addMenu" style="
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 10px;
+
+  display: none;
+  flex-direction: column;
+
+  min-width: 160px;
+  z-index: 1000;
+  ">
+    <div onclick="addLinkUI()" style="padding:12px; cursor:pointer;">Add Block</div>
+    <div onclick="addAvatarUI()" style="padding:12px; cursor:pointer;">Add Avatar</div>
+    <div onclick="addBio()" style="padding:12px; cursor:pointer;">Add Bio</div>
+
+  </div>
+
+  <script>
+    let draggedIndex = null;
+    const username = window.location.pathname.split('/').pop();
+
+    const storedUsername = localStorage.getItem('username');
+    const storedPassword = localStorage.getItem('password');
+
+    let isOwner = storedUsername === username;
+
+    let currentUser = null;
+
+    const nameEl = document.getElementById('name');
+    const bioEl = document.getElementById('bio');
+    const linksEl = document.getElementById('links');
+
+    // Hide add button if not owner
+    if (!isOwner) {
+      document.querySelector('button[onclick="showAddOptions(event)"]').style.display = "none";
+    }
+
+    function loadUser() {
+      fetch(`/api/${username}`)
+        .then(res => res.json())
+        .then(user => {
+          currentUser = user;
+
+          nameEl.innerText = user.username;
+          bioEl.innerText = user.bio || "";
+
+          linksEl.innerHTML = "";
+
+          user.links.forEach((link, index) => {
+            const a = document.createElement('a');
+            a.href = link.url;
+            a.target = "_blank";
+
+            // styling
+            a.style.display = "flex";
+            a.style.alignItems = "center";
+            a.style.justifyContent = "space-between";
+            a.style.padding = "8px 10px";
+            a.style.margin = "6px auto";
+            a.style.maxWidth = "320px";
+            a.style.width = "90%";
+            a.style.background = "#1a1a1a";
+            a.style.borderRadius = "8px";
+            a.style.fontSize = "13px";
+            a.style.textDecoration = "none";
+            a.style.color = "white";
+
+            // text
+            const text = document.createElement('span');
+            text.innerText = link.name;
+            a.appendChild(text);
+
+            // 3 dots menu
+            if (isOwner) {
+              const menuBtn = document.createElement('span');
+              menuBtn.innerText = "⋮";
+              menuBtn.style.cursor = "pointer";
+              menuBtn.style.fontSize = "16px";
+              menuBtn.style.opacity = "0.6";
+              menuBtn.style.paddingLeft = "10px";
+
+              menuBtn.onclick = (e) => {
+                showMenu(index, e);
+              };
+
+              a.appendChild(menuBtn);
+            }
+
+            linksEl.appendChild(a);
+          });
+        });
+    }
+
+    function showAddOptions(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('addMenu');
+      menu.style.display = "flex";
+    }
+
+    function saveUser() {
+      const password = storedPassword;
+
+      fetch(`/api/${username}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          password: password,
+          bio: currentUser.bio,
+          links: currentUser.links
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error);
+          } else {
+            loadUser();
+          }
+        });
+    }
+
+    function handleAuth() {
+      if (isOwner) {
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        location.reload();
+      } else {
+        window.location.href = "/login.html";
+      }
+    }
+
+    // Set icon AFTER page loads
+    window.addEventListener("DOMContentLoaded", () => {
+      const authIcon = document.getElementById('authIcon');
+
+      if (isOwner) {
+        authIcon.innerHTML = `
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M16 17l5-5-5-5M21 12H9M13 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8"
+            stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+      } else {
+        authIcon.innerHTML = `
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M10 17l-5-5 5-5M3 12h12M7 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7"
+            stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+      }
     });
-</script>
+
+    loadUser();
+
+    function editLink(index) {
+      const newName = prompt("New name:");
+      const newUrl = prompt("New URL:");
+
+      if (!newName || !newUrl) return;
+
+      currentUser.links[index] = { name: newName, url: newUrl };
+      saveUser();
+    }
+
+    function deleteLink(index) {
+      const confirmDelete = confirm("Delete this link?");
+      if (!confirmDelete) return;
+
+      currentUser.links.splice(index, 1);
+      saveUser();
+    }
+
+    let selectedIndex = null;
+
+    function showMenu(index, event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      selectedIndex = index;
+
+      const menu = document.getElementById('menuPopup');
+
+      menu.style.display = "flex";
+      menu.style.top = event.clientY + "px";
+      menu.style.left = event.clientX + "px";
+    }
+
+    function handleMenuAction(action) {
+      const menu = document.getElementById('menuPopup');
+      menu.style.display = "none";
+
+      if (action === "edit") {
+        editLink(selectedIndex);
+      }
+
+      if (action === "delete") {
+        deleteLink(selectedIndex);
+      }
+    }
+
+    document.addEventListener("click", () => {
+      const menu = document.getElementById('menuPopup');
+      menu.style.display = "none";
+    });
+
+    new Sortable(document.getElementById('links'), {
+      animation: 150,
+      ghostClass: 'dragging',
+
+      onEnd: function (evt) {
+        const item = currentUser.links.splice(evt.oldIndex, 1)[0];
+        currentUser.links.splice(evt.newIndex, 0, item);
+        saveUser();
+      }
+    });
+
+    document.addEventListener("click", () => {
+      document.getElementById('addMenu').style.display = "none";
+    });
+
+    function addBio() {
+      openModal("bio");
+    }
+
+    function addLinkUI() {
+      openModal("link");
+    }
+
+    function addAvatarUI() {
+      alert("Avatar coming next step");
+    }
+
+    let currentAction = null;
+
+    function openModal(action) {
+      currentAction = action;
+
+      document.getElementById('inputModal').style.display = "flex";
+
+      // reset inputs
+      document.getElementById('input1').value = "";
+      document.getElementById('input2').value = "";
+    }
+
+    function submitInput() {
+      const val1 = document.getElementById('input1').value;
+      const val2 = document.getElementById('input2').value;
+
+      if (currentAction === "link") {
+        if (!val1 || !val2) return;
+
+        currentUser.links.push({ name: val1, url: val2 });
+        saveUser();
+      }
+
+      if (currentAction === "bio") {
+        if (!val1) return;
+
+        currentUser.bio = val1;
+        saveUser();
+      }
+
+      document.getElementById('inputModal').style.display = "none";
+    }
+
+  </script>
+
+  <div id="inputModal" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0,0,0,0.6);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+">
+
+    <div style="
+    background: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 300px;
+  ">
+
+      <input id="input1" placeholder="Name" style="width:100%; margin-bottom:10px; padding:8px;">
+
+      <input id="input2" placeholder="URL" style="width:100%; margin-bottom:10px; padding:8px;">
+
+      <button onclick="submitInput()" style="width:100%;">Save</button>
+
+    </div>
+
+  </div>
 
 </body>
+
 </html>

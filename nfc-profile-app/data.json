@@ -1,0 +1,26 @@
+{
+  "mohamed": {
+    "password": "1234",
+    "bio": "Developer",
+    "links": [
+      {
+        "name": "WhatsApp",
+        "url": "https://wa.me/123456789"
+      },
+      {
+        "name": "Instagram",
+        "url": "https://instagram.com"
+      }
+    ]
+  },
+  "ahmed": {
+    "password": "abcd",
+    "bio": "Designer",
+    "links": [
+      {
+        "name": "Portfolio",
+        "url": "https://example.com"
+      }
+    ]
+  }
+}
