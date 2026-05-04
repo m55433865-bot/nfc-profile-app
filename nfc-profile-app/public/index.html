@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
+
+    .container {
+      margin-top: 50px;
+    }
+
+    .link {
+      display: block;
+      margin: 10px auto;
+      padding: 15px;
+      width: 80%;
+      background: #333;
+      border-radius: 10px;
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1 id="name">Loading...</h1>
+  <p id="bio"></p>
+  <div id="links"></div>
+</div>
+
+<script>
+  const username = window.location.pathname.split('/').pop();
+
+  const nameEl = document.getElementById('name');
+  const bioEl = document.getElementById('bio');
+  const linksEl = document.getElementById('links');
+
+  fetch(`/api/${username}`)
+    .then(res => res.json())
+    .then(user => {
+      nameEl.innerText = user.username;
+      bioEl.innerText = user.bio;
+
+      user.links.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link.url;
+        a.innerText = link.name;
+        a.target = "_blank";
+        a.className = "link";
+        linksEl.appendChild(a);
+      });
+    })
+    .catch(() => {
+      nameEl.innerText = "User not found";
+    });
+</script>
+
+</body>
+</html>
