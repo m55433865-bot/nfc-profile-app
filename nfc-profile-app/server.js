@@ -41,7 +41,7 @@ app.post('/api/:username', (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const { password, bio, links } = req.body;
+  const { password, bio, links, avatar } = req.body;
 
   if (users[username].password !== password) {
     return res.status(403).json({ error: "Wrong password" });
@@ -49,6 +49,10 @@ app.post('/api/:username', (req, res) => {
 
   users[username].bio = bio;
   users[username].links = links;
+
+  if (avatar !== undefined) {
+    users[username].avatar = avatar;
+  }
 
   saveUsers(users);
 

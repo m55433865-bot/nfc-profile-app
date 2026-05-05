@@ -48,6 +48,7 @@
   </div>
 
   <div class="container">
+    <div id="avatarContainer"></div>
     <h1 id="name">Loading...</h1>
     <p id="bio"></p>
     <div id="links"></div>
@@ -151,6 +152,25 @@
           nameEl.innerText = user.username;
           bioEl.innerText = user.bio || "";
 
+          const avatarContainer = document.getElementById('avatarContainer');
+
+          if (user.avatar) {
+            avatarContainer.innerHTML = `
+    <img src="${user.avatar}" 
+    onclick="${isOwner ? 'handleAvatarClick()' : ''}"
+    style="
+      width:80px;
+      height:80px;
+      border-radius:50%;
+      object-fit:cover;
+      margin-bottom:10px;
+      cursor: ${isOwner ? 'pointer' : 'default'};
+    ">
+  `;
+          } else {
+            avatarContainer.innerHTML = "";
+          }
+
           linksEl.innerHTML = "";
 
           user.links.forEach((link, index) => {
@@ -215,6 +235,7 @@
         body: JSON.stringify({
           password: password,
           bio: currentUser.bio,
+          avatar: currentUser.avatar,   // ✅ THIS LINE
           links: currentUser.links
         })
       })
@@ -336,7 +357,7 @@
     }
 
     function addAvatarUI() {
-      alert("Avatar coming next step");
+      document.getElementById('avatarInput').click();
     }
 
     let currentAction = null;
@@ -372,6 +393,39 @@
       document.getElementById('inputModal').style.display = "none";
     }
 
+    window.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById('avatarInput');
+
+      if (!input) return;
+
+      input.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function () {
+          currentUser.avatar = reader.result;
+          saveUser();
+          console.log("image loaded");
+        };
+
+        reader.readAsDataURL(file);
+      });
+    });
+
+    function handleAvatarClick() {
+      const action = confirm("Press OK to change, Cancel to remove");
+
+      if (action) {
+        // change
+        document.getElementById('avatarInput').click();
+      } else {
+        // remove
+        currentUser.avatar = "";
+        saveUser();
+      }
+    }
   </script>
 
   <div id="inputModal" style="
@@ -406,6 +460,8 @@
     </div>
 
   </div>
+
+  <input type="file" id="avatarInput" accept="image/*" style="display:none;">
 
 </body>
 
