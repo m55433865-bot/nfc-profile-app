@@ -10,76 +10,67 @@ body {
   padding: 20px;
   max-width: 400px;
   margin: auto;
-}
-
-.avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
   margin-top: 40px;
 }
 
-h1 {
+/* Profile Header */
+#profileHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#name {
   margin: 10px 0 5px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
-p {
+#bio {
+  margin: 0;
+  font-size: 14px;
   color: #aaa;
-  margin-bottom: 30px;
 }
 
+/* Avatar */
+#avatarContainer img {
+  border: 2px solid #333;
+}
+
+/* Links */
 .link {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   margin: 8px auto;
-  padding: 8px 10px;
+  padding: 10px 12px;
 
-  width: 80%;
+  max-width: 320px;
+  width: 90%;
 
   background: #1a1a1a;
-  border-radius: 8px;
+  border-radius: 10px;
 
   text-decoration: none;
   color: white;
 
-  font-size: 13px;
+  font-size: 15px;
+
+  transition: all 0.2s ease;
 }
 
 .link:hover {
   background: #333;
+  transform: scale(1.03);
 }
 
-#addBtn {
-  all: unset; /* resets everything */
-  
-  position: fixed;
-  bottom: 12px;
-  right: 12px;
-
-  width: 24px;
-  height: 24px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #1f1f1f;
-  border: 1px solid #333;
-  border-radius: 6px;
-
-  cursor: pointer;
+.link:active {
+  transform: scale(0.97);
 }
 
-#addBtn:hover {
-  background: #2a2a2a;
-}
-
-.link span:last-child {
-  opacity: 0.6;
-}
-
+/* Text inside link */
 .link span:first-child {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -89,4 +80,10 @@ p {
 .link span:last-child {
   font-size: 16px;
   opacity: 0.6;
+}
+
+.link div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
