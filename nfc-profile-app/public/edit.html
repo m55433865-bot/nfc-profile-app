@@ -20,8 +20,6 @@
   min-width: 120px;
   z-index: 1000;
 ">
-        <div onclick="handleMenuAction('edit')" style="padding:10px; cursor:pointer;">Edit</div>
-        <div onclick="handleMenuAction('delete')" style="padding:10px; cursor:pointer;">Delete</div>
     </div>
 
     <div class="container">
@@ -50,9 +48,6 @@
         </div>
 
     </div>
-
-    <!-- 🔐 Auth Button -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <div id="addMenu" style="
   position: fixed;
@@ -103,7 +98,6 @@
         isOwner = !!normalizedStoredUsername && normalizedStoredUsername === username;
 
         let currentUser = null;
-        let linksSortable = null;
 
         const nameEl = document.getElementById('name');
         const bioEl = document.getElementById('bio');
@@ -115,10 +109,6 @@
         function switchTab(tab) {
             currentTab = tab;
             editingLinkIndex = null;
-
-            if (linksSortable) {
-                linksSortable.option("disabled", currentTab !== "edit");
-            }
 
             document.getElementById("tabView").classList.remove("active");
             document.getElementById("tabEdit").classList.remove("active");
@@ -319,20 +309,6 @@
 
                         // 3 dots menu
                         if (isOwner && currentTab === "edit") {
-                            const rowActions = document.createElement('div');
-                            rowActions.style.display = "flex";
-                            rowActions.style.alignItems = "center";
-                            rowActions.style.gap = "6px";
-
-                            const dragHandle = document.createElement('span');
-                            dragHandle.className = "drag-handle";
-                            dragHandle.innerText = "☰";
-                            dragHandle.setAttribute("aria-label", "Drag to reorder");
-                            dragHandle.onclick = (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            };
-
                             const menuBtn = document.createElement('span');
                             menuBtn.className = "menu-btn edit-icon edit-menu-btn";
                             menuBtn.innerText = "⋮";
@@ -369,9 +345,7 @@
                                 showMenu(index, e);
                             };
 
-                            rowActions.appendChild(dragHandle);
-                            rowActions.appendChild(menuBtn);
-                            a.appendChild(rowActions);
+                            a.appendChild(menuBtn);
                         }
 
                         linksEl.appendChild(a);
@@ -517,6 +491,18 @@
             saveUser();
         }
 
+        function moveLink(index, direction) {
+            const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+            if (targetIndex < 0 || targetIndex >= currentUser.links.length) return;
+
+            const currentLink = currentUser.links[index];
+            currentUser.links[index] = currentUser.links[targetIndex];
+            currentUser.links[targetIndex] = currentLink;
+            editingLinkIndex = null;
+            saveUser();
+        }
+
         let selectedIndex = null;
 
         function showMenu(index, event) {
@@ -526,6 +512,22 @@
             selectedIndex = index;
 
             const menu = document.getElementById('menuPopup');
+            const isFirst = index === 0;
+            const isLast = index === currentUser.links.length - 1;
+            const hasMultipleLinks = currentUser.links.length > 1;
+
+            menu.innerHTML = "";
+
+            if (hasMultipleLinks && !isFirst) {
+                menu.appendChild(createMenuItem("Move Up", "move-up"));
+            }
+
+            if (hasMultipleLinks && !isLast) {
+                menu.appendChild(createMenuItem("Move Down", "move-down"));
+            }
+
+            menu.appendChild(createMenuItem("Edit", "edit"));
+            menu.appendChild(createMenuItem("Delete", "delete"));
 
             menu.style.display = "flex";
             menu.style.pointerEvents = "auto";
@@ -533,10 +535,31 @@
             menu.style.left = event.clientX + "px";
         }
 
+        function createMenuItem(label, action) {
+            const item = document.createElement('div');
+            item.innerText = label;
+            item.style.padding = "10px";
+            item.style.cursor = "pointer";
+            item.onclick = (event) => {
+                event.stopPropagation();
+                handleMenuAction(action);
+            };
+
+            return item;
+        }
+
         function handleMenuAction(action) {
             const menu = document.getElementById('menuPopup');
             menu.style.display = "none";
             menu.style.pointerEvents = "none";
+
+            if (action === "move-up") {
+                moveLink(selectedIndex, "up");
+            }
+
+            if (action === "move-down") {
+                moveLink(selectedIndex, "down");
+            }
 
             if (action === "edit") {
                 editLink(selectedIndex);
@@ -552,34 +575,6 @@
             menu.style.display = "none";
             menu.style.pointerEvents = "none";
             closeAvatarMenu();
-        });
-
-        linksSortable = new Sortable(document.getElementById('links'), {
-            animation: 180,
-            disabled: currentTab !== "edit",
-            draggable: ".link:not(.no-sort)",
-            handle: ".drag-handle",
-            filter: ".no-sort, input, button, .theme-input, .ui-btn, .menu-btn",
-            preventOnFilter: false,
-            ghostClass: "drag-ghost",
-            chosenClass: "drag-chosen",
-            dragClass: "drag-dragging",
-            delay: 150,
-            delayOnTouchOnly: true,
-            touchStartThreshold: 5,
-            forceFallback: true,
-            fallbackTolerance: 5,
-
-            onEnd: function (evt) {
-                if (currentTab !== "edit" || evt.item.classList.contains("no-sort")) return;
-                if (evt.oldIndex === undefined || evt.newIndex === undefined) return;
-
-                const item = currentUser.links.splice(evt.oldIndex, 1)[0];
-                if (!item) return;
-
-                currentUser.links.splice(evt.newIndex, 0, item);
-                saveUser();
-            }
         });
 
         document.addEventListener("click", () => {
