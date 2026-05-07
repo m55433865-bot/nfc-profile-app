@@ -9,8 +9,17 @@ const ADMIN_USERNAME = "66546788";
 const ADMIN_PASSWORD = "123";
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://icxhlqummrtfpxzegbvd.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljeGhscXVtbXJ0ZnB4emVnYnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjYyODQsImV4cCI6MjA5Mzc0MjI4NH0.15teqmpk7adjnANdLAWlrmfTJDRlXyGhiy-JiNqWnSI";
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    })
+  : null;
+const supabaseServer = supabaseAdmin || supabaseAnon;
 
 app.use(express.static('public'));
 app.use(express.json({ limit: '10mb' }));
@@ -37,9 +46,9 @@ function normalizeUser(row) {
   };
 }
 
-async function getUser(username) {
+async function getUser(username, client = supabaseServer) {
   const cleanUsername = username.toLowerCase();
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('users')
     .select('*')
     .eq('username', cleanUsername)
@@ -49,8 +58,8 @@ async function getUser(username) {
   return normalizeUser(data);
 }
 
-async function listUsers() {
-  const { data, error } = await supabase
+async function listUsers(client = supabaseServer) {
+  const { data, error } = await client
     .from('users')
     .select('*')
     .order('username', { ascending: true });
@@ -59,11 +68,11 @@ async function listUsers() {
   return (data || []).map(normalizeUser);
 }
 
-async function createUser(username, password) {
+async function createUser(username, password, client = supabaseServer) {
   const cleanUsername = username.trim().toLowerCase();
   const cleanPassword = password.trim();
 
-  const { error } = await supabase
+  const { error } = await client
     .from('users')
     .insert({
       username: cleanUsername,
@@ -77,8 +86,8 @@ async function createUser(username, password) {
   if (error) throw error;
 }
 
-async function updateUser(username, updates) {
-  const { error } = await supabase
+async function updateUser(username, updates, client = supabaseServer) {
+  const { error } = await client
     .from('users')
     .update(updates)
     .eq('username', username.toLowerCase());
@@ -86,8 +95,8 @@ async function updateUser(username, updates) {
   if (error) throw error;
 }
 
-async function deleteUser(username) {
-  const { error } = await supabase
+async function deleteUser(username, client = supabaseServer) {
+  const { error } = await client
     .from('users')
     .delete()
     .eq('username', username.toLowerCase());
@@ -103,6 +112,15 @@ function isAdminRequest(req) {
 function requireAdmin(req, res) {
   if (!isAdminRequest(req)) {
     res.status(403).json({ error: "Admin only" });
+    return false;
+  }
+
+  return true;
+}
+
+function requireServiceRole(res) {
+  if (!supabaseAdmin) {
+    res.status(500).json({ error: "SUPABASE_SERVICE_ROLE_KEY is required for admin user management" });
     return false;
   }
 
@@ -152,9 +170,10 @@ app.post('/api/login', async (req, res) => {
 // ADMIN: list users
 app.get('/api/admin/users', async (req, res) => {
   if (!requireAdmin(req, res)) return;
+  if (!requireServiceRole(res)) return;
 
   try {
-    const users = await listUsers();
+    const users = await listUsers(supabaseAdmin);
     const list = [
       { username: ADMIN_USERNAME, displayName: "Admin", isAdmin: true },
       ...users
@@ -175,6 +194,7 @@ app.get('/api/admin/users', async (req, res) => {
 // ADMIN: create user
 app.post('/api/admin/users', async (req, res) => {
   if (!requireAdmin(req, res)) return;
+  if (!requireServiceRole(res)) return;
 
   try {
     const username = (req.body.username || "").trim().toLowerCase();
@@ -184,11 +204,11 @@ app.post('/api/admin/users', async (req, res) => {
       return res.status(400).json({ error: "Username and password are required" });
     }
 
-    if (username === ADMIN_USERNAME || await getUser(username)) {
+    if (username === ADMIN_USERNAME || await getUser(username, supabaseAdmin)) {
       return res.status(409).json({ error: "Username already exists" });
     }
 
-    await createUser(username, password);
+    await createUser(username, password, supabaseAdmin);
     res.json({ success: true });
   } catch (error) {
     sendSupabaseError(res, error);
@@ -198,6 +218,7 @@ app.post('/api/admin/users', async (req, res) => {
 // ADMIN: change password
 app.post('/api/admin/users/:username/password', async (req, res) => {
   if (!requireAdmin(req, res)) return;
+  if (!requireServiceRole(res)) return;
 
   try {
     const username = req.params.username.toLowerCase();
@@ -211,12 +232,12 @@ app.post('/api/admin/users/:username/password', async (req, res) => {
       return res.status(400).json({ error: "Password is required" });
     }
 
-    const user = await getUser(username);
+    const user = await getUser(username, supabaseAdmin);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    await updateUser(username, { password });
+    await updateUser(username, { password }, supabaseAdmin);
     res.json({ success: true });
   } catch (error) {
     sendSupabaseError(res, error);
@@ -226,6 +247,7 @@ app.post('/api/admin/users/:username/password', async (req, res) => {
 // ADMIN: delete user
 app.delete('/api/admin/users/:username', async (req, res) => {
   if (!requireAdmin(req, res)) return;
+  if (!requireServiceRole(res)) return;
 
   try {
     const username = req.params.username.toLowerCase();
@@ -234,12 +256,12 @@ app.delete('/api/admin/users/:username', async (req, res) => {
       return res.status(403).json({ error: "Admin user cannot be deleted" });
     }
 
-    const user = await getUser(username);
+    const user = await getUser(username, supabaseAdmin);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    await deleteUser(username);
+    await deleteUser(username, supabaseAdmin);
     res.json({ success: true });
   } catch (error) {
     sendSupabaseError(res, error);
