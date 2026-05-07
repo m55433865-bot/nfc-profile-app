@@ -172,17 +172,33 @@
         return;
       }
 
-      // save login locally
-      localStorage.setItem('username', username);
-      localStorage.setItem('password', password);
+      fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            error.innerText = data.error;
+            return;
+          }
 
-      if (username === "66546788" && password === "123") {
-        window.location.href = "/admin.html";
-        return;
-      }
+          localStorage.setItem('username', data.username || username);
+          localStorage.setItem('password', password);
 
-      // redirect to profile
-      window.location.href = `/${username}`;
+          if (data.isAdmin) {
+            window.location.href = "/admin.html";
+            return;
+          }
+
+          window.location.href = `/${data.username || username}`;
+        })
+        .catch(() => {
+          error.innerText = "Login failed. Try again.";
+        });
     }
 
     document.addEventListener("keydown", (event) => {

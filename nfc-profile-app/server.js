@@ -1,46 +1,98 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const browserSync = require('browser-sync').create();
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = 3000;
 const ADMIN_USERNAME = "66546788";
 const ADMIN_PASSWORD = "123";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://icxhlqummrtfpxzegbvd.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljeGhscXVtbXJ0ZnB4emVnYnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjYyODQsImV4cCI6MjA5Mzc0MjI4NH0.15teqmpk7adjnANdLAWlrmfTJDRlXyGhiy-JiNqWnSI";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 app.use(express.static('public'));
-app.use(express.json()); // important
+app.use(express.json({ limit: '10mb' }));
 
-function getUsers() {
-  const users = JSON.parse(fs.readFileSync('data.json'));
-
-  Object.keys(users).forEach((username) => {
-    const user = users[username];
-
-    if (!user.displayName) {
-      user.displayName = username;
-    }
-
-    if (!user.bio) {
-      user.bio = "";
-    }
-
-    if (!user.avatar) {
-      user.avatar = "";
-    }
-
-    if (!Array.isArray(user.links)) {
-      user.links = [];
-    } else {
-      user.links = user.links.filter((link) => link && link.name && link.url);
-    }
-  });
-
-  return users;
+function sanitizeLinks(links) {
+  return Array.isArray(links)
+    ? links.filter((link) => link && link.name && link.url)
+    : [];
 }
 
-function saveUsers(data) {
-  fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
+function normalizeUser(row) {
+  if (!row) return null;
+
+  const username = (row.username || "").toLowerCase();
+
+  return {
+    id: row.id,
+    username,
+    password: row.password || "",
+    displayName: row.displayname || username,
+    bio: row.bio || "",
+    avatar: row.avatar || "",
+    links: sanitizeLinks(row.links)
+  };
+}
+
+async function getUser(username) {
+  const cleanUsername = username.toLowerCase();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('username', cleanUsername)
+    .maybeSingle();
+
+  if (error) throw error;
+  return normalizeUser(data);
+}
+
+async function listUsers() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .order('username', { ascending: true });
+
+  if (error) throw error;
+  return (data || []).map(normalizeUser);
+}
+
+async function createUser(username, password) {
+  const cleanUsername = username.trim().toLowerCase();
+  const cleanPassword = password.trim();
+
+  const { error } = await supabase
+    .from('users')
+    .insert({
+      username: cleanUsername,
+      password: cleanPassword,
+      displayname: cleanUsername,
+      bio: "",
+      avatar: "",
+      links: []
+    });
+
+  if (error) throw error;
+}
+
+async function updateUser(username, updates) {
+  const { error } = await supabase
+    .from('users')
+    .update(updates)
+    .eq('username', username.toLowerCase());
+
+  if (error) throw error;
+}
+
+async function deleteUser(username) {
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('username', username.toLowerCase());
+
+  if (error) throw error;
 }
 
 function isAdminRequest(req) {
@@ -57,153 +109,202 @@ function requireAdmin(req, res) {
   return true;
 }
 
+function sendSupabaseError(res, error) {
+  console.error(error);
+
+  if (error.code === "23505") {
+    return res.status(409).json({ error: "Username already exists" });
+  }
+
+  if (error.code === "42501") {
+    return res.status(403).json({ error: "Supabase permission denied. Check users table RLS policy or use a server-side service role key." });
+  }
+
+  res.status(500).json({ error: "Database error" });
+}
+
+// LOGIN
+app.post('/api/login', async (req, res) => {
+  try {
+    const username = (req.body.username || "").trim().toLowerCase();
+    const password = (req.body.password || "").trim();
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password are required" });
+    }
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      return res.json({ success: true, isAdmin: true, username });
+    }
+
+    const user = await getUser(username);
+
+    if (!user || user.password !== password) {
+      return res.status(403).json({ error: "Wrong username or password" });
+    }
+
+    res.json({ success: true, isAdmin: false, username });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
 // ADMIN: list users
-app.get('/api/admin/users', (req, res) => {
+app.get('/api/admin/users', async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
-  const users = getUsers();
-  const list = [
-    { username: ADMIN_USERNAME, displayName: "Admin", isAdmin: true },
-    ...Object.keys(users)
-      .filter((username) => username !== ADMIN_USERNAME)
-      .map((username) => ({
-        username,
-        displayName: users[username].displayName || username,
-        isAdmin: false
-      }))
-  ];
+  try {
+    const users = await listUsers();
+    const list = [
+      { username: ADMIN_USERNAME, displayName: "Admin", isAdmin: true },
+      ...users
+        .filter((user) => user.username !== ADMIN_USERNAME)
+        .map((user) => ({
+          username: user.username,
+          displayName: user.displayName || user.username,
+          isAdmin: false
+        }))
+    ];
 
-  res.json({ users: list });
+    res.json({ users: list });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
 });
 
 // ADMIN: create user
-app.post('/api/admin/users', (req, res) => {
+app.post('/api/admin/users', async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
-  const users = getUsers();
-  const username = (req.body.username || "").trim().toLowerCase();
-  const password = (req.body.password || "").trim();
+  try {
+    const username = (req.body.username || "").trim().toLowerCase();
+    const password = (req.body.password || "").trim();
 
-  if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required" });
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password are required" });
+    }
+
+    if (username === ADMIN_USERNAME || await getUser(username)) {
+      return res.status(409).json({ error: "Username already exists" });
+    }
+
+    await createUser(username, password);
+    res.json({ success: true });
+  } catch (error) {
+    sendSupabaseError(res, error);
   }
-
-  if (username === ADMIN_USERNAME || users[username]) {
-    return res.status(409).json({ error: "User already exists" });
-  }
-
-  users[username] = {
-    password,
-    displayName: username,
-    bio: "",
-    avatar: "",
-    links: []
-  };
-
-  saveUsers(users);
-  res.json({ success: true });
 });
 
 // ADMIN: change password
-app.post('/api/admin/users/:username/password', (req, res) => {
+app.post('/api/admin/users/:username/password', async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
-  const users = getUsers();
-  const username = req.params.username.toLowerCase();
-  const password = (req.body.password || "").trim();
+  try {
+    const username = req.params.username.toLowerCase();
+    const password = (req.body.password || "").trim();
 
-  if (username === ADMIN_USERNAME) {
-    return res.status(403).json({ error: "Admin password is fixed" });
-  }
+    if (username === ADMIN_USERNAME) {
+      return res.status(403).json({ error: "Admin password is fixed" });
+    }
 
-  if (!users[username]) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  if (!password) {
-    return res.status(400).json({ error: "Password is required" });
-  }
-
-  users[username].password = password;
-  saveUsers(users);
-  res.json({ success: true });
-});
-
-// ADMIN: delete user
-app.delete('/api/admin/users/:username', (req, res) => {
-  if (!requireAdmin(req, res)) return;
-
-  const users = getUsers();
-  const username = req.params.username.toLowerCase();
-
-  if (username === ADMIN_USERNAME) {
-    return res.status(403).json({ error: "Admin user cannot be deleted" });
-  }
-
-  if (!users[username]) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  delete users[username];
-  saveUsers(users);
-  res.json({ success: true });
-});
-
-// GET user
-app.get('/api/:username', (req, res) => {
-  const users = getUsers();
-  const username = req.params.username.toLowerCase();
-
-  if (!users[username]) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  res.json({
-    username,
-    ...users[username]
-  });
-});
-
-// UPDATE user
-app.post('/api/:username', (req, res) => {
-  const users = getUsers();
-  const username = req.params.username.toLowerCase();
-
-  if (!users[username]) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  const { password, bio, links, avatar, displayName, newPassword } = req.body;
-
-  if (users[username].password !== password) {
-    return res.status(403).json({ error: "Wrong password" });
-  }
-
-  users[username].bio = bio || "";
-  users[username].links = Array.isArray(links)
-    ? links.filter((link) => link && link.name && link.url)
-    : [];
-
-  if (displayName !== undefined) {
-    users[username].displayName = displayName;
-  }
-
-  if (avatar !== undefined) {
-    users[username].avatar = avatar;
-  }
-
-  if (newPassword !== undefined) {
-    const cleanPassword = String(newPassword).trim();
-    if (!cleanPassword) {
+    if (!password) {
       return res.status(400).json({ error: "Password is required" });
     }
 
-    users[username].password = cleanPassword;
+    const user = await getUser(username);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    await updateUser(username, { password });
+    res.json({ success: true });
+  } catch (error) {
+    sendSupabaseError(res, error);
   }
+});
 
-  saveUsers(users);
+// ADMIN: delete user
+app.delete('/api/admin/users/:username', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
 
-  res.json({ success: true });
+  try {
+    const username = req.params.username.toLowerCase();
+
+    if (username === ADMIN_USERNAME) {
+      return res.status(403).json({ error: "Admin user cannot be deleted" });
+    }
+
+    const user = await getUser(username);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    await deleteUser(username);
+    res.json({ success: true });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+// GET user
+app.get('/api/:username', async (req, res) => {
+  try {
+    const username = req.params.username.toLowerCase();
+    const user = await getUser(username);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+// UPDATE user
+app.post('/api/:username', async (req, res) => {
+  try {
+    const username = req.params.username.toLowerCase();
+    const user = await getUser(username);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const { password, bio, links, avatar, displayName, newPassword } = req.body;
+
+    if (user.password !== password) {
+      return res.status(403).json({ error: "Wrong password" });
+    }
+
+    const updates = {
+      bio: bio || "",
+      links: sanitizeLinks(links)
+    };
+
+    if (displayName !== undefined) {
+      updates.displayname = displayName;
+    }
+
+    if (avatar !== undefined) {
+      updates.avatar = avatar;
+    }
+
+    if (newPassword !== undefined) {
+      const cleanPassword = String(newPassword).trim();
+      if (!cleanPassword) {
+        return res.status(400).json({ error: "Password is required" });
+      }
+
+      updates.password = cleanPassword;
+    }
+
+    await updateUser(username, updates);
+    res.json({ success: true });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
 });
 
 // page
