@@ -103,6 +103,7 @@
         isOwner = !!normalizedStoredUsername && normalizedStoredUsername === username;
 
         let currentUser = null;
+        let linksSortable = null;
 
         const nameEl = document.getElementById('name');
         const bioEl = document.getElementById('bio');
@@ -114,6 +115,10 @@
         function switchTab(tab) {
             currentTab = tab;
             editingLinkIndex = null;
+
+            if (linksSortable) {
+                linksSortable.option("disabled", currentTab !== "edit");
+            }
 
             document.getElementById("tabView").classList.remove("active");
             document.getElementById("tabEdit").classList.remove("active");
@@ -358,7 +363,7 @@
 
                     if (isOwner && currentTab === "edit") {
                         const addRow = document.createElement('div');
-                        addRow.className = "link edit-mode-link";
+                        addRow.className = "link edit-mode-link no-sort";
 
                         addRow.style.justifyContent = "center";
                         addRow.style.cursor = "pointer";
@@ -398,15 +403,15 @@
                 <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
                     Settings
                 </div>
-                <div class="link" onclick="showSettingsPlaceholder()" style="cursor:pointer;">
+                <div class="link no-sort" onclick="showSettingsPlaceholder()" style="cursor:pointer;">
                     <span>Theme</span>
                     <span>›</span>
                 </div>
-                <div class="link" onclick="openModal('password')" style="cursor:pointer;">
+                <div class="link no-sort" onclick="openModal('password')" style="cursor:pointer;">
                     <span>Change Password</span>
                     <span>›</span>
                 </div>
-                <div class="link" onclick="logoutUser()" style="cursor:pointer;">
+                <div class="link no-sort" onclick="logoutUser()" style="cursor:pointer;">
                     <span>Logout</span>
                     <span>›</span>
                 </div>
@@ -428,6 +433,7 @@
 
             const menu = document.getElementById('addMenu');
             menu.style.display = "flex";
+            menu.style.pointerEvents = "auto";
 
             // position near click
             menu.style.top = e.clientY + "px";
@@ -506,6 +512,7 @@
             const menu = document.getElementById('menuPopup');
 
             menu.style.display = "flex";
+            menu.style.pointerEvents = "auto";
             menu.style.top = event.clientY + "px";
             menu.style.left = event.clientX + "px";
         }
@@ -513,6 +520,7 @@
         function handleMenuAction(action) {
             const menu = document.getElementById('menuPopup');
             menu.style.display = "none";
+            menu.style.pointerEvents = "none";
 
             if (action === "edit") {
                 editLink(selectedIndex);
@@ -526,24 +534,37 @@
         document.addEventListener("click", () => {
             const menu = document.getElementById('menuPopup');
             menu.style.display = "none";
+            menu.style.pointerEvents = "none";
             closeAvatarMenu();
         });
 
-        new Sortable(document.getElementById('links'), {
+        linksSortable = new Sortable(document.getElementById('links'), {
             animation: 150,
+            disabled: currentTab !== "edit",
+            draggable: ".link:not(.no-sort)",
+            filter: ".no-sort, input, button, .theme-input, .ui-btn",
+            preventOnFilter: false,
             ghostClass: 'dragging',
+            delay: 120,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
 
             onEnd: function (evt) {
-                if (currentTab !== "edit") return;
+                if (currentTab !== "edit" || evt.item.classList.contains("no-sort")) return;
+                if (evt.oldIndex === undefined || evt.newIndex === undefined) return;
 
                 const item = currentUser.links.splice(evt.oldIndex, 1)[0];
+                if (!item) return;
+
                 currentUser.links.splice(evt.newIndex, 0, item);
                 saveUser();
             }
         });
 
         document.addEventListener("click", () => {
-            document.getElementById('addMenu').style.display = "none";
+            const addMenu = document.getElementById('addMenu');
+            addMenu.style.display = "none";
+            addMenu.style.pointerEvents = "none";
             closeAvatarMenu();
         });
 

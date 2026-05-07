@@ -143,6 +143,7 @@
     function openAddUserModal() {
       modalMode = "add";
       selectedUsername = null;
+      showMessage("");
       modalTitle.innerText = "Add user";
       usernameInput.style.display = "block";
       usernameInput.value = "";
@@ -179,9 +180,18 @@
     }
 
     function addUser() {
-      const username = usernameInput.value.trim();
+      const username = usernameInput.value.trim().toLowerCase();
       const password = passwordInput.value.trim();
-      if (!username || !password) return;
+
+      if (!username) {
+        showMessage("Username is required");
+        return;
+      }
+
+      if (!password) {
+        showMessage("Password is required");
+        return;
+      }
 
       fetch("/api/admin/users", {
         method: "POST",
