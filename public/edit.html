@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div id="menuPopup" style="
+  position: fixed;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  min-width: 120px;
+  z-index: 1000;
+">
+    </div>
+
+    <div class="container">
+
+        <div id="profileHeader">
+            <div id="avatarContainer"></div>
+            <h1 id="name">Loading...</h1>
+            <p id="bio"></p>
+        </div>
+
+        <!-- CARD -->
+        <div id="card">
+
+            <!-- TABS -->
+            <div id="tabs">
+                <button onclick="switchTab('view')" id="tabView">Display</button>
+                <button onclick="switchTab('edit')" id="tabEdit">Edit</button>
+                <button onclick="switchTab('settings')" id="tabSettings">Settings</button>
+            </div>
+
+            <!-- CONTENT -->
+            <div id="cardContent">
+                <div id="links"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="addMenu" style="
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 10px;
+
+  display: none;
+  flex-direction: column;
+
+  min-width: 160px;
+  z-index: 1000;
+  ">
+        <div onclick="addLinkUI()" style="padding:12px; cursor:pointer;">Add Block</div>
+        <div onclick="addAvatarUI()" style="padding:12px; cursor:pointer;">Add Avatar</div>
+        <div onclick="addBio()" style="padding:12px; cursor:pointer;">Add Bio</div>
+
+    </div>
+
+    <div id="avatarMenu" class="avatar-actions-menu">
+        <button type="button" class="avatar-menu-item" onclick="changeAvatarPhoto(event)">Change Photo</button>
+        <button type="button" class="avatar-menu-item danger" onclick="removeAvatarPhoto(event)">Remove Photo</button>
+    </div>
+
+    <script>
+        let draggedIndex = null;
+        const storedUsername = localStorage.getItem('username');
+        let storedPassword = localStorage.getItem('password');
+        const normalizedStoredUsername = (storedUsername || "").trim().toLowerCase();
+        const params = new URLSearchParams(window.location.search);
+        const pathName = window.location.pathname.split('/').filter(Boolean).pop();
+        const routeUsername = pathName && !["edit.html", "login.html"].includes(pathName.toLowerCase())
+            ? pathName
+            : null;
+
+        let isOwner = false;
+
+        // Route/API username stays separate from editable displayName.
+        let username = (params.get("username") || routeUsername || normalizedStoredUsername || "").trim().toLowerCase();
+
+        if (!username) {
+            window.location.href = "/login.html";
+        }
+
+        isOwner = !!normalizedStoredUsername && normalizedStoredUsername === username;
+
+        let currentUser = null;
+
+        const nameEl = document.getElementById('name');
+        const bioEl = document.getElementById('bio');
+        const linksEl = document.getElementById('links');
+
+        let currentTab = "view";
+        let editingLinkIndex = null;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            editingLinkIndex = null;
+
+            document.getElementById("tabView").classList.remove("active");
+            document.getElementById("tabEdit").classList.remove("active");
+            document.getElementById("tabSettings").classList.remove("active");
+
+            if (tab === "view") {
+                document.getElementById("tabView").classList.add("active");
+            } else if (tab === "edit") {
+                document.getElementById("tabEdit").classList.add("active");
+            } else {
+                document.getElementById("tabSettings").classList.add("active");
+            }
+
+            loadUser(); // 🔥 critical
+        }
+
+        function loadUser() {
+            fetch(`/api/${username}`)
+                .then(res => res.json())
+                .then(user => {
+                    if (!Array.isArray(user.links)) {
+                        user.links = [];
+                    } else {
+                        user.links = user.links.filter(link => link && link.name && link.url);
+                    }
+
+                    if (!user.bio) user.bio = "";
+                    if (!user.avatar) user.avatar = "";
+                    if (!user.displayName) user.displayName = user.username;
+
+                    const avatarContainer = document.getElementById('avatarContainer');
+
+                    if (user.avatar || (isOwner && currentTab === "edit")) {
+                        avatarContainer.innerHTML = `
+                            <div
+                                ${isOwner && currentTab === "edit" ? `onclick="handleAvatarClick(event)"` : ""}
+                                class="avatar-frame ${isOwner && currentTab === "edit" ? "editable" : ""}"
+                            >
+
+                            ${user.avatar
+                                ? `
+                                <img src="${user.avatar}" 
+                                    style="
+                                    width:90px;
+                                    height:90px;
+                                    border-radius:50%;
+                                    object-fit:cover;
+                                    border: 3px solid #333;
+                                    ">
+                                `
+                                : `
+                                <div class="avatar-placeholder">+</div>
+                                `
+                            }
+
+                            ${isOwner && currentTab === "edit"
+                                ? `
+                                <div class="edit-icon avatar-edit-icon" style="
+                                position: absolute;
+                                bottom: 0;
+                                right: 0;
+                                border-radius: 50%;
+                                padding: 6px;
+                                ">
+                                ✏️
+                                </div>
+                            `
+                                : ""
+                            }
+
+                            </div>
+                        `;
+                    } else {
+                        avatarContainer.innerHTML = "";
+                    }
+
+                    currentUser = user;
+                    const displayName = user.displayName || user.username;
+
+                    if (isOwner && currentTab === "edit") {
+                        nameEl.innerHTML = `
+                        ${displayName}
+                        <span class="edit-icon" onclick="editName()">✏️</span>
+                    `;
+                    } else {
+                        nameEl.innerText = displayName;
+                    }
+                    if (isOwner && currentTab === "edit") {
+                        bioEl.innerHTML = `
+                                ${user.bio || ""}
+                                <span class="edit-icon" onclick="addBio()">✏️</span>
+                            `;
+                    } else {
+                        bioEl.innerText = user.bio || "";
+                    }
+
+                    linksEl.innerHTML = "";
+
+                    if (isOwner && currentTab === "settings") {
+                        renderSettings();
+                        return;
+                    }
+
+                    user.links.forEach((link, index) => {
+                        const a = document.createElement(
+                            isOwner && currentTab === "edit" && editingLinkIndex === index ? "div" : "a"
+                        );
+
+                        if (a.tagName === "A") {
+                            a.href = link.url;
+                            a.target = "_blank";
+                        }
+
+                        a.className = "link";
+                        if (isOwner && currentTab === "edit") {
+                            a.classList.add("edit-mode-link");
+                        }
+
+                        if (isOwner && currentTab === "edit" && editingLinkIndex === index) {
+                            a.classList.add("link-edit-panel");
+
+                            const fields = document.createElement('div');
+                            fields.className = "link-edit-fields";
+
+                            const nameInput = document.createElement('input');
+                            nameInput.className = "theme-input";
+                            nameInput.placeholder = "Name";
+                            nameInput.value = link.name;
+
+                            const urlInput = document.createElement('input');
+                            urlInput.className = "theme-input";
+                            urlInput.placeholder = "URL";
+                            urlInput.value = link.url;
+
+                            const actions = document.createElement('div');
+                            actions.className = "form-actions";
+
+                            const cancelBtn = document.createElement('button');
+                            cancelBtn.type = "button";
+                            cancelBtn.className = "ui-btn secondary";
+                            cancelBtn.innerText = "Cancel";
+                            cancelBtn.onclick = (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                editingLinkIndex = null;
+                                loadUser();
+                            };
+
+                            const saveBtn = document.createElement('button');
+                            saveBtn.type = "button";
+                            saveBtn.className = "ui-btn primary";
+                            saveBtn.innerText = "Save";
+                            saveBtn.onclick = (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                saveEditedLink(index, nameInput.value, urlInput.value);
+                            };
+
+                            actions.appendChild(cancelBtn);
+                            actions.appendChild(saveBtn);
+
+                            fields.appendChild(nameInput);
+                            fields.appendChild(urlInput);
+                            fields.appendChild(actions);
+
+                            a.appendChild(fields);
+                            linksEl.appendChild(a);
+                            return;
+                        }
+
+                        // text
+                        const left = document.createElement('div');
+                        left.style.display = "flex";
+                        left.style.alignItems = "center";
+                        left.style.gap = "10px";
+
+                        // icon
+                        const icon = document.createElement('span');
+                        icon.innerHTML = getIcon(link.url);
+
+                        icon.style.display = "flex";
+                        icon.style.alignItems = "center";
+                        icon.style.justifyContent = "center";
+
+                        icon.style.width = "30px";   // 🔥 control size here
+                        icon.style.height = "30px";
+
+                        icon.style.flexShrink = "0";  // prevent shrinking on long names
+
+                        // text
+                        const text = document.createElement('span');
+                        text.innerText = link.name;
+
+                        left.appendChild(icon);
+                        left.appendChild(text);
+
+                        a.appendChild(left);
+
+                        // 3 dots menu
+                        if (isOwner && currentTab === "edit") {
+                            const menuBtn = document.createElement('span');
+                            menuBtn.className = "menu-btn edit-icon edit-menu-btn";
+                            menuBtn.innerText = "⋮";
+
+                            menuBtn.style.display = "flex";
+                            menuBtn.style.alignItems = "center";
+                            menuBtn.style.justifyContent = "center";
+
+                            menuBtn.style.width = "34px";
+                            menuBtn.style.height = "34px";
+
+                            menuBtn.style.cursor = "pointer";
+                            menuBtn.style.fontSize = "22px";   // 🔥 bigger dots
+                            menuBtn.style.lineHeight = "1";    // 🔥 prevents weird vertical spacing
+
+                            menuBtn.style.color = "#aaa";      // subtle default
+                            menuBtn.style.borderRadius = "8px";
+                            menuBtn.style.transition = "all 0.2s ease";
+
+                            menuBtn.onmouseover = () => {
+                                menuBtn.style.background = "#333";
+                                menuBtn.style.color = "#fff";    // highlight on hover
+                            };
+
+                            menuBtn.onmouseleave = () => {
+                                menuBtn.style.background = "transparent";
+                                menuBtn.style.color = "#aaa";
+                            };
+
+                            menuBtn.onclick = (e) => {
+                                e.preventDefault();     // stop link navigation
+                                e.stopPropagation();    // stop event bubbling
+
+                                showMenu(index, e);
+                            };
+
+                            a.appendChild(menuBtn);
+                        }
+
+                        linksEl.appendChild(a);
+                    });
+
+                    if (isOwner && currentTab === "edit") {
+                        const addRow = document.createElement('div');
+                        addRow.className = "link edit-mode-link no-sort";
+
+                        addRow.style.justifyContent = "center";
+                        addRow.style.cursor = "pointer";
+                        addRow.style.opacity = "0.7";
+
+                        addRow.innerHTML = `
+                            <span style="font-size:18px;">＋ Add</span>`;
+
+                        addRow.onclick = (e) => {
+                            e.stopPropagation();
+                            addLinkUI();
+                        };
+
+                        linksEl.appendChild(addRow);
+                    }
+
+                    if (isOwner && currentTab === "edit") {
+                        playEditModeAnimation();
+                    }
+
+                });
+        }
+
+        function playEditModeAnimation() {
+            const livelyItems = document.querySelectorAll(".edit-icon, .edit-mode-link");
+
+            livelyItems.forEach((item, index) => {
+                item.classList.remove("edit-active");
+                item.style.setProperty("--edit-delay", `${Math.min(index * 45, 320)}ms`);
+                void item.offsetWidth;
+                item.classList.add("edit-active");
+            });
+        }
+
+        function renderSettings() {
+            linksEl.innerHTML = `
+                <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
+                    Settings
+                </div>
+                <div class="link no-sort" onclick="showSettingsPlaceholder()" style="cursor:pointer;">
+                    <span>Theme</span>
+                    <span>›</span>
+                </div>
+                <div class="link no-sort" onclick="openModal('password')" style="cursor:pointer;">
+                    <span>Change Password</span>
+                    <span>›</span>
+                </div>
+                <div class="link no-sort" onclick="logoutUser()" style="cursor:pointer;">
+                    <span>Logout</span>
+                    <span>›</span>
+                </div>
+            `;
+        }
+
+        function showSettingsPlaceholder() {
+            console.log("Theme settings coming soon");
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('username');
+            localStorage.removeItem('password');
+            window.location.href = "/login.html";
+        }
+
+        function showAddOptions(e) {
+            e.stopPropagation();
+
+            const menu = document.getElementById('addMenu');
+            menu.style.display = "flex";
+            menu.style.pointerEvents = "auto";
+
+            // position near click
+            menu.style.top = e.clientY + "px";
+            menu.style.left = e.clientX + "px";
+
+            // IMPORTANT: override bottom/right from CSS
+            menu.style.bottom = "auto";
+            menu.style.right = "auto";
+        }
+
+        function saveUser() {
+            const password = storedPassword;
+
+            fetch(`/api/${username}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: password,
+                    displayName: currentUser.displayName,
+                    bio: currentUser.bio,
+                    avatar: currentUser.avatar,   // ✅ THIS LINE
+                    links: currentUser.links
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                    } else {
+                        loadUser();
+                    }
+                });
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (!isOwner) {
+                document.getElementById("tabEdit").style.display = "none";
+                document.getElementById("tabSettings").style.display = "none";
+            }
+
+        });
+
+        loadUser();
+
+        function editLink(index) {
+            editingLinkIndex = index;
+            loadUser();
+        }
+
+        function saveEditedLink(index, name, url) {
+            const cleanName = name.trim();
+            const cleanUrl = url.trim();
+            if (!cleanName || !cleanUrl) return;
+
+            currentUser.links[index] = { name: cleanName, url: cleanUrl };
+            editingLinkIndex = null;
+            saveUser();
+        }
+
+        function deleteLink(index) {
+            currentUser.links.splice(index, 1);
+            editingLinkIndex = null;
+            saveUser();
+        }
+
+        function moveLink(index, direction) {
+            const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+            if (targetIndex < 0 || targetIndex >= currentUser.links.length) return;
+
+            const currentLink = currentUser.links[index];
+            currentUser.links[index] = currentUser.links[targetIndex];
+            currentUser.links[targetIndex] = currentLink;
+            editingLinkIndex = null;
+            saveUser();
+        }
+
+        let selectedIndex = null;
+
+        function showMenu(index, event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            selectedIndex = index;
+
+            const menu = document.getElementById('menuPopup');
+            const isFirst = index === 0;
+            const isLast = index === currentUser.links.length - 1;
+            const hasMultipleLinks = currentUser.links.length > 1;
+
+            menu.innerHTML = "";
+
+            if (hasMultipleLinks && !isFirst) {
+                menu.appendChild(createMenuItem("Move Up", "move-up"));
+            }
+
+            if (hasMultipleLinks && !isLast) {
+                menu.appendChild(createMenuItem("Move Down", "move-down"));
+            }
+
+            menu.appendChild(createMenuItem("Edit", "edit"));
+            menu.appendChild(createMenuItem("Delete", "delete"));
+
+            menu.style.display = "flex";
+            menu.style.pointerEvents = "auto";
+            menu.style.top = event.clientY + "px";
+            menu.style.left = event.clientX + "px";
+        }
+
+        function createMenuItem(label, action) {
+            const item = document.createElement('div');
+            item.innerText = label;
+            item.style.padding = "10px";
+            item.style.cursor = "pointer";
+            item.onclick = (event) => {
+                event.stopPropagation();
+                handleMenuAction(action);
+            };
+
+            return item;
+        }
+
+        function handleMenuAction(action) {
+            const menu = document.getElementById('menuPopup');
+            menu.style.display = "none";
+            menu.style.pointerEvents = "none";
+
+            if (action === "move-up") {
+                moveLink(selectedIndex, "up");
+            }
+
+            if (action === "move-down") {
+                moveLink(selectedIndex, "down");
+            }
+
+            if (action === "edit") {
+                editLink(selectedIndex);
+            }
+
+            if (action === "delete") {
+                deleteLink(selectedIndex);
+            }
+        }
+
+        document.addEventListener("click", () => {
+            const menu = document.getElementById('menuPopup');
+            menu.style.display = "none";
+            menu.style.pointerEvents = "none";
+            closeAvatarMenu();
+        });
+
+        document.addEventListener("click", () => {
+            const addMenu = document.getElementById('addMenu');
+            addMenu.style.display = "none";
+            addMenu.style.pointerEvents = "none";
+            closeAvatarMenu();
+        });
+
+        function addBio() {
+            openModal("bio");
+        }
+
+        function addLinkUI() {
+            openModal("link");
+        }
+
+        function addAvatarUI() {
+            document.getElementById('avatarInput').click();
+        }
+
+        let currentAction = null;
+
+        function openModal(action) {
+            currentAction = action;
+
+            document.getElementById('inputModal').style.display = "flex";
+
+            const title = document.getElementById('modalTitle');
+            const input1 = document.getElementById('input1');
+            const input2 = document.getElementById('input2');
+
+            input1.value = "";
+            input2.value = "";
+            input2.style.display = action === "bio" || action === "name" || action === "password" ? "none" : "block";
+
+            if (action === "link") {
+                title.innerText = "Add link";
+                input1.placeholder = "Name";
+                input2.placeholder = "URL";
+            }
+
+            if (action === "bio") {
+                title.innerText = "Edit bio";
+                input1.placeholder = "Bio";
+                input1.value = currentUser.bio || "";
+            }
+
+            if (action === "name") {
+                title.innerText = "Edit name";
+                input1.placeholder = "Name";
+                input1.value = currentUser.displayName || currentUser.username || "";
+            }
+
+            if (action === "password") {
+                title.innerText = "Change password";
+                input1.placeholder = "New password";
+                input1.type = "password";
+            } else {
+                input1.type = "text";
+            }
+        }
+
+        function submitInput() {
+            const val1 = document.getElementById('input1').value.trim();
+            const val2 = document.getElementById('input2').value.trim();
+
+            if (currentAction === "link") {
+                if (!val1 || !val2) return;
+
+                currentUser.links.push({ name: val1, url: val2 });
+                saveUser();
+            }
+
+            if (currentAction === "bio") {
+                if (!val1) return;
+
+                currentUser.bio = val1;
+                saveUser();
+            }
+
+            if (currentAction === "name") {
+                if (!val1) return;
+
+                currentUser.displayName = val1;
+                saveUser();
+            }
+
+            if (currentAction === "password") {
+                if (!val1) return;
+
+                changePassword(val1);
+                return;
+            }
+
+            closeModal();
+        }
+
+        function changePassword(newPassword) {
+            fetch(`/api/${username}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: storedPassword,
+                    newPassword,
+                    displayName: currentUser.displayName,
+                    bio: currentUser.bio,
+                    avatar: currentUser.avatar,
+                    links: currentUser.links
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    storedPassword = newPassword;
+                    localStorage.setItem('password', newPassword);
+                    closeModal();
+                    loadUser();
+                });
+        }
+
+        function closeModal() {
+            currentAction = null;
+            document.getElementById('inputModal').style.display = "none";
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const input = document.getElementById('avatarInput');
+
+            if (!input) return;
+
+            input.addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+
+                reader.onload = function () {
+                    currentUser.avatar = reader.result;
+                    saveUser();
+                    console.log("image loaded");
+                };
+
+                reader.readAsDataURL(file);
+            });
+        });
+
+        function handleAvatarClick(event) {
+            if (!isOwner || currentTab !== "edit") return;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!currentUser.avatar) {
+                document.getElementById('avatarInput').click();
+                return;
+            }
+
+            const menu = document.getElementById('avatarMenu');
+            const rect = event.currentTarget.getBoundingClientRect();
+
+            menu.style.top = `${rect.bottom + 8}px`;
+            menu.style.left = `${Math.max(12, rect.left + rect.width - 150)}px`;
+            menu.classList.add("open");
+        }
+
+        function closeAvatarMenu() {
+            document.getElementById('avatarMenu').classList.remove("open");
+        }
+
+        function changeAvatarPhoto(event) {
+            event.stopPropagation();
+            closeAvatarMenu();
+            document.getElementById('avatarInput').click();
+        }
+
+        function removeAvatarPhoto(event) {
+            event.stopPropagation();
+            closeAvatarMenu();
+            currentUser.avatar = "";
+            saveUser();
+        }
+
+        function getIcon(url) {
+            const safeUrl = (url || "").trim();
+            const lowerUrl = safeUrl.toLowerCase();
+            const genericIcon = `
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+        <path d="M10 14L21 3M21 3H14M21 3V10" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 5V19H19V14" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+
+            if (lowerUrl.startsWith("tel:") || lowerUrl.startsWith("telephone:")) {
+                return `
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.32 1.77.59 2.61a2 2 0 0 1-.45 2.11L8 9.69a16 16 0 0 0 6.31 6.31l1.25-1.25a2 2 0 0 1 2.11-.45c.84.27 1.71.47 2.61.59A2 2 0 0 1 22 16.92z" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+            }
+
+            if (lowerUrl.includes("wa.me")) {
+                return `
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+        <path d="M16.72 13.06c-.29-.15-1.72-.85-1.99-.95-.27-.1-.47-.15-.66.15-.2.29-.76.95-.93 1.15-.17.2-.34.22-.63.07-.29-.15-1.23-.45-2.34-1.43-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.6.14-.14.29-.34.43-.51.14-.17.19-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.6-.91-2.19-.24-.58-.49-.5-.66-.51h-.56c-.2 0-.51.07-.77.37-.27.29-1.03 1.01-1.03 2.46 0 1.45 1.05 2.86 1.2 3.06.15.2 2.07 3.16 5.01 4.43.7.3 1.25.48 1.67.62.7.22 1.34.19 1.85.12.56-.08 1.72-.7 1.96-1.37.24-.67.24-1.24.17-1.37-.07-.12-.27-.2-.56-.35z" fill="#25D366"/>
+      </svg>
+    `;
+            }
+
+            if (lowerUrl.includes("instagram")) {
+                return `
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="2" width="20" height="20" rx="5" stroke="#E1306C" stroke-width="2"/>
+        <circle cx="12" cy="12" r="4" stroke="#E1306C" stroke-width="2"/>
+        <circle cx="17" cy="7" r="1.5" fill="#E1306C"/>
+      </svg>
+    `;
+            }
+
+            let domain = "example.com";
+
+            try {
+                const parsedUrl = new URL(
+                    safeUrl.includes("://") ? safeUrl : `https://${safeUrl}`
+                );
+                domain = parsedUrl.hostname.replace(/^www\./, "");
+            } catch (error) {
+                domain = safeUrl
+                    .replace(/^https?:\/\//i, "")
+                    .replace(/^www\./i, "")
+                    .split("/")[0]
+                    .split("?")[0]
+                    .split("#")[0] || domain;
+            }
+
+            return `
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}"
+      alt=""
+      onerror="this.outerHTML=\`${genericIcon.trim()}\`"
+      style="width:24px; height:24px; border-radius:5px; object-fit:cover; display:block;"
+    >
+  `;
+        }
+        switchTab(isOwner ? "edit" : "view");
+
+        function editName() {
+            openModal("name");
+        }
+
+    </script>
+
+    <div id="inputModal" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0,0,0,0.6);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+">
+
+        <div class="modal-card">
+
+            <div id="modalTitle" class="modal-title">Add link</div>
+
+            <div class="link-edit-fields">
+                <input id="input1" class="theme-input" placeholder="Name">
+
+                <input id="input2" class="theme-input" placeholder="URL">
+
+                <div class="form-actions">
+                    <button type="button" class="ui-btn secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="ui-btn primary" onclick="submitInput()">Save</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+
+</body>
+
+</html>
