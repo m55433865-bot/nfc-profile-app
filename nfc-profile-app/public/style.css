@@ -42,6 +42,7 @@ button,
 input,
 .link,
 .edit-icon,
+.drag-handle,
 .avatar-frame,
 .avatar-menu-item,
 .floating-menu button {
@@ -475,6 +476,41 @@ input,
 
 .edit-menu-btn {
   margin-left: 0;
+}
+
+.drag-handle {
+  align-items: center;
+  border-radius: 8px;
+  color: #777;
+  cursor: grab;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 18px;
+  height: 34px;
+  justify-content: center;
+  line-height: 1;
+  touch-action: none;
+  user-select: none;
+  width: 34px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-chosen {
+  border-color: rgba(0, 200, 150, 0.35);
+  transform: scale(1.02);
+}
+
+.drag-ghost {
+  opacity: 0.45;
+}
+
+.drag-dragging {
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  opacity: 0.96;
+  transform: scale(1.02);
 }
 
 .edit-icon.edit-active {

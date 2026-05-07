@@ -319,6 +319,20 @@
 
                         // 3 dots menu
                         if (isOwner && currentTab === "edit") {
+                            const rowActions = document.createElement('div');
+                            rowActions.style.display = "flex";
+                            rowActions.style.alignItems = "center";
+                            rowActions.style.gap = "6px";
+
+                            const dragHandle = document.createElement('span');
+                            dragHandle.className = "drag-handle";
+                            dragHandle.innerText = "☰";
+                            dragHandle.setAttribute("aria-label", "Drag to reorder");
+                            dragHandle.onclick = (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            };
+
                             const menuBtn = document.createElement('span');
                             menuBtn.className = "menu-btn edit-icon edit-menu-btn";
                             menuBtn.innerText = "⋮";
@@ -355,7 +369,9 @@
                                 showMenu(index, e);
                             };
 
-                            a.appendChild(menuBtn);
+                            rowActions.appendChild(dragHandle);
+                            rowActions.appendChild(menuBtn);
+                            a.appendChild(rowActions);
                         }
 
                         linksEl.appendChild(a);
@@ -539,15 +555,20 @@
         });
 
         linksSortable = new Sortable(document.getElementById('links'), {
-            animation: 150,
+            animation: 180,
             disabled: currentTab !== "edit",
             draggable: ".link:not(.no-sort)",
-            filter: ".no-sort, input, button, .theme-input, .ui-btn",
+            handle: ".drag-handle",
+            filter: ".no-sort, input, button, .theme-input, .ui-btn, .menu-btn",
             preventOnFilter: false,
-            ghostClass: 'dragging',
-            delay: 120,
+            ghostClass: "drag-ghost",
+            chosenClass: "drag-chosen",
+            dragClass: "drag-dragging",
+            delay: 150,
             delayOnTouchOnly: true,
             touchStartThreshold: 5,
+            forceFallback: true,
+            fallbackTolerance: 5,
 
             onEnd: function (evt) {
                 if (currentTab !== "edit" || evt.item.classList.contains("no-sort")) return;
