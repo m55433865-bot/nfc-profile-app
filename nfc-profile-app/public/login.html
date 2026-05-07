@@ -38,6 +38,11 @@
     localStorage.setItem('username', username);
     localStorage.setItem('password', password);
 
+    if (username === "66546788" && password === "123") {
+      window.location.href = "/admin.html";
+      return;
+    }
+
     // redirect to profile
     window.location.href = `/${username}`;
   }

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div id="card">
+      <div class="admin-header">
+        <h1 class="admin-title">Admin Panel</h1>
+        <button type="button" class="ui-btn primary" onclick="openAddUserModal()">+ Add User</button>
+      </div>
+
+      <div id="adminMessage" class="admin-message"></div>
+      <div id="usersList" class="admin-list"></div>
+    </div>
+  </div>
+
+  <div id="userMenu" class="floating-menu">
+    <button type="button" onclick="openPasswordModal()">Change Password</button>
+    <button type="button" class="danger" onclick="deleteSelectedUser()">Delete User</button>
+  </div>
+
+  <div id="adminModal" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+  ">
+    <div class="modal-card">
+      <div id="modalTitle" class="modal-title">Add user</div>
+
+      <div class="link-edit-fields">
+        <input id="usernameInput" class="theme-input" placeholder="Username">
+        <input id="passwordInput" class="theme-input" placeholder="Password" type="password">
+
+        <div class="form-actions">
+          <button type="button" class="ui-btn secondary" onclick="closeModal()">Cancel</button>
+          <button type="button" class="ui-btn primary" onclick="submitModal()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_USERNAME = "66546788";
+    const ADMIN_PASSWORD = "123";
+
+    const storedUsername = localStorage.getItem("username");
+    const storedPassword = localStorage.getItem("password");
+    const isAdmin = storedUsername === ADMIN_USERNAME && storedPassword === ADMIN_PASSWORD;
+
+    const usersList = document.getElementById("usersList");
+    const userMenu = document.getElementById("userMenu");
+    const adminMessage = document.getElementById("adminMessage");
+    const adminModal = document.getElementById("adminModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const usernameInput = document.getElementById("usernameInput");
+    const passwordInput = document.getElementById("passwordInput");
+
+    let selectedUsername = null;
+    let modalMode = "add";
+
+    function adminHeaders() {
+      return {
+        "Content-Type": "application/json",
+        "x-admin-username": storedUsername,
+        "x-admin-password": storedPassword
+      };
+    }
+
+    function showMessage(message) {
+      adminMessage.innerText = message || "";
+    }
+
+    function loadUsers() {
+      fetch("/api/admin/users", {
+        headers: adminHeaders()
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error);
+            return;
+          }
+
+          renderUsers(data.users || []);
+        });
+    }
+
+    function renderUsers(users) {
+      usersList.innerHTML = "";
+
+      users.forEach(user => {
+        const row = document.createElement("div");
+        row.className = "link";
+
+        const name = document.createElement("div");
+        name.innerHTML = `
+          <span class="admin-row-name">${user.username}</span>
+          ${user.isAdmin ? `<span class="admin-row-meta">admin</span>` : ""}
+        `;
+
+        row.appendChild(name);
+
+        if (!user.isAdmin) {
+          const menuBtn = document.createElement("span");
+          menuBtn.className = "menu-btn edit-icon edit-menu-btn";
+          menuBtn.innerText = "⋮";
+          menuBtn.onclick = (event) => {
+            event.stopPropagation();
+            showUserMenu(user.username, event);
+          };
+
+          row.appendChild(menuBtn);
+        }
+
+        usersList.appendChild(row);
+      });
+    }
+
+    function showUserMenu(username, event) {
+      selectedUsername = username;
+      userMenu.style.display = "flex";
+      userMenu.style.top = `${event.clientY}px`;
+      userMenu.style.left = `${event.clientX}px`;
+    }
+
+    function closeUserMenu() {
+      userMenu.style.display = "none";
+    }
+
+    function openAddUserModal() {
+      modalMode = "add";
+      selectedUsername = null;
+      modalTitle.innerText = "Add user";
+      usernameInput.style.display = "block";
+      usernameInput.value = "";
+      passwordInput.value = "";
+      adminModal.style.display = "flex";
+      closeUserMenu();
+    }
+
+    function openPasswordModal() {
+      if (!selectedUsername || selectedUsername === ADMIN_USERNAME) return;
+
+      modalMode = "password";
+      modalTitle.innerText = `Change password`;
+      usernameInput.style.display = "none";
+      usernameInput.value = selectedUsername;
+      passwordInput.value = "";
+      adminModal.style.display = "flex";
+      closeUserMenu();
+    }
+
+    function closeModal() {
+      adminModal.style.display = "none";
+      usernameInput.value = "";
+      passwordInput.value = "";
+    }
+
+    function submitModal() {
+      if (modalMode === "add") {
+        addUser();
+        return;
+      }
+
+      updatePassword();
+    }
+
+    function addUser() {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!username || !password) return;
+
+      fetch("/api/admin/users", {
+        method: "POST",
+        headers: adminHeaders(),
+        body: JSON.stringify({ username, password })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error);
+            return;
+          }
+
+          closeModal();
+          showMessage("User added");
+          loadUsers();
+        });
+    }
+
+    function updatePassword() {
+      const password = passwordInput.value.trim();
+      if (!selectedUsername || !password) return;
+
+      fetch(`/api/admin/users/${selectedUsername}/password`, {
+        method: "POST",
+        headers: adminHeaders(),
+        body: JSON.stringify({ password })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error);
+            return;
+          }
+
+          closeModal();
+          showMessage("Password updated");
+          loadUsers();
+        });
+    }
+
+    function deleteSelectedUser() {
+      if (!selectedUsername || selectedUsername === ADMIN_USERNAME) return;
+
+      fetch(`/api/admin/users/${selectedUsername}`, {
+        method: "DELETE",
+        headers: adminHeaders()
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error);
+            return;
+          }
+
+          showMessage("User deleted");
+          closeUserMenu();
+          loadUsers();
+        });
+    }
+
+    document.addEventListener("click", closeUserMenu);
+
+    if (!isAdmin) {
+      window.location.href = "/login.html";
+    } else {
+      loadUsers();
+    }
+  </script>
+</body>
+
+</html>
