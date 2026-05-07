@@ -173,7 +173,7 @@ app.post('/api/:username', (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const { password, bio, links, avatar, displayName } = req.body;
+  const { password, bio, links, avatar, displayName, newPassword } = req.body;
 
   if (users[username].password !== password) {
     return res.status(403).json({ error: "Wrong password" });
@@ -190,6 +190,15 @@ app.post('/api/:username', (req, res) => {
 
   if (avatar !== undefined) {
     users[username].avatar = avatar;
+  }
+
+  if (newPassword !== undefined) {
+    const cleanPassword = String(newPassword).trim();
+    if (!cleanPassword) {
+      return res.status(400).json({ error: "Password is required" });
+    }
+
+    users[username].password = cleanPassword;
   }
 
   saveUsers(users);

@@ -39,6 +39,7 @@
             <div id="tabs">
                 <button onclick="switchTab('view')" id="tabView">Display</button>
                 <button onclick="switchTab('edit')" id="tabEdit">Edit</button>
+                <button onclick="switchTab('settings')" id="tabSettings">Settings</button>
             </div>
 
             <!-- CONTENT -->
@@ -51,27 +52,6 @@
     </div>
 
     <!-- 🔐 Auth Button -->
-    <button id="authBtn" onclick="handleAuth()" style="
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-
-    width: 60px;
-    height: 60px;
-
-    background: #1f1f1f;
-    border: 1px solid #333;
-    border-radius: 8px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  ">
-        <div id="authIcon"></div>
-    </button>
-
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <div id="addMenu" style="
@@ -103,7 +83,7 @@
     <script>
         let draggedIndex = null;
         const storedUsername = localStorage.getItem('username');
-        const storedPassword = localStorage.getItem('password');
+        let storedPassword = localStorage.getItem('password');
         const normalizedStoredUsername = (storedUsername || "").trim().toLowerCase();
         const params = new URLSearchParams(window.location.search);
         const pathName = window.location.pathname.split('/').filter(Boolean).pop();
@@ -136,11 +116,14 @@
 
             document.getElementById("tabView").classList.remove("active");
             document.getElementById("tabEdit").classList.remove("active");
+            document.getElementById("tabSettings").classList.remove("active");
 
             if (tab === "view") {
                 document.getElementById("tabView").classList.add("active");
-            } else {
+            } else if (tab === "edit") {
                 document.getElementById("tabEdit").classList.add("active");
+            } else {
+                document.getElementById("tabSettings").classList.add("active");
             }
 
             loadUser(); // 🔥 critical
@@ -227,6 +210,11 @@
                     }
 
                     linksEl.innerHTML = "";
+
+                    if (isOwner && currentTab === "settings") {
+                        renderSettings();
+                        return;
+                    }
 
                     user.links.forEach((link, index) => {
                         const a = document.createElement(
@@ -404,6 +392,36 @@
             });
         }
 
+        function renderSettings() {
+            linksEl.innerHTML = `
+                <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
+                    Settings
+                </div>
+                <div class="link" onclick="showSettingsPlaceholder()" style="cursor:pointer;">
+                    <span>Theme</span>
+                    <span>›</span>
+                </div>
+                <div class="link" onclick="openModal('password')" style="cursor:pointer;">
+                    <span>Change Password</span>
+                    <span>›</span>
+                </div>
+                <div class="link" onclick="logoutUser()" style="cursor:pointer;">
+                    <span>Logout</span>
+                    <span>›</span>
+                </div>
+            `;
+        }
+
+        function showSettingsPlaceholder() {
+            console.log("Theme settings coming soon");
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('username');
+            localStorage.removeItem('password');
+            window.location.href = "/login.html";
+        }
+
         function showAddOptions(e) {
             e.stopPropagation();
 
@@ -445,38 +463,10 @@
                 });
         }
 
-        function handleAuth() {
-            if (isOwner && currentTap === ":edit") {
-                localStorage.removeItem('username');
-                localStorage.removeItem('password');
-                location.reload();
-            } else {
-                window.location.href = "/login.html";
-            }
-        }
-
-        // Set icon AFTER page loads
         window.addEventListener("DOMContentLoaded", () => {
-            const authIcon = document.getElementById('authIcon');
-
-            if (isOwner) {
-                authIcon.innerHTML = `
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M16 17l5-5-5-5M21 12H9M13 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8"
-            stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        `;
-            } else {
-                authIcon.innerHTML = `
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M10 17l-5-5 5-5M3 12h12M7 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7"
-            stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        `;
-            }
-
             if (!isOwner) {
-                document.getElementById("tabs").style.display = "none";
+                document.getElementById("tabEdit").style.display = "none";
+                document.getElementById("tabSettings").style.display = "none";
             }
 
         });
@@ -543,6 +533,8 @@
             ghostClass: 'dragging',
 
             onEnd: function (evt) {
+                if (currentTab !== "edit") return;
+
                 const item = currentUser.links.splice(evt.oldIndex, 1)[0];
                 currentUser.links.splice(evt.newIndex, 0, item);
                 saveUser();
@@ -579,7 +571,7 @@
 
             input1.value = "";
             input2.value = "";
-            input2.style.display = action === "bio" || action === "name" ? "none" : "block";
+            input2.style.display = action === "bio" || action === "name" || action === "password" ? "none" : "block";
 
             if (action === "link") {
                 title.innerText = "Add link";
@@ -597,6 +589,14 @@
                 title.innerText = "Edit name";
                 input1.placeholder = "Name";
                 input1.value = currentUser.displayName || currentUser.username || "";
+            }
+
+            if (action === "password") {
+                title.innerText = "Change password";
+                input1.placeholder = "New password";
+                input1.type = "password";
+            } else {
+                input1.type = "text";
             }
         }
 
@@ -625,7 +625,43 @@
                 saveUser();
             }
 
+            if (currentAction === "password") {
+                if (!val1) return;
+
+                changePassword(val1);
+                return;
+            }
+
             closeModal();
+        }
+
+        function changePassword(newPassword) {
+            fetch(`/api/${username}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: storedPassword,
+                    newPassword,
+                    displayName: currentUser.displayName,
+                    bio: currentUser.bio,
+                    avatar: currentUser.avatar,
+                    links: currentUser.links
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    storedPassword = newPassword;
+                    localStorage.setItem('password', newPassword);
+                    closeModal();
+                    loadUser();
+                });
         }
 
         function closeModal() {
