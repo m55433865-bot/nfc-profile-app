@@ -94,7 +94,12 @@
         let isOwner = false;
 
         // Route/API username stays separate from editable displayName.
-        let username = (params.get("username") || routeUsername || normalizedStoredUsername || "mohamed").trim().toLowerCase();
+        let username = (params.get("username") || routeUsername || normalizedStoredUsername || "").trim().toLowerCase();
+
+        if (!username) {
+            window.location.href = "/login.html";
+        }
+
         isOwner = !!normalizedStoredUsername && normalizedStoredUsername === username;
 
         let currentUser = null;
@@ -102,10 +107,6 @@
         const nameEl = document.getElementById('name');
         const bioEl = document.getElementById('bio');
         const linksEl = document.getElementById('links');
-
-        // if (!username) {
-        //     window.location.href = "/login.html";
-        // }
 
         let currentTab = "view";
         let editingLinkIndex = null;

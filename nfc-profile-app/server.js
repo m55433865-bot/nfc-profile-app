@@ -208,7 +208,7 @@ app.post('/api/:username', (req, res) => {
 
 // page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'edit.html'));
+  res.redirect('/login.html');
 });
 
 app.get('/:username', (req, res) => {
