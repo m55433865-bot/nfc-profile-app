@@ -14,9 +14,9 @@
   --soft-border-color: color-mix(in srgb, var(--border-color), transparent 45%);
   --accent-soft: color-mix(in srgb, var(--accent-color), transparent 78%);
   --accent-faint: color-mix(in srgb, var(--accent-color), transparent 90%);
-  --icon-bg: color-mix(in srgb, var(--surface-color), var(--text-color) 8%);
-  --icon-border: color-mix(in srgb, var(--border-color), var(--text-color) 22%);
-  --icon-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-color), transparent 86%), 0 5px 14px rgba(0, 0, 0, 0.16);
+  --icon-bg: rgba(255, 255, 255, 0.08);
+  --icon-border: rgba(255, 255, 255, 0.12);
+  --icon-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 5px 12px rgba(0, 0, 0, 0.14);
   --icon-contrast-dark-bg: rgba(5, 7, 11, 0.86);
   --icon-contrast-dark-border: rgba(255, 255, 255, 0.2);
   --icon-contrast-light-bg: rgba(255, 255, 255, 0.92);
@@ -391,21 +391,32 @@ input,
 }
 
 :root[data-theme-mode="light"] .link-icon {
-  background: rgba(255, 255, 255, 0.76);
-  border-color: rgba(15, 23, 42, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 5px 14px rgba(15, 23, 42, 0.08);
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 4px 10px rgba(15, 23, 42, 0.08);
 }
 
 .link-icon.brand-icon {
-  background: color-mix(in srgb, var(--icon-bg), var(--card-color) 18%);
+  background: var(--icon-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+:root[data-theme-mode="light"] .link-icon.brand-icon {
+  background: rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.18);
 }
 
 .link-icon.icon-contrast-dark {
   background: var(--icon-contrast-dark-bg);
   border-color: var(--icon-contrast-dark-border);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 7px 16px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+:root[data-theme-mode="light"] .link-icon.icon-contrast-dark {
+  background: rgba(0, 0, 0, 0.18);
+  border-color: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 5px 12px rgba(15, 23, 42, 0.12);
 }
 
 .link-icon.icon-contrast-light {
