@@ -14,6 +14,13 @@
   --soft-border-color: color-mix(in srgb, var(--border-color), transparent 45%);
   --accent-soft: color-mix(in srgb, var(--accent-color), transparent 78%);
   --accent-faint: color-mix(in srgb, var(--accent-color), transparent 90%);
+  --icon-bg: color-mix(in srgb, var(--surface-color), transparent 8%);
+  --icon-border: color-mix(in srgb, var(--border-color), transparent 38%);
+  --icon-shadow: inset 0 0 0 1px var(--icon-border);
+  --icon-contrast-dark-bg: rgba(6, 8, 12, 0.72);
+  --icon-contrast-dark-border: rgba(255, 255, 255, 0.12);
+  --icon-contrast-light-bg: rgba(255, 255, 255, 0.82);
+  --icon-contrast-light-border: rgba(15, 23, 42, 0.12);
 }
 
 body {
@@ -376,9 +383,33 @@ input,
   justify-content: center;
   overflow: hidden;
   border-radius: 9px;
-  background: linear-gradient(145deg, var(--input-bg), var(--surface-color));
-  box-shadow: inset 0 0 0 1px var(--soft-border-color);
+  background: var(--icon-bg);
+  border: 1px solid var(--icon-border);
+  box-shadow: var(--icon-shadow);
   color: var(--muted-text-color);
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+:root[data-theme-mode="light"] .link-icon {
+  background: rgba(15, 23, 42, 0.045);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.link-icon.brand-icon {
+  background: color-mix(in srgb, var(--icon-bg), transparent 18%);
+}
+
+.link-icon.icon-contrast-dark {
+  background: var(--icon-contrast-dark-bg);
+  border-color: var(--icon-contrast-dark-border);
+  box-shadow: inset 0 0 0 1px var(--icon-contrast-dark-border), 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.link-icon.icon-contrast-light {
+  background: var(--icon-contrast-light-bg);
+  border-color: var(--icon-contrast-light-border);
+  box-shadow: inset 0 0 0 1px var(--icon-contrast-light-border), 0 6px 14px rgba(15, 23, 42, 0.08);
 }
 
 .link-icon img {
@@ -397,6 +428,7 @@ input,
 
 .link-icon.system-icon {
   color: var(--accent-color);
+  background: var(--accent-faint);
 }
 
 .link-icon svg {

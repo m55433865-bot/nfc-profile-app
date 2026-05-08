@@ -1451,7 +1451,7 @@
             { name: "WhatsApp", slug: "whatsapp", color: "25D366", hosts: ["whatsapp.com", "wa.me"] },
             { name: "Instagram", slug: "instagram", color: "E4405F", hosts: ["instagram.com"] },
             { name: "YouTube", slug: "youtube", color: "FF0000", hosts: ["youtube.com", "youtu.be"] },
-            { name: "TikTok", slug: "tiktok", color: "FFFFFF", hosts: ["tiktok.com"] },
+            { name: "TikTok", slug: "tiktok", color: "FFFFFF", hosts: ["tiktok.com"], contrast: "dark" },
             {
                 name: "LinkedIn",
                 slug: "linkedin",
@@ -1464,11 +1464,11 @@
                 `
             },
             { name: "Facebook", slug: "facebook", color: "1877F2", hosts: ["facebook.com", "fb.com", "fb.watch"] },
-            { name: "X", slug: "x", color: "FFFFFF", hosts: ["x.com", "twitter.com"] },
+            { name: "X", slug: "x", color: "FFFFFF", hosts: ["x.com", "twitter.com"], contrast: "dark" },
             { name: "Telegram", slug: "telegram", color: "26A5E4", hosts: ["telegram.org", "t.me"] },
-            { name: "Snapchat", slug: "snapchat", color: "FFFC00", hosts: ["snapchat.com"] },
+            { name: "Snapchat", slug: "snapchat", color: "FFFC00", hosts: ["snapchat.com"], contrast: "dark" },
             { name: "Discord", slug: "discord", color: "5865F2", hosts: ["discord.com", "discord.gg"] },
-            { name: "GitHub", slug: "github", color: "FFFFFF", hosts: ["github.com", "github.io"] },
+            { name: "GitHub", slug: "github", color: "FFFFFF", hosts: ["github.com", "github.io"], contrast: "dark" },
             { name: "Twitch", slug: "twitch", color: "9146FF", hosts: ["twitch.tv"] }
         ];
 
@@ -1680,6 +1680,9 @@
             const platform = detectPlatform(url);
             if (platform) {
                 icon.classList.add("brand-icon");
+                if (platform.contrast) {
+                    icon.classList.add(`icon-contrast-${platform.contrast}`);
+                }
                 icon.setAttribute("aria-label", `${platform.name} icon`);
                 getPlatformIcon(platform, icon, url);
                 return icon;
