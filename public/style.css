@@ -14,13 +14,13 @@
   --soft-border-color: color-mix(in srgb, var(--border-color), transparent 45%);
   --accent-soft: color-mix(in srgb, var(--accent-color), transparent 78%);
   --accent-faint: color-mix(in srgb, var(--accent-color), transparent 90%);
-  --icon-bg: color-mix(in srgb, var(--surface-color), transparent 8%);
-  --icon-border: color-mix(in srgb, var(--border-color), transparent 38%);
-  --icon-shadow: inset 0 0 0 1px var(--icon-border);
-  --icon-contrast-dark-bg: rgba(6, 8, 12, 0.72);
-  --icon-contrast-dark-border: rgba(255, 255, 255, 0.12);
-  --icon-contrast-light-bg: rgba(255, 255, 255, 0.82);
-  --icon-contrast-light-border: rgba(15, 23, 42, 0.12);
+  --icon-bg: color-mix(in srgb, var(--surface-color), var(--text-color) 8%);
+  --icon-border: color-mix(in srgb, var(--border-color), var(--text-color) 22%);
+  --icon-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-color), transparent 86%), 0 5px 14px rgba(0, 0, 0, 0.16);
+  --icon-contrast-dark-bg: rgba(5, 7, 11, 0.86);
+  --icon-contrast-dark-border: rgba(255, 255, 255, 0.2);
+  --icon-contrast-light-bg: rgba(255, 255, 255, 0.92);
+  --icon-contrast-light-border: rgba(15, 23, 42, 0.18);
 }
 
 body {
@@ -391,25 +391,27 @@ input,
 }
 
 :root[data-theme-mode="light"] .link-icon {
-  background: rgba(15, 23, 42, 0.045);
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(15, 23, 42, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 5px 14px rgba(15, 23, 42, 0.08);
 }
 
 .link-icon.brand-icon {
-  background: color-mix(in srgb, var(--icon-bg), transparent 18%);
+  background: color-mix(in srgb, var(--icon-bg), var(--card-color) 18%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .link-icon.icon-contrast-dark {
   background: var(--icon-contrast-dark-bg);
   border-color: var(--icon-contrast-dark-border);
-  box-shadow: inset 0 0 0 1px var(--icon-contrast-dark-border), 0 6px 14px rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 7px 16px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(0, 0, 0, 0.16);
 }
 
 .link-icon.icon-contrast-light {
   background: var(--icon-contrast-light-bg);
   border-color: var(--icon-contrast-light-border);
-  box-shadow: inset 0 0 0 1px var(--icon-contrast-light-border), 0 6px 14px rgba(15, 23, 42, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 7px 16px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.36);
 }
 
 .link-icon img {
@@ -421,19 +423,20 @@ input,
 }
 
 .link-icon.brand-icon img {
-  width: 21px;
-  height: 21px;
+  width: 20px;
+  height: 20px;
   border-radius: 0;
 }
 
 .link-icon.system-icon {
   color: var(--accent-color);
-  background: var(--accent-faint);
+  background: color-mix(in srgb, var(--accent-color), transparent 86%);
+  border-color: color-mix(in srgb, var(--accent-color), transparent 70%);
 }
 
 .link-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 21px;
+  height: 21px;
   display: block;
 }
 
