@@ -75,6 +75,8 @@
         <button type="button" class="avatar-menu-item danger" onclick="removeAvatarPhoto(event)">Remove Photo</button>
     </div>
 
+    <div id="editModeHint" class="edit-mode-hint">Tap your name or bio to edit</div>
+
     <script>
         let draggedIndex = null;
         const storedUsername = localStorage.getItem('username');
@@ -105,6 +107,195 @@
 
         let currentTab = "view";
         let editingLinkIndex = null;
+        let draftTheme = null;
+
+        const defaultTheme = {
+            mode: "dark",
+            preset: "midnight",
+            accent: "#00c896"
+        };
+
+        const themePresets = {
+            "midnight": {
+                label: "Midnight",
+                dark: { bg: "#0f0f0f", card: "#1f1f1f", surface: "#202020", surfaceHover: "#292929", text: "#ffffff", muted: "#aaa", border: "#333", input: "#141414" },
+                light: { bg: "#f5f5f7", card: "#ffffff", surface: "#f8f8fa", surfaceHover: "#ededf1", text: "#171717", muted: "#666", border: "#dedee4", input: "#ffffff" }
+            },
+            "ocean": {
+                label: "Ocean",
+                dark: { bg: "#071317", card: "#102026", surface: "#142a32", surfaceHover: "#1a3640", text: "#f2fbff", muted: "#9fb8c2", border: "#24434d", input: "#0b1b21" },
+                light: { bg: "#eefaff", card: "#ffffff", surface: "#f3fbff", surfaceHover: "#e2f4fb", text: "#102027", muted: "#58727d", border: "#c8e4ed", input: "#ffffff" }
+            },
+            "purple": {
+                label: "Purple",
+                dark: { bg: "#120e1f", card: "#1d1830", surface: "#28213f", surfaceHover: "#33294f", text: "#fbf8ff", muted: "#b6aacd", border: "#3d3357", input: "#181228" },
+                light: { bg: "#faf7ff", card: "#ffffff", surface: "#f7f1ff", surfaceHover: "#efe4ff", text: "#21172f", muted: "#746482", border: "#e0d4ef", input: "#ffffff" }
+            },
+            "gold": {
+                label: "Gold",
+                dark: { bg: "#17130a", card: "#241d10", surface: "#2d2515", surfaceHover: "#382f1c", text: "#fffaf0", muted: "#c6b790", border: "#4a3c20", input: "#1d170d" },
+                light: { bg: "#fff9ec", card: "#ffffff", surface: "#fff6df", surfaceHover: "#f7edcf", text: "#261e0f", muted: "#7a6a46", border: "#ead9aa", input: "#ffffff" }
+            },
+            "forest": {
+                label: "Forest",
+                dark: { bg: "#0d160f", card: "#17251b", surface: "#1d2f23", surfaceHover: "#253b2c", text: "#f3fff6", muted: "#a4bda9", border: "#304b38", input: "#101d14" },
+                light: { bg: "#f2fbf4", card: "#ffffff", surface: "#f4fbf5", surfaceHover: "#e6f2e9", text: "#142216", muted: "#5d725f", border: "#cfe0d2", input: "#ffffff" }
+            },
+            "minimal-white": {
+                label: "Minimal White",
+                dark: { bg: "#151515", card: "#222", surface: "#2a2a2a", surfaceHover: "#343434", text: "#ffffff", muted: "#b8b8b8", border: "#3a3a3a", input: "#1b1b1b" },
+                light: { bg: "#ffffff", card: "#ffffff", surface: "#f7f7f7", surfaceHover: "#eeeeee", text: "#111111", muted: "#666666", border: "#dddddd", input: "#ffffff" }
+            },
+            "neon": {
+                label: "Neon",
+                dark: { bg: "#080a12", card: "#111525", surface: "#171d33", surfaceHover: "#202844", text: "#f6f8ff", muted: "#9aa6ce", border: "#2c3558", input: "#0c1020" },
+                light: { bg: "#f6f8ff", card: "#ffffff", surface: "#f1f4ff", surfaceHover: "#e7ecff", text: "#12182a", muted: "#637099", border: "#d4daf1", input: "#ffffff" }
+            }
+        };
+
+        const accentColors = [
+            { label: "Blue", value: "#3b82f6" },
+            { label: "Purple", value: "#7c3aed" },
+            { label: "Green", value: "#00c896" },
+            { label: "Gold", value: "#d6a83f" },
+            { label: "Red", value: "#ef4444" },
+            { label: "Pink", value: "#ec4899" }
+        ];
+
+        function sanitizeTheme(theme) {
+            const safeTheme = theme && typeof theme === "object" ? theme : {};
+            const mode = ["dark", "light", "system"].includes(safeTheme.mode) ? safeTheme.mode : defaultTheme.mode;
+            const preset = themePresets[safeTheme.preset] ? safeTheme.preset : defaultTheme.preset;
+            const accent = /^#[0-9a-f]{6}$/i.test(safeTheme.accent || "") ? safeTheme.accent : defaultTheme.accent;
+
+            return { mode, preset, accent };
+        }
+
+        function getResolvedThemeMode(mode) {
+            if (mode !== "system") return mode;
+            return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        }
+
+        function applyTheme(theme) {
+            const safeTheme = sanitizeTheme(theme);
+            const preset = themePresets[safeTheme.preset] || themePresets[defaultTheme.preset];
+            const mode = getResolvedThemeMode(safeTheme.mode);
+            const palette = preset[mode] || preset.dark;
+            const root = document.documentElement;
+
+            root.dataset.themeMode = mode;
+            root.dataset.themePreset = safeTheme.preset;
+            root.style.setProperty("--bg-color", palette.bg);
+            root.style.setProperty("--card-color", palette.card);
+            root.style.setProperty("--surface-color", palette.surface);
+            root.style.setProperty("--surface-hover-color", palette.surfaceHover);
+            root.style.setProperty("--text-color", palette.text);
+            root.style.setProperty("--muted-text-color", palette.muted);
+            root.style.setProperty("--border-color", palette.border);
+            root.style.setProperty("--input-bg", palette.input);
+            root.style.setProperty("--accent-color", safeTheme.accent);
+            root.style.setProperty("--button-bg", safeTheme.accent);
+            root.style.setProperty("--button-text", mode === "light" ? "#ffffff" : "#07110e");
+            root.style.setProperty("--shadow-color", mode === "light" ? "rgba(17, 24, 39, 0.14)" : "rgba(0, 0, 0, 0.42)");
+            console.log("applied theme", safeTheme);
+        }
+
+        function renderAppearanceOptions() {
+            if (!draftTheme) return;
+
+            const modeEl = document.getElementById("themeModeOptions");
+            const presetEl = document.getElementById("themePresetOptions");
+            const accentEl = document.getElementById("themeAccentOptions");
+
+            modeEl.innerHTML = "";
+            ["dark", "light", "system"].forEach(mode => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = `appearance-chip ${draftTheme.mode === mode ? "active" : ""}`;
+                button.innerText = mode[0].toUpperCase() + mode.slice(1);
+                button.onclick = () => {
+                    draftTheme.mode = mode;
+                    applyTheme(draftTheme);
+                    renderAppearanceOptions();
+                };
+                modeEl.appendChild(button);
+            });
+
+            presetEl.innerHTML = "";
+            Object.entries(themePresets).forEach(([key, preset]) => {
+                const palette = preset[getResolvedThemeMode(draftTheme.mode)] || preset.dark;
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
+                button.innerHTML = `
+                    <span class="appearance-swatch" style="background:${palette.bg}; border-color:${palette.border};">
+                        <span style="background:${palette.surface};"></span>
+                    </span>
+                    <span>${preset.label}</span>
+                `;
+                button.onclick = () => {
+                    draftTheme.preset = key;
+                    applyTheme(draftTheme);
+                    renderAppearanceOptions();
+                };
+                presetEl.appendChild(button);
+            });
+
+            accentEl.innerHTML = "";
+            accentColors.forEach(accent => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = `accent-swatch ${draftTheme.accent.toLowerCase() === accent.value.toLowerCase() ? "active" : ""}`;
+                button.title = accent.label;
+                button.style.background = accent.value;
+                button.onclick = () => {
+                    draftTheme.accent = accent.value;
+                    applyTheme(draftTheme);
+                    renderAppearanceOptions();
+                };
+                accentEl.appendChild(button);
+            });
+
+            const custom = document.getElementById("customAccent");
+            custom.value = draftTheme.accent;
+        }
+
+        function openAppearanceModal() {
+            if (!currentUser) return;
+            draftTheme = sanitizeTheme(currentUser.theme);
+            document.getElementById("appearanceModal").style.display = "flex";
+            renderAppearanceOptions();
+            applyTheme(draftTheme);
+        }
+
+        function closeAppearanceModal(save = false) {
+            const modal = document.getElementById("appearanceModal");
+            modal.style.display = "none";
+
+            if (save && draftTheme) {
+                currentUser.theme = sanitizeTheme(draftTheme);
+                console.log("selected theme before save", currentUser.theme);
+                draftTheme = null;
+                saveTheme(currentUser.theme);
+                return;
+            }
+
+            draftTheme = null;
+            applyTheme(currentUser ? sanitizeTheme(currentUser.theme) : defaultTheme);
+        }
+
+        function updateCustomAccent(value) {
+            if (!draftTheme || !/^#[0-9a-f]{6}$/i.test(value)) return;
+            draftTheme.accent = value;
+            applyTheme(draftTheme);
+            renderAppearanceOptions();
+        }
+
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").addEventListener) {
+            window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+                if (currentUser) applyTheme(draftTheme || currentUser.theme);
+            });
+        }
 
         function switchTab(tab) {
             currentTab = tab;
@@ -122,34 +313,43 @@
                 document.getElementById("tabSettings").classList.add("active");
             }
 
-            loadUser(); // 🔥 critical
+            loadUser(); // critical
+            if (tab === "edit" && isOwner) {
+                showEditModeHint();
+            }
         }
 
-        function loadUser() {
-            fetch(`/api/${username}`)
-                .then(res => res.json())
-                .then(user => {
-                    if (!Array.isArray(user.links)) {
-                        user.links = [];
-                    } else {
-                        user.links = user.links.filter(link => link && link.name && link.url);
-                    }
+        function loadUser(preloadedUser = null) {
+            const renderLoadedUser = (user) => {
+                if (user.error) {
+                    console.error(user.error);
+                    return;
+                }
 
-                    if (!user.bio) user.bio = "";
-                    if (!user.avatar) user.avatar = "";
-                    if (!user.displayName) user.displayName = user.username;
+                if (!Array.isArray(user.links)) {
+                    user.links = [];
+                } else {
+                    user.links = user.links.filter(link => link && link.name && link.url);
+                }
 
-                    const avatarContainer = document.getElementById('avatarContainer');
+                if (!user.bio) user.bio = "";
+                if (!user.avatar) user.avatar = "";
+                if (!user.displayName) user.displayName = user.username;
+                user.theme = sanitizeTheme(user.theme);
+                console.log("loaded user.theme", user.theme);
+                applyTheme(user.theme);
 
-                    if (user.avatar || (isOwner && currentTab === "edit")) {
-                        avatarContainer.innerHTML = `
+                const avatarContainer = document.getElementById('avatarContainer');
+
+                if (user.avatar || (isOwner && currentTab === "edit")) {
+                    avatarContainer.innerHTML = `
                             <div
                                 ${isOwner && currentTab === "edit" ? `onclick="handleAvatarClick(event)"` : ""}
                                 class="avatar-frame ${isOwner && currentTab === "edit" ? "editable" : ""}"
                             >
 
                             ${user.avatar
-                                ? `
+                            ? `
                                 <img src="${user.avatar}" 
                                     style="
                                     width:90px;
@@ -159,222 +359,220 @@
                                     border: 3px solid #333;
                                     ">
                                 `
-                                : `
+                            : `
                                 <div class="avatar-placeholder">+</div>
                                 `
-                            }
+                        }
 
                             ${isOwner && currentTab === "edit"
-                                ? `
-                                <div class="edit-icon avatar-edit-icon" style="
-                                position: absolute;
-                                bottom: 0;
-                                right: 0;
-                                border-radius: 50%;
-                                padding: 6px;
-                                ">
-                                ✏️
+                            ? `
+                                <div class="avatar-camera-badge" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M9 5 7.5 7H5a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3h-2.5L15 5H9Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="12" cy="13.5" r="3.2" stroke="currentColor" stroke-width="1.9"/>
+                                    </svg>
                                 </div>
                             `
-                                : ""
-                            }
+                            : ""
+                        }
 
                             </div>
                         `;
-                    } else {
-                        avatarContainer.innerHTML = "";
+                } else {
+                    avatarContainer.innerHTML = "";
+                }
+
+                currentUser = user;
+                const displayName = user.displayName || user.username;
+
+                if (isOwner && currentTab === "edit") {
+                    nameEl.className = "editable-profile-text";
+                    nameEl.innerText = displayName;
+                    nameEl.onclick = () => startInlineEdit("name");
+                } else {
+                    nameEl.className = "";
+                    nameEl.onclick = null;
+                    nameEl.innerText = displayName;
+                }
+
+                if (isOwner && currentTab === "edit") {
+                    bioEl.className = `editable-profile-text editable-profile-bio ${user.bio ? "" : "empty"}`;
+                    bioEl.innerText = user.bio || "Add bio";
+                    bioEl.onclick = () => startInlineEdit("bio");
+                } else {
+                    bioEl.className = "";
+                    bioEl.onclick = null;
+                    bioEl.innerText = user.bio || "";
+                }
+
+                linksEl.innerHTML = "";
+
+                if (isOwner && currentTab === "settings") {
+                    renderSettings();
+                    return;
+                }
+
+                user.links.forEach((link, index) => {
+                    const a = document.createElement(
+                        isOwner && currentTab === "edit" && editingLinkIndex === index ? "div" : "a"
+                    );
+
+                    if (a.tagName === "A") {
+                        a.href = normalizeUrl(link.url);
+                        a.target = "_blank";
                     }
 
-                    currentUser = user;
-                    const displayName = user.displayName || user.username;
-
+                    a.className = "link";
                     if (isOwner && currentTab === "edit") {
-                        nameEl.innerHTML = `
-                        ${displayName}
-                        <span class="edit-icon" onclick="editName()">✏️</span>
-                    `;
-                    } else {
-                        nameEl.innerText = displayName;
-                    }
-                    if (isOwner && currentTab === "edit") {
-                        bioEl.innerHTML = `
-                                ${user.bio || ""}
-                                <span class="edit-icon" onclick="addBio()">✏️</span>
-                            `;
-                    } else {
-                        bioEl.innerText = user.bio || "";
+                        a.classList.add("edit-mode-link");
                     }
 
-                    linksEl.innerHTML = "";
+                    if (isOwner && currentTab === "edit" && editingLinkIndex === index) {
+                        a.classList.add("link-edit-panel");
 
-                    if (isOwner && currentTab === "settings") {
-                        renderSettings();
+                        const fields = document.createElement('div');
+                        fields.className = "link-edit-fields";
+
+                        const nameInput = document.createElement('input');
+                        nameInput.className = "theme-input";
+                        nameInput.placeholder = "Name";
+                        nameInput.value = link.name;
+
+                        const urlInput = document.createElement('input');
+                        urlInput.className = "theme-input";
+                        urlInput.placeholder = "URL";
+                        urlInput.value = link.url;
+
+                        const actions = document.createElement('div');
+                        actions.className = "form-actions";
+
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.type = "button";
+                        cancelBtn.className = "ui-btn secondary";
+                        cancelBtn.innerText = "Cancel";
+                        cancelBtn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            editingLinkIndex = null;
+                            loadUser();
+                        };
+
+                        const saveBtn = document.createElement('button');
+                        saveBtn.type = "button";
+                        saveBtn.className = "ui-btn primary";
+                        saveBtn.innerText = "Save";
+                        saveBtn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            saveEditedLink(index, nameInput.value, urlInput.value);
+                        };
+
+                        actions.appendChild(cancelBtn);
+                        actions.appendChild(saveBtn);
+
+                        fields.appendChild(nameInput);
+                        fields.appendChild(urlInput);
+                        fields.appendChild(actions);
+
+                        a.appendChild(fields);
+                        linksEl.appendChild(a);
                         return;
                     }
 
-                    user.links.forEach((link, index) => {
-                        const a = document.createElement(
-                            isOwner && currentTab === "edit" && editingLinkIndex === index ? "div" : "a"
-                        );
+                    // text
+                    const left = document.createElement('div');
+                    left.className = "link-main";
 
-                        if (a.tagName === "A") {
-                            a.href = normalizeUrl(link.url);
-                            a.target = "_blank";
-                        }
+                    // icon
+                    const icon = createLinkIcon(link.finalUrl || link.url, link.type);
 
-                        a.className = "link";
-                        if (isOwner && currentTab === "edit") {
-                            a.classList.add("edit-mode-link");
-                        }
+                    // text
+                    const text = document.createElement('span');
+                    text.className = "link-title";
+                    text.innerText = link.name;
 
-                        if (isOwner && currentTab === "edit" && editingLinkIndex === index) {
-                            a.classList.add("link-edit-panel");
+                    left.appendChild(icon);
+                    left.appendChild(text);
 
-                            const fields = document.createElement('div');
-                            fields.className = "link-edit-fields";
+                    a.appendChild(left);
 
-                            const nameInput = document.createElement('input');
-                            nameInput.className = "theme-input";
-                            nameInput.placeholder = "Name";
-                            nameInput.value = link.name;
-
-                            const urlInput = document.createElement('input');
-                            urlInput.className = "theme-input";
-                            urlInput.placeholder = "URL";
-                            urlInput.value = link.url;
-
-                            const actions = document.createElement('div');
-                            actions.className = "form-actions";
-
-                            const cancelBtn = document.createElement('button');
-                            cancelBtn.type = "button";
-                            cancelBtn.className = "ui-btn secondary";
-                            cancelBtn.innerText = "Cancel";
-                            cancelBtn.onclick = (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                editingLinkIndex = null;
-                                loadUser();
-                            };
-
-                            const saveBtn = document.createElement('button');
-                            saveBtn.type = "button";
-                            saveBtn.className = "ui-btn primary";
-                            saveBtn.innerText = "Save";
-                            saveBtn.onclick = (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                saveEditedLink(index, nameInput.value, urlInput.value);
-                            };
-
-                            actions.appendChild(cancelBtn);
-                            actions.appendChild(saveBtn);
-
-                            fields.appendChild(nameInput);
-                            fields.appendChild(urlInput);
-                            fields.appendChild(actions);
-
-                            a.appendChild(fields);
-                            linksEl.appendChild(a);
-                            return;
-                        }
-
-                        // text
-                        const left = document.createElement('div');
-                        left.style.display = "flex";
-                        left.style.alignItems = "center";
-                        left.style.gap = "10px";
-
-                        // icon
-                        const icon = document.createElement('span');
-                        icon.innerHTML = getIcon(link.url);
-
-                        icon.style.display = "flex";
-                        icon.style.alignItems = "center";
-                        icon.style.justifyContent = "center";
-
-                        icon.style.width = "30px";   // 🔥 control size here
-                        icon.style.height = "30px";
-
-                        icon.style.flexShrink = "0";  // prevent shrinking on long names
-
-                        // text
-                        const text = document.createElement('span');
-                        text.innerText = link.name;
-
-                        left.appendChild(icon);
-                        left.appendChild(text);
-
-                        a.appendChild(left);
-
-                        // 3 dots menu
-                        if (isOwner && currentTab === "edit") {
-                            const menuBtn = document.createElement('span');
-                            menuBtn.className = "menu-btn edit-icon edit-menu-btn";
-                            menuBtn.innerText = "⋮";
-
-                            menuBtn.style.display = "flex";
-                            menuBtn.style.alignItems = "center";
-                            menuBtn.style.justifyContent = "center";
-
-                            menuBtn.style.width = "34px";
-                            menuBtn.style.height = "34px";
-
-                            menuBtn.style.cursor = "pointer";
-                            menuBtn.style.fontSize = "22px";   // 🔥 bigger dots
-                            menuBtn.style.lineHeight = "1";    // 🔥 prevents weird vertical spacing
-
-                            menuBtn.style.color = "#aaa";      // subtle default
-                            menuBtn.style.borderRadius = "8px";
-                            menuBtn.style.transition = "all 0.2s ease";
-
-                            menuBtn.onmouseover = () => {
-                                menuBtn.style.background = "#333";
-                                menuBtn.style.color = "#fff";    // highlight on hover
-                            };
-
-                            menuBtn.onmouseleave = () => {
-                                menuBtn.style.background = "transparent";
-                                menuBtn.style.color = "#aaa";
-                            };
-
-                            menuBtn.onclick = (e) => {
-                                e.preventDefault();     // stop link navigation
-                                e.stopPropagation();    // stop event bubbling
-
-                                showMenu(index, e);
-                            };
-
-                            a.appendChild(menuBtn);
-                        }
-
-                        linksEl.appendChild(a);
-                    });
-
+                    // 3 dots menu
                     if (isOwner && currentTab === "edit") {
-                        const addRow = document.createElement('div');
-                        addRow.className = "link edit-mode-link no-sort";
+                        const menuBtn = document.createElement('span');
+                        menuBtn.className = "menu-btn edit-icon edit-menu-btn";
+                        menuBtn.innerText = "⋮";
 
-                        addRow.style.justifyContent = "center";
-                        addRow.style.cursor = "pointer";
-                        addRow.style.opacity = "0.7";
+                        menuBtn.style.display = "flex";
+                        menuBtn.style.alignItems = "center";
+                        menuBtn.style.justifyContent = "center";
 
-                        addRow.innerHTML = `
-                            <span style="font-size:18px;">＋ Add</span>`;
+                        menuBtn.style.width = "34px";
+                        menuBtn.style.height = "34px";
 
-                        addRow.onclick = (e) => {
-                            e.stopPropagation();
-                            addLinkUI();
+                        menuBtn.style.cursor = "pointer";
+                        menuBtn.style.fontSize = "22px";   // 🔥 bigger dots
+                        menuBtn.style.lineHeight = "1";    // 🔥 prevents weird vertical spacing
+
+                        menuBtn.style.color = "#aaa";      // subtle default
+                        menuBtn.style.borderRadius = "8px";
+                        menuBtn.style.transition = "all 0.2s ease";
+
+                        menuBtn.onmouseover = () => {
+                            menuBtn.style.background = "#333";
+                            menuBtn.style.color = "#fff";    // highlight on hover
                         };
 
-                        linksEl.appendChild(addRow);
+                        menuBtn.onmouseleave = () => {
+                            menuBtn.style.background = "transparent";
+                            menuBtn.style.color = "#aaa";
+                        };
+
+                        menuBtn.onclick = (e) => {
+                            e.preventDefault();     // stop link navigation
+                            e.stopPropagation();    // stop event bubbling
+
+                            showMenu(index, e);
+                        };
+
+                        a.appendChild(menuBtn);
                     }
 
-                    if (isOwner && currentTab === "edit") {
-                        playEditModeAnimation();
-                    }
-
+                    linksEl.appendChild(a);
                 });
+
+                if (isOwner && currentTab === "edit") {
+                    const addRow = document.createElement('div');
+                    addRow.className = "link edit-mode-link no-sort";
+
+                    addRow.style.justifyContent = "center";
+                    addRow.style.cursor = "pointer";
+                    addRow.style.opacity = "0.7";
+
+                    addRow.innerHTML = `
+                            <span style="font-size:18px;">＋ Add</span>`;
+
+                    addRow.onclick = (e) => {
+                        e.stopPropagation();
+                        addLinkUI();
+                    };
+
+                    linksEl.appendChild(addRow);
+                }
+
+                if (isOwner && currentTab === "edit") {
+                    playEditModeAnimation();
+                }
+
+            };
+
+            if (preloadedUser) {
+                renderLoadedUser(preloadedUser);
+                return Promise.resolve(preloadedUser);
+            }
+
+            return fetch(`/api/${username}`)
+                .then(res => res.json())
+                .then(renderLoadedUser);
         }
 
         function playEditModeAnimation() {
@@ -393,7 +591,7 @@
                 <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
                     Settings
                 </div>
-                <div class="link no-sort" onclick="showSettingsPlaceholder()" style="cursor:pointer;">
+                <div class="link no-sort" onclick="openAppearanceModal()" style="cursor:pointer;">
                     <span>Theme</span>
                     <span>›</span>
                 </div>
@@ -406,10 +604,6 @@
                     <span>›</span>
                 </div>
             `;
-        }
-
-        function showSettingsPlaceholder() {
-            console.log("Theme settings coming soon");
         }
 
         function logoutUser() {
@@ -436,6 +630,8 @@
 
         function saveUser() {
             const password = storedPassword;
+            const themeToSave = sanitizeTheme(currentUser.theme);
+            console.log("selected theme before save", themeToSave);
 
             fetch(`/api/${username}`, {
                 method: "POST",
@@ -447,16 +643,71 @@
                     displayName: currentUser.displayName,
                     bio: currentUser.bio,
                     avatar: currentUser.avatar,   // ✅ THIS LINE
-                    links: currentUser.links
+                    links: currentUser.links,
+                    theme: themeToSave
                 })
             })
                 .then(res => res.json())
                 .then(data => {
+                    console.log("save response", data);
                     if (data.error) {
                         console.error(data.error);
                     } else {
-                        loadUser();
+                        console.log("returned updated theme", data.user ? data.user.theme : data.theme);
+                        if (data.user) {
+                            loadUser(data.user);
+                        } else {
+                            currentUser.theme = sanitizeTheme(data.theme || themeToSave);
+                            applyTheme(currentUser.theme);
+                        }
                     }
+                });
+        }
+
+        function saveTheme(theme) {
+            const themeToSave = sanitizeTheme(theme);
+            console.log("selected theme before save", themeToSave);
+
+            fetch(`/api/${username}/theme`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: storedPassword,
+                    theme: themeToSave
+                })
+            })
+                .then(async res => {
+                    const text = await res.text();
+                    let data = null;
+
+                    try {
+                        data = text ? JSON.parse(text) : {};
+                    } catch (error) {
+                        data = { error: text || "Theme save failed" };
+                    }
+
+                    if (!res.ok) {
+                        console.error("theme save failed", {
+                            status: res.status,
+                            statusText: res.statusText,
+                            response: data
+                        });
+                    }
+
+                    return data;
+                })
+                .then(data => {
+                    console.log("save response", data);
+                    if (data.error) {
+                        console.error(data);
+                        return;
+                    }
+
+                    currentUser.theme = sanitizeTheme(data.theme || themeToSave);
+                    console.log("returned updated theme", currentUser.theme);
+                    applyTheme(currentUser.theme);
                 });
         }
 
@@ -585,11 +836,11 @@
         });
 
         function addBio() {
-            openModal("bio");
+            startInlineEdit("bio");
         }
 
         function addLinkUI() {
-            openModal("link");
+            openSmartLinkModal();
         }
 
         function addAvatarUI() {
@@ -597,6 +848,253 @@
         }
 
         let currentAction = null;
+        let selectedSmartLink = null;
+        let inlineEditField = null;
+
+        function startInlineEdit(field) {
+            if (!isOwner || currentTab !== "edit" || !currentUser || inlineEditField) return;
+
+            inlineEditField = field;
+
+            const target = field === "name" ? nameEl : bioEl;
+            const originalValue = field === "name"
+                ? (currentUser.displayName || currentUser.username || "")
+                : (currentUser.bio || "");
+            const editor = document.createElement(field === "bio" ? "textarea" : "input");
+
+            editor.className = `inline-profile-editor ${field === "bio" ? "bio-editor" : "name-editor"}`;
+            editor.value = originalValue;
+            editor.rows = field === "bio" ? 2 : 1;
+
+            target.replaceChildren(editor);
+            target.classList.add("inline-editing");
+            editor.focus();
+            editor.select();
+
+            let finished = false;
+
+            const finish = (save) => {
+                if (finished) return;
+                finished = true;
+
+                const nextValue = editor.value.trim();
+                inlineEditField = null;
+
+                if (save) {
+                    if (field === "name") {
+                        if (nextValue) {
+                            currentUser.displayName = nextValue;
+                            saveUser();
+                            return;
+                        }
+                    } else {
+                        currentUser.bio = nextValue;
+                        saveUser();
+                        return;
+                    }
+                }
+
+                loadUser();
+            };
+
+            editor.addEventListener("blur", () => finish(true));
+            editor.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    finish(true);
+                }
+
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    finish(false);
+                }
+            });
+        }
+
+        function showEditModeHint() {
+            const hintKey = `editHintSeen:${username}`;
+            if (sessionStorage.getItem(hintKey)) return;
+
+            const hint = document.getElementById('editModeHint');
+            if (!hint) return;
+
+            sessionStorage.setItem(hintKey, "true");
+            hint.classList.add("show");
+
+            window.clearTimeout(hint._hideTimer);
+            hint._hideTimer = window.setTimeout(() => {
+                hint.classList.remove("show");
+            }, 3200);
+        }
+
+        const smartLinkCategories = [
+            {
+                title: "Communication",
+                items: [
+                    { type: "phone", label: "Phone Number", placeholder: "99123456", hint: "Creates a tap-to-call link." },
+                    { type: "whatsapp", label: "WhatsApp", placeholder: "99123456", hint: "Creates a WhatsApp chat link." },
+                    { type: "telegram", label: "Telegram", placeholder: "username or t.me/username", hint: "Creates a Telegram link." },
+                    { type: "email", label: "Email", placeholder: "test@gmail.com", hint: "Creates an email link." },
+                    { type: "sms", label: "SMS", placeholder: "99123456", hint: "Creates a text-message link." }
+                ]
+            },
+            {
+                title: "Social Media",
+                items: [
+                    { type: "instagram", label: "Instagram", placeholder: "username or instagram.com/user" },
+                    { type: "tiktok", label: "TikTok", placeholder: "@username or tiktok.com/@user" },
+                    { type: "snapchat", label: "Snapchat", placeholder: "username or snapchat.com/add/user" },
+                    { type: "twitter", label: "X/Twitter", placeholder: "@username or x.com/user" },
+                    { type: "facebook", label: "Facebook", placeholder: "profile URL or username" },
+                    { type: "linkedin", label: "LinkedIn", placeholder: "profile URL or username" },
+                    { type: "youtube", label: "YouTube", placeholder: "@channel or youtube.com/@channel" },
+                    { type: "discord", label: "Discord", placeholder: "invite code or discord.gg/code" }
+                ]
+            },
+            {
+                title: "Business / Creator",
+                items: [
+                    { type: "website", label: "Website", placeholder: "google.com" },
+                    { type: "store", label: "Store Link", placeholder: "store link" },
+                    { type: "portfolio", label: "Portfolio", placeholder: "portfolio link" },
+                    { type: "maps", label: "Google Maps Location", placeholder: "business name or maps link" },
+                    { type: "booking", label: "Booking Link", placeholder: "booking link" }
+                ]
+            },
+            {
+                title: "Generic",
+                items: [
+                    { type: "custom", label: "Custom Website", placeholder: "Paste any website or profile link" }
+                ]
+            }
+        ];
+
+        function getSmartLinkItems() {
+            return smartLinkCategories.flatMap(category => category.items);
+        }
+
+        function getSmartLinkConfig(type) {
+            return getSmartLinkItems().find(item => item.type === type) || getSmartLinkItems()[0];
+        }
+
+        function openSmartLinkModal() {
+            selectedSmartLink = null;
+            document.getElementById('smartLinkModal').style.display = "flex";
+            document.getElementById('smartLinkValue').value = "";
+            document.getElementById('smartLinkLabel').value = "";
+            document.getElementById('smartLinkForm').style.display = "none";
+            document.getElementById('smartLinkPreview').innerHTML = "Choose a type, then paste a number, username, email, or link.";
+            renderSmartLinkOptions();
+        }
+
+        function closeSmartLinkModal() {
+            selectedSmartLink = null;
+            document.getElementById('smartLinkModal').style.display = "none";
+        }
+
+        function renderSmartLinkOptions() {
+            const optionsEl = document.getElementById('smartLinkOptions');
+            optionsEl.innerHTML = "";
+
+            smartLinkCategories.forEach(category => {
+                const section = document.createElement('div');
+                section.className = "smart-add-section";
+
+                const title = document.createElement('div');
+                title.className = "smart-add-section-title";
+                title.innerText = category.title;
+                section.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.className = "smart-add-grid";
+
+                category.items.forEach(item => {
+                    const button = document.createElement('button');
+                    button.type = "button";
+                    button.className = "smart-add-option";
+                    button.appendChild(createSmartOptionIcon(item.type));
+
+                    const label = document.createElement('span');
+                    label.innerText = item.label;
+                    button.appendChild(label);
+
+                    button.onclick = () => selectSmartLinkType(item.type);
+                    grid.appendChild(button);
+                });
+
+                section.appendChild(grid);
+                optionsEl.appendChild(section);
+            });
+        }
+
+        function selectSmartLinkType(type) {
+            selectedSmartLink = getSmartLinkConfig(type);
+            document.getElementById('smartLinkForm').style.display = "block";
+            document.getElementById('smartLinkValue').value = "";
+            document.getElementById('smartLinkLabel').value = selectedSmartLink.label;
+            document.getElementById('smartLinkValue').placeholder = selectedSmartLink.placeholder || "Paste value or link";
+            updateSmartLinkPreview();
+            document.getElementById('smartLinkValue').focus();
+        }
+
+        function updateSmartLinkPreview() {
+            const value = document.getElementById('smartLinkValue').value.trim();
+            const labelInput = document.getElementById('smartLinkLabel');
+            const preview = document.getElementById('smartLinkPreview');
+
+            if (!selectedSmartLink) return;
+
+            const detected = detectSmartInput(value);
+            const activeType = detected.type || selectedSmartLink.type;
+            const activeConfig = getSmartLinkConfig(activeType);
+
+            if (detected.type && (!labelInput.value || labelInput.value === selectedSmartLink.label)) {
+                labelInput.value = activeConfig.label;
+            }
+
+            const finalUrl = buildFinalUrl(activeType, value);
+            if (!value) {
+                preview.innerHTML = selectedSmartLink.hint || "Paste a username, number, email, or full link.";
+                return;
+            }
+
+            if (!finalUrl) {
+                preview.innerHTML = "This does not look valid yet.";
+                return;
+            }
+
+            const previewIcon = createLinkIcon(finalUrl, activeType);
+            const previewText = document.createElement('span');
+            previewText.innerText = finalUrl;
+            preview.innerHTML = "";
+            preview.appendChild(previewIcon);
+            preview.appendChild(previewText);
+        }
+
+        function submitSmartLink() {
+            if (!selectedSmartLink) return;
+
+            const rawValue = document.getElementById('smartLinkValue').value.trim();
+            const detected = detectSmartInput(rawValue);
+            const type = detected.type || selectedSmartLink.type;
+            const config = getSmartLinkConfig(type);
+            const finalUrl = buildFinalUrl(type, rawValue);
+            const label = document.getElementById('smartLinkLabel').value.trim() || config.label;
+
+            if (!rawValue || !finalUrl) return;
+
+            currentUser.links.push({
+                name: label,
+                url: finalUrl,
+                type,
+                label,
+                value: rawValue,
+                finalUrl
+            });
+
+            closeSmartLinkModal();
+            saveUser();
+        }
 
         function openModal(action) {
             currentAction = action;
@@ -685,11 +1183,13 @@
                     displayName: currentUser.displayName,
                     bio: currentUser.bio,
                     avatar: currentUser.avatar,
-                    links: currentUser.links
+                    links: currentUser.links,
+                    theme: sanitizeTheme(currentUser.theme)
                 })
             })
                 .then(res => res.json())
                 .then(data => {
+                    console.log("save response", data);
                     if (data.error) {
                         console.error(data.error);
                         return;
@@ -698,7 +1198,13 @@
                     storedPassword = newPassword;
                     localStorage.setItem('password', newPassword);
                     closeModal();
-                    loadUser();
+                    console.log("returned updated theme", data.user ? data.user.theme : data.theme);
+                    if (data.user) {
+                        loadUser(data.user);
+                    } else {
+                        currentUser.theme = sanitizeTheme(data.theme || currentUser.theme);
+                        applyTheme(currentUser.theme);
+                    }
                 });
         }
 
@@ -794,44 +1300,471 @@
             }
         }
 
+        function isLikelyPhone(value) {
+            const digits = (value || "").replace(/\D/g, "");
+            return digits.length >= 7 && digits.length <= 15;
+        }
+
+        function normalizePhone(value, withPlus = true) {
+            let digits = (value || "").replace(/\D/g, "");
+            if (!digits) return "";
+
+            if (digits.length === 8) {
+                digits = `965${digits}`;
+            }
+
+            return withPlus ? `+${digits}` : digits;
+        }
+
+        function cleanUsername(value) {
+            return (value || "")
+                .trim()
+                .replace(/^@/, "")
+                .replace(/^\/+/, "")
+                .replace(/\/+$/, "");
+        }
+
+        function isFullUrlLike(value) {
+            const cleanValue = (value || "").trim();
+            return /^[a-z][a-z0-9+.-]*:/i.test(cleanValue) || cleanValue.includes(".");
+        }
+
+        function getPreviewUrlForType(type) {
+            const previews = {
+                phone: "tel:+96599123456",
+                whatsapp: "https://wa.me/96599123456",
+                telegram: "https://t.me/telegram",
+                email: "mailto:test@example.com",
+                sms: "sms:+96599123456",
+                instagram: "https://instagram.com/instagram",
+                tiktok: "https://tiktok.com/@tiktok",
+                snapchat: "https://snapchat.com/add/snapchat",
+                twitter: "https://x.com/x",
+                facebook: "https://facebook.com/facebook",
+                linkedin: "https://linkedin.com/in/linkedin",
+                youtube: "https://youtube.com/@youtube",
+                discord: "https://discord.gg/discord",
+                website: "https://example.com",
+                store: "https://shop.example.com",
+                portfolio: "https://portfolio.example.com",
+                maps: "https://maps.google.com",
+                booking: "https://calendly.com",
+                custom: "https://example.com"
+            };
+
+            return previews[type] || previews.custom;
+        }
+
+        function detectSmartInput(value) {
+            const cleanValue = (value || "").trim();
+            if (!cleanValue) return {};
+
+            if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue)) {
+                return { type: "email" };
+            }
+
+            if (isLikelyPhone(cleanValue)) {
+                return { type: "phone", suggestions: ["phone", "whatsapp", "sms"] };
+            }
+
+            const platform = detectPlatform(cleanValue);
+            if (!platform) return {};
+
+            const platformTypeMap = {
+                whatsapp: "whatsapp",
+                instagram: "instagram",
+                youtube: "youtube",
+                tiktok: "tiktok",
+                linkedin: "linkedin",
+                facebook: "facebook",
+                x: "twitter",
+                telegram: "telegram",
+                snapchat: "snapchat",
+                discord: "discord",
+                github: "custom",
+                twitch: "custom"
+            };
+
+            return { type: platformTypeMap[platform.slug] || "custom", platform };
+        }
+
+        function buildSocialUrl(type, value, baseUrl, usernamePrefix = "") {
+            const cleanValue = (value || "").trim();
+            if (!cleanValue) return "";
+
+            if (isFullUrlLike(cleanValue)) {
+                return normalizeUrl(cleanValue);
+            }
+
+            const username = cleanUsername(cleanValue);
+            if (!username) return "";
+
+            return `${baseUrl}${usernamePrefix}${encodeURIComponent(username)}`;
+        }
+
+        function buildFinalUrl(type, value) {
+            const cleanValue = (value || "").trim();
+            if (!cleanValue) return "";
+
+            switch (type) {
+                case "phone":
+                    return isLikelyPhone(cleanValue) ? `tel:${normalizePhone(cleanValue)}` : normalizeUrl(cleanValue);
+                case "whatsapp":
+                    return isLikelyPhone(cleanValue) ? `https://wa.me/${normalizePhone(cleanValue, false)}` : normalizeUrl(cleanValue);
+                case "telegram":
+                    return buildSocialUrl(type, cleanValue, "https://t.me/");
+                case "email":
+                    return cleanValue.startsWith("mailto:") ? cleanValue : `mailto:${cleanValue}`;
+                case "sms":
+                    return isLikelyPhone(cleanValue) ? `sms:${normalizePhone(cleanValue)}` : normalizeUrl(cleanValue);
+                case "instagram":
+                    return buildSocialUrl(type, cleanValue, "https://instagram.com/");
+                case "tiktok":
+                    return buildSocialUrl(type, cleanValue, "https://tiktok.com/@", "");
+                case "snapchat":
+                    return buildSocialUrl(type, cleanValue, "https://snapchat.com/add/");
+                case "twitter":
+                    return buildSocialUrl(type, cleanValue, "https://x.com/");
+                case "facebook":
+                    return buildSocialUrl(type, cleanValue, "https://facebook.com/");
+                case "linkedin":
+                    return buildSocialUrl(type, cleanValue, "https://linkedin.com/in/");
+                case "youtube":
+                    return buildSocialUrl(type, cleanValue, "https://youtube.com/@", "");
+                case "discord":
+                    if (isFullUrlLike(cleanValue)) return normalizeUrl(cleanValue);
+                    return `https://discord.gg/${encodeURIComponent(cleanUsername(cleanValue))}`;
+                case "maps":
+                    if (isFullUrlLike(cleanValue)) return normalizeUrl(cleanValue);
+                    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanValue)}`;
+                case "website":
+                case "store":
+                case "portfolio":
+                case "booking":
+                case "custom":
+                default:
+                    return normalizeUrl(cleanValue);
+            }
+        }
+
+        const platformIcons = [
+            { name: "WhatsApp", slug: "whatsapp", color: "25D366", hosts: ["whatsapp.com", "wa.me"] },
+            { name: "Instagram", slug: "instagram", color: "E4405F", hosts: ["instagram.com"] },
+            { name: "YouTube", slug: "youtube", color: "FF0000", hosts: ["youtube.com", "youtu.be"] },
+            { name: "TikTok", slug: "tiktok", color: "FFFFFF", hosts: ["tiktok.com"] },
+            {
+                name: "LinkedIn",
+                slug: "linkedin",
+                color: "0A66C2",
+                hosts: ["linkedin.com"],
+                inlineSvg: `
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="#0A66C2" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.61 0 4.27 2.38 4.27 5.47v6.27ZM5.32 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12Zm1.78 13.02H3.54V9H7.1v11.45Z"/>
+                    </svg>
+                `
+            },
+            { name: "Facebook", slug: "facebook", color: "1877F2", hosts: ["facebook.com", "fb.com", "fb.watch"] },
+            { name: "X", slug: "x", color: "FFFFFF", hosts: ["x.com", "twitter.com"] },
+            { name: "Telegram", slug: "telegram", color: "26A5E4", hosts: ["telegram.org", "t.me"] },
+            { name: "Snapchat", slug: "snapchat", color: "FFFC00", hosts: ["snapchat.com"] },
+            { name: "Discord", slug: "discord", color: "5865F2", hosts: ["discord.com", "discord.gg"] },
+            { name: "GitHub", slug: "github", color: "FFFFFF", hosts: ["github.com", "github.io"] },
+            { name: "Twitch", slug: "twitch", color: "9146FF", hosts: ["twitch.tv"] }
+        ];
+
+        function getHostname(url) {
+            try {
+                const normalizedUrl = normalizeUrl(url);
+                const parsedUrl = new URL(normalizedUrl);
+                return parsedUrl.hostname.toLowerCase().replace(/^www\./, "");
+            } catch (error) {
+                return "";
+            }
+        }
+
+        function hostMatches(hostname, platformHost) {
+            return hostname === platformHost || hostname.endsWith(`.${platformHost}`);
+        }
+
+        function detectPlatform(url) {
+            const hostname = getHostname(url);
+            if (!hostname) return null;
+
+            return platformIcons.find(platform =>
+                platform.hosts.some(platformHost => hostMatches(hostname, platformHost))
+            ) || null;
+        }
+
         function getDefaultLinkIcon() {
-            return `
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-                    <path d="M10 14L21 3M21 3H14M21 3V10" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M5 5V19H19V14" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            const fallback = document.createElement('span');
+            fallback.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M3.6 9h16.8M3.6 15h16.8M12 3c2.1 2.4 3.1 5.4 3.1 9s-1 6.6-3.1 9M12 3c-2.1 2.4-3.1 5.4-3.1 9s1 6.6 3.1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
             `;
+            return fallback.firstElementChild;
+        }
+
+        const systemIconPaths = {
+            phone: `<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.32 1.77.59 2.61a2 2 0 0 1-.45 2.11L8 9.69a16 16 0 0 0 6.31 6.31l1.25-1.25a2 2 0 0 1 2.11-.45c.84.27 1.71.47 2.61.59A2 2 0 0 1 22 16.92z"/>`,
+            email: `<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/>`,
+            sms: `<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 10h8M8 14h5"/>`,
+            website: `<path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3c2.1 2.4 3.1 5.4 3.1 9s-1 6.6-3.1 9M12 3c-2.1 2.4-3.1 5.4-3.1 9s1 6.6 3.1 9"/>`,
+            store: `<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>`,
+            portfolio: `<path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1"/><path d="M3 7h18v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M3 13h18"/>`,
+            custom: `<path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93"/><path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07L13 19.07"/>`,
+            booking: `<path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="m9 16 2 2 4-5"/>`,
+            maps: `<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`
+        };
+
+        const systemIconTypes = new Set(Object.keys(systemIconPaths));
+        const forcedSystemLinkTypes = new Set(["phone", "email", "sms", "website", "store", "portfolio", "booking", "maps"]);
+
+        function getSystemIconType(type) {
+            if (type === "maps") return "maps";
+            if (type === "website") return "website";
+            if (type === "store") return "store";
+            if (type === "portfolio") return "portfolio";
+            if (type === "booking") return "booking";
+            if (type === "custom") return "custom";
+            if (systemIconTypes.has(type)) return type;
+            return "";
+        }
+
+        function getSystemIcon(type) {
+            const iconType = getSystemIconType(type);
+            const path = systemIconPaths[iconType];
+            if (!path) return null;
+
+            const wrapper = document.createElement('span');
+            wrapper.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    ${path}
+                </svg>
+            `;
+
+            const svg = wrapper.firstElementChild;
+            svg.setAttribute("stroke", "currentColor");
+            svg.setAttribute("stroke-width", "1.8");
+            svg.setAttribute("stroke-linecap", "round");
+            svg.setAttribute("stroke-linejoin", "round");
+            return svg;
+        }
+
+        function createSmartOptionIcon(type) {
+            const icon = document.createElement('span');
+            icon.className = "link-icon system-icon";
+
+            const systemIcon = getSystemIcon(type);
+            if (systemIcon) {
+                icon.appendChild(systemIcon);
+                return icon;
+            }
+
+            return createLinkIcon(getPreviewUrlForType(type));
+        }
+
+        function inferSystemTypeFromUrl(url) {
+            const cleanUrl = (url || "").trim().toLowerCase();
+
+            if (cleanUrl.startsWith("tel:") || cleanUrl.startsWith("telephone:")) return "phone";
+            if (cleanUrl.startsWith("mailto:")) return "email";
+            if (cleanUrl.startsWith("sms:")) return "sms";
+            if (cleanUrl.includes("google.com/maps") || cleanUrl.includes("maps.google.")) return "maps";
+
+            return "";
+        }
+
+        function hideLinkIcon(icon) {
+            if (!icon) return;
+            icon.classList.add("link-icon-hidden");
+            icon.remove();
+        }
+
+        function showDefaultLinkIcon(icon) {
+            const fallbackIcon = getDefaultLinkIcon();
+            if (!fallbackIcon) {
+                hideLinkIcon(icon);
+                return false;
+            }
+
+            icon.innerHTML = "";
+            icon.appendChild(fallbackIcon);
+            return true;
         }
 
         function handleIconError(img) {
-            img.outerHTML = getDefaultLinkIcon();
+            const icon = img.parentElement;
+            if (icon) {
+                if (!showDefaultLinkIcon(icon)) {
+                    hideLinkIcon(icon);
+                }
+            } else {
+                const fallbackIcon = getDefaultLinkIcon();
+                if (fallbackIcon) {
+                    img.replaceWith(fallbackIcon);
+                } else {
+                    img.remove();
+                }
+            }
         }
 
-        function getIcon(url) {
+        function loadFaviconIcon(icon, url) {
             const faviconUrl = getFaviconUrl(url);
 
             if (!faviconUrl) {
-                return getDefaultLinkIcon();
+                return showDefaultLinkIcon(icon);
             }
 
-            return `
-                <img
-                    src="${faviconUrl}"
-                    alt=""
-                    loading="lazy"
-                    referrerpolicy="no-referrer"
-                    onerror="handleIconError(this)"
-                    style="width:24px; height:24px; border-radius:5px; object-fit:cover; display:block;"
-                >
-            `;
+            const img = document.createElement('img');
+            img.src = faviconUrl;
+            img.alt = "";
+            img.loading = "eager";
+            img.decoding = "async";
+            img.referrerPolicy = "no-referrer";
+            img.onerror = () => {
+                if (!showDefaultLinkIcon(icon)) {
+                    hideLinkIcon(icon);
+                }
+            };
+            img.onload = () => {
+                icon.innerHTML = "";
+                icon.appendChild(img);
+            };
+
+            return true;
+        }
+
+        function getPlatformIcon(platform, icon, url) {
+            if (platform.inlineSvg) {
+                icon.innerHTML = platform.inlineSvg;
+                return icon.firstElementChild;
+            }
+
+            const brandImg = document.createElement('img');
+            brandImg.src = `https://cdn.simpleicons.org/${platform.slug}/${platform.color}`;
+            brandImg.alt = "";
+            brandImg.loading = "eager";
+            brandImg.decoding = "async";
+            brandImg.onerror = () => {
+                if (!showDefaultLinkIcon(icon)) {
+                    hideLinkIcon(icon);
+                }
+            };
+            brandImg.onload = () => {
+                icon.innerHTML = "";
+                icon.appendChild(brandImg);
+            };
+
+            return brandImg;
+        }
+
+        function createLinkIcon(url, type = "") {
+            const icon = document.createElement('span');
+            icon.className = "link-icon";
+            if (!showDefaultLinkIcon(icon)) {
+                hideLinkIcon(icon);
+                return icon;
+            }
+
+            const systemType = forcedSystemLinkTypes.has(type) ? type : inferSystemTypeFromUrl(url);
+            const systemIcon = getSystemIcon(systemType);
+            if (systemIcon) {
+                icon.classList.add("system-icon");
+                icon.innerHTML = "";
+                icon.appendChild(systemIcon);
+                return icon;
+            }
+
+            const platform = detectPlatform(url);
+            if (platform) {
+                icon.classList.add("brand-icon");
+                icon.setAttribute("aria-label", `${platform.name} icon`);
+                getPlatformIcon(platform, icon, url);
+                return icon;
+            }
+
+            loadFaviconIcon(icon, url);
+            return icon;
+        }
+
+        function getIcon(url) {
+            return createLinkIcon(url);
         }
         switchTab(isOwner ? "edit" : "view");
 
         function editName() {
-            openModal("name");
+            startInlineEdit("name");
         }
 
     </script>
+
+    <div id="smartLinkModal" class="smart-modal" onclick="closeSmartLinkModal()">
+        <div class="modal-card smart-link-card" onclick="event.stopPropagation()">
+            <div class="modal-title">Add to Profile</div>
+            <div class="smart-add-subtitle">Choose what you want to add. Paste a number, username, email, or link and I
+                will format it for you.</div>
+
+            <div id="smartLinkOptions" class="smart-add-options"></div>
+
+            <div id="smartLinkForm" class="smart-link-form">
+                <div class="link-edit-fields">
+                    <input id="smartLinkValue" class="theme-input" placeholder="Paste value or link"
+                        oninput="updateSmartLinkPreview()">
+                    <input id="smartLinkLabel" class="theme-input" placeholder="Label">
+                    <div id="smartLinkPreview" class="smart-link-preview">Choose a type, then paste a number, username,
+                        email, or link.</div>
+                    <div class="form-actions">
+                        <button type="button" class="ui-btn secondary" onclick="closeSmartLinkModal()">Cancel</button>
+                        <button type="button" class="ui-btn primary" onclick="submitSmartLink()">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="appearanceModal" class="smart-modal" onclick="closeAppearanceModal(false)">
+        <div class="modal-card appearance-card" onclick="event.stopPropagation()">
+            <div class="modal-title">Appearance</div>
+            <div class="smart-add-subtitle">Choose how this profile looks for you and public visitors.</div>
+
+            <div class="appearance-section">
+                <div class="appearance-label">Theme Mode</div>
+                <div id="themeModeOptions" class="appearance-row"></div>
+            </div>
+
+            <div class="appearance-section">
+                <div class="appearance-label">Preset Themes</div>
+                <div id="themePresetOptions" class="appearance-preset-grid"></div>
+            </div>
+
+            <div class="appearance-section">
+                <div class="appearance-label">Accent Color</div>
+                <div id="themeAccentOptions" class="appearance-row accent-row"></div>
+                <input id="customAccent" class="theme-input color-input" type="color" value="#00c896"
+                    onchange="updateCustomAccent(this.value)">
+            </div>
+
+            <div class="appearance-preview">
+                <div class="link-main">
+                    <span class="link-icon system-icon">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke="currentColor" stroke-width="1.8" />
+                            <path d="M3.6 9h16.8M3.6 15h16.8" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" />
+                        </svg>
+                    </span>
+                    <span class="link-title">Profile preview</span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="ui-btn secondary" onclick="closeAppearanceModal(false)">Cancel</button>
+                <button type="button" class="ui-btn primary" onclick="closeAppearanceModal(true)">Save</button>
+            </div>
+        </div>
+    </div>
 
     <div id="inputModal" style="
   position: fixed;

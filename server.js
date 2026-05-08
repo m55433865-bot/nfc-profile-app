@@ -1,3 +1,4 @@
+require('dotenv').config(); //added for .env
 const express = require('express');
 const path = require('path');
 const browserSync = require('browser-sync').create();
@@ -13,11 +14,11 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false
-      }
-    })
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
+    }
+  })
   : null;
 const supabaseServer = supabaseAdmin || supabaseAnon;
 
@@ -28,6 +29,33 @@ function sanitizeLinks(links) {
   return Array.isArray(links)
     ? links.filter((link) => link && link.name && link.url)
     : [];
+}
+
+const DEFAULT_THEME = {
+  mode: "dark",
+  preset: "midnight",
+  accent: "#00c896"
+};
+
+function sanitizeTheme(theme) {
+  if (!theme || typeof theme !== "object") return { ...DEFAULT_THEME };
+
+  const allowedModes = new Set(["dark", "light", "system"]);
+  const allowedPresets = new Set(["midnight", "ocean", "purple", "gold", "forest", "minimal-white", "neon"]);
+  const safeAccent = /^#[0-9a-f]{6}$/i.test(theme.accent || "") ? theme.accent : DEFAULT_THEME.accent;
+
+  return {
+    mode: allowedModes.has(theme.mode) ? theme.mode : DEFAULT_THEME.mode,
+    preset: allowedPresets.has(theme.preset) ? theme.preset : DEFAULT_THEME.preset,
+    accent: safeAccent
+  };
+}
+
+function redactUpdatesForLog(updates) {
+  return {
+    ...updates,
+    ...(updates.password ? { password: "[redacted]" } : {})
+  };
 }
 
 function normalizeUser(row) {
@@ -42,7 +70,8 @@ function normalizeUser(row) {
     displayName: row.displayname || username,
     bio: row.bio || "",
     avatar: row.avatar || "",
-    links: sanitizeLinks(row.links)
+    links: sanitizeLinks(row.links),
+    theme: sanitizeTheme(row.theme)
   };
 }
 
@@ -75,7 +104,8 @@ function buildCreateUserPayload(username, password) {
     displayname: username,
     bio: "",
     avatar: "",
-    links: []
+    links: [],
+    theme: DEFAULT_THEME
   };
 }
 
@@ -98,12 +128,25 @@ async function createUser(username, password, client = supabaseServer) {
 }
 
 async function updateUser(username, updates, client = supabaseServer) {
-  const { error } = await client
+  const cleanUsername = username.toLowerCase();
+  console.log("Supabase update payload", {
+    username: cleanUsername,
+    updates: redactUpdatesForLog(updates)
+  });
+
+  const { data, error } = await client
     .from('users')
     .update(updates)
-    .eq('username', username.toLowerCase());
+    .eq('username', cleanUsername)
+    .select('*')
+    .single();
+
+  console.log("update result:", data);
+  console.log("update error:", error);
 
   if (error) throw error;
+
+  return normalizeUser(data);
 }
 
 async function deleteUser(username, client = supabaseServer) {
@@ -156,7 +199,12 @@ function sendSupabaseError(res, error) {
     return res.status(403).json({ error: "Permission denied" });
   }
 
-  res.status(500).json({ error: "Database error" });
+  res.status(500).json({
+    error: error.message || "Database error",
+    code: error.code,
+    details: error.details,
+    hint: error.hint
+  });
 }
 
 // LOGIN
@@ -302,6 +350,59 @@ app.get('/api/:username', async (req, res) => {
   }
 });
 
+// UPDATE user theme
+app.post('/api/:username/theme', async (req, res) => {
+  try {
+    const username = req.params.username.toLowerCase();
+    const theme = req.body ? req.body.theme : undefined;
+
+    console.log("theme received:", theme);
+
+    if (!theme) {
+      return res.status(400).json({ error: "Theme is required" });
+    }
+
+    const user = await getUser(username);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.password !== (req.body.password || "")) {
+      return res.status(403).json({ error: "Wrong password" });
+    }
+
+    const safeTheme = sanitizeTheme(theme);
+    const { data, error } = await supabaseServer
+      .from("users")
+      .update({ theme: safeTheme })
+      .eq("username", username)
+      .select("theme")
+      .single();
+
+    console.log("update result:", data);
+    console.log("update error:", error);
+
+    if (error) {
+      return res.status(500).json({
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+    }
+
+    res.json({ success: true, theme: sanitizeTheme(data.theme) });
+  } catch (error) {
+    console.log("update error:", error);
+    res.status(500).json({
+      error: error.message || "Theme update failed",
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
+  }
+});
+
 // UPDATE user
 app.post('/api/:username', async (req, res) => {
   try {
@@ -312,7 +413,8 @@ app.post('/api/:username', async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { password, bio, links, avatar, displayName, newPassword } = req.body;
+    const { password, bio, links, avatar, displayName, newPassword, theme } = req.body;
+    console.log("theme received:", req.body.theme);
 
     if (user.password !== password) {
       return res.status(403).json({ error: "Wrong password" });
@@ -331,6 +433,10 @@ app.post('/api/:username', async (req, res) => {
       updates.avatar = avatar;
     }
 
+    if (theme !== undefined) {
+      updates.theme = sanitizeTheme(theme);
+    }
+
     if (newPassword !== undefined) {
       const cleanPassword = String(newPassword).trim();
       if (!cleanPassword) {
@@ -340,8 +446,12 @@ app.post('/api/:username', async (req, res) => {
       updates.password = cleanPassword;
     }
 
-    await updateUser(username, updates);
-    res.json({ success: true });
+    const updatedUser = await updateUser(username, updates);
+    console.log("Updated user theme", {
+      username,
+      theme: updatedUser ? updatedUser.theme : null
+    });
+    res.json({ success: true, user: updatedUser, theme: updatedUser.theme });
   } catch (error) {
     sendSupabaseError(res, error);
   }
