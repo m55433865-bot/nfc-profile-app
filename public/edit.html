@@ -870,6 +870,15 @@
             closeAvatarMenu();
         });
 
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape") return;
+
+            const smartModal = document.getElementById("smartLinkModal");
+            if (smartModal && smartModal.style.display === "flex") {
+                closeSmartLinkModal();
+            }
+        });
+
         function addBio() {
             startInlineEdit("bio");
         }
@@ -1018,12 +1027,17 @@
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
+            document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkPreview').innerHTML = "Choose a type, then paste a number, username, email, or link.";
             renderSmartLinkOptions();
         }
 
         function closeSmartLinkModal() {
             selectedSmartLink = null;
+            document.getElementById('smartLinkValue').value = "";
+            document.getElementById('smartLinkLabel').value = "";
+            document.getElementById('smartLinkForm').style.display = "none";
+            document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkModal').style.display = "none";
         }
 
@@ -1065,6 +1079,7 @@
         function selectSmartLinkType(type) {
             selectedSmartLink = getSmartLinkConfig(type);
             document.getElementById('smartLinkForm').style.display = "block";
+            document.getElementById('smartAddCancel').style.display = "none";
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = selectedSmartLink.label;
             document.getElementById('smartLinkValue').placeholder = selectedSmartLink.placeholder || "Paste value or link";
@@ -1752,11 +1767,18 @@
 
     <div id="smartLinkModal" class="smart-modal" onclick="closeSmartLinkModal()">
         <div class="modal-card smart-link-card" onclick="event.stopPropagation()">
-            <div class="modal-title">Add to Profile</div>
+            <div class="modal-header-row">
+                <div class="modal-title">Add to Profile</div>
+                <button type="button" class="modal-close-btn" onclick="closeSmartLinkModal()" aria-label="Close add block form">×</button>
+            </div>
             <div class="smart-add-subtitle">Choose what you want to add. Paste a number, username, email, or link and I
                 will format it for you.</div>
 
             <div id="smartLinkOptions" class="smart-add-options"></div>
+
+            <div id="smartAddCancel" class="form-actions smart-add-cancel">
+                <button type="button" class="ui-btn secondary" onclick="closeSmartLinkModal()">Cancel</button>
+            </div>
 
             <div id="smartLinkForm" class="smart-link-form">
                 <div class="link-edit-fields">

@@ -580,6 +580,41 @@ input,
   text-align: left;
 }
 
+.modal-header-row {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.modal-header-row .modal-title {
+  margin-bottom: 0;
+}
+
+.modal-close-btn {
+  align-items: center;
+  background: var(--surface-color);
+  border: 1px solid var(--soft-border-color);
+  border-radius: 9px;
+  color: var(--text-color);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 38px;
+  font-size: 22px;
+  height: 38px;
+  justify-content: center;
+  line-height: 1;
+  touch-action: manipulation;
+  transition: background 0.18s ease, transform 0.18s ease;
+  width: 38px;
+}
+
+.modal-close-btn:hover {
+  background: var(--surface-hover-color);
+  transform: translateY(-1px);
+}
+
 .smart-modal {
   position: fixed;
   inset: 0;
@@ -782,6 +817,17 @@ input,
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid var(--soft-border-color);
+}
+
+.smart-add-cancel {
+  margin-top: 14px;
+}
+
+@media (max-width: 420px) {
+  .smart-add-cancel .ui-btn,
+  .smart-link-form .form-actions .ui-btn {
+    flex: 1;
+  }
 }
 
 .smart-link-preview {
