@@ -1050,10 +1050,10 @@
             if (!selectedSmartLink) return;
 
             const detected = detectSmartInput(value);
-            const activeType = detected.type || selectedSmartLink.type;
+            const activeType = getActiveSmartLinkType(value);
             const activeConfig = getSmartLinkConfig(activeType);
 
-            if (detected.type && (!labelInput.value || labelInput.value === selectedSmartLink.label)) {
+            if (detected.type && activeType !== selectedSmartLink.type && (!labelInput.value || labelInput.value === selectedSmartLink.label)) {
                 labelInput.value = activeConfig.label;
             }
 
@@ -1080,8 +1080,7 @@
             if (!selectedSmartLink) return;
 
             const rawValue = document.getElementById('smartLinkValue').value.trim();
-            const detected = detectSmartInput(rawValue);
-            const type = detected.type || selectedSmartLink.type;
+            const type = getActiveSmartLinkType(rawValue);
             const config = getSmartLinkConfig(type);
             const finalUrl = buildFinalUrl(type, rawValue);
             const label = document.getElementById('smartLinkLabel').value.trim() || config.label;
@@ -1391,6 +1390,19 @@
             };
 
             return { type: platformTypeMap[platform.slug] || "custom", platform };
+        }
+
+        function getActiveSmartLinkType(value) {
+            if (!selectedSmartLink) return "";
+
+            const selectedType = selectedSmartLink.type;
+            const detected = detectSmartInput(value);
+
+            if (["custom", "website"].includes(selectedType) && detected.type && detected.type !== "phone") {
+                return detected.type;
+            }
+
+            return selectedType;
         }
 
         function buildSocialUrl(type, value, baseUrl, usernamePrefix = "") {
