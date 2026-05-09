@@ -612,6 +612,18 @@
         }
 
         function logoutUser() {
+            openLogoutConfirm();
+        }
+
+        function openLogoutConfirm() {
+            document.getElementById("logoutConfirmModal").style.display = "flex";
+        }
+
+        function closeLogoutConfirm() {
+            document.getElementById("logoutConfirmModal").style.display = "none";
+        }
+
+        function confirmLogout() {
             localStorage.removeItem('username');
             localStorage.removeItem('password');
             window.location.href = appPath("/login");
@@ -787,8 +799,26 @@
 
             menu.style.display = "flex";
             menu.style.pointerEvents = "auto";
-            menu.style.top = event.clientY + "px";
-            menu.style.left = event.clientX + "px";
+            positionFloatingMenu(menu, event.clientX, event.clientY);
+        }
+
+        function positionFloatingMenu(menu, x, y) {
+            const margin = 12;
+            menu.style.visibility = "hidden";
+            menu.style.left = "0px";
+            menu.style.top = "0px";
+
+            requestAnimationFrame(() => {
+                const rect = menu.getBoundingClientRect();
+                const maxLeft = window.innerWidth - rect.width - margin;
+                const maxTop = window.innerHeight - rect.height - margin;
+                const left = Math.max(margin, Math.min(x, maxLeft));
+                const top = Math.max(margin, Math.min(y, maxTop));
+
+                menu.style.left = `${left}px`;
+                menu.style.top = `${top}px`;
+                menu.style.visibility = "visible";
+            });
         }
 
         function createMenuItem(label, action) {
@@ -1782,6 +1812,16 @@
             <div class="form-actions">
                 <button type="button" class="ui-btn secondary" onclick="closeAppearanceModal(false)">Cancel</button>
                 <button type="button" class="ui-btn primary" onclick="closeAppearanceModal(true)">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logoutConfirmModal" class="smart-modal" onclick="closeLogoutConfirm()">
+        <div class="modal-card confirm-card" onclick="event.stopPropagation()">
+            <div class="modal-title">Are you sure you want to logout?</div>
+            <div class="form-actions">
+                <button type="button" class="ui-btn secondary" onclick="closeLogoutConfirm()">No</button>
+                <button type="button" class="ui-btn primary" onclick="confirmLogout()">Yes</button>
             </div>
         </div>
     </div>

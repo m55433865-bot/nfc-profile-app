@@ -850,9 +850,11 @@ input,
   display: none;
   flex-direction: column;
   min-width: 150px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
   overflow: hidden;
   position: fixed;
-  z-index: 1200;
+  z-index: 2300;
   pointer-events: auto;
 }
 
@@ -862,8 +864,57 @@ input,
   color: var(--text-color);
   cursor: pointer;
   font-size: 14px;
+  min-height: 42px;
   padding: 11px 12px;
   text-align: left;
+  white-space: nowrap;
+}
+
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirm-card {
+  width: min(90vw, 340px);
+}
+
+#menuPopup {
+  background: var(--card-color) !important;
+  border-color: var(--border-color) !important;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+  overflow: hidden;
+  box-shadow: 0 12px 30px var(--shadow-color);
+  z-index: 2300 !important;
+}
+
+#menuPopup div {
+  min-height: 42px;
+  box-sizing: border-box;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+#menuPopup div:hover {
+  background: var(--surface-hover-color);
+}
+
+@media (max-width: 420px) {
+  .admin-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-actions {
+    width: 100%;
+  }
+
+  .admin-actions .ui-btn {
+    flex: 1;
+  }
 }
 
 .floating-menu button:hover {

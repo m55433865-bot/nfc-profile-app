@@ -12,7 +12,10 @@
     <div id="card">
       <div class="admin-header">
         <h1 class="admin-title">Admin Panel</h1>
-        <button type="button" class="ui-btn primary" onclick="openAddUserModal()">+ Add User</button>
+        <div class="admin-actions">
+          <button type="button" class="ui-btn secondary" onclick="openLogoutConfirm()">Logout</button>
+          <button type="button" class="ui-btn primary" onclick="openAddUserModal()">+ Add User</button>
+        </div>
       </div>
 
       <div id="adminMessage" class="admin-message"></div>
@@ -23,6 +26,16 @@
   <div id="userMenu" class="floating-menu">
     <button type="button" onclick="openPasswordModal()">Change Password</button>
     <button type="button" class="danger" onclick="deleteSelectedUser()">Delete User</button>
+  </div>
+
+  <div id="logoutConfirmModal" class="smart-modal" onclick="closeLogoutConfirm()">
+    <div class="modal-card confirm-card" onclick="event.stopPropagation()">
+      <div class="modal-title">Are you sure you want to logout?</div>
+      <div class="form-actions">
+        <button type="button" class="ui-btn secondary" onclick="closeLogoutConfirm()">No</button>
+        <button type="button" class="ui-btn primary" onclick="logoutAdmin()">Yes</button>
+      </div>
+    </div>
   </div>
 
   <div id="adminModal" style="
@@ -133,14 +146,34 @@
     }
 
     function showUserMenu(username, event) {
+      event.preventDefault();
+      event.stopPropagation();
       selectedUsername = username;
       userMenu.style.display = "flex";
-      userMenu.style.top = `${event.clientY}px`;
-      userMenu.style.left = `${event.clientX}px`;
+      positionFloatingMenu(userMenu, event.clientX, event.clientY);
     }
 
     function closeUserMenu() {
       userMenu.style.display = "none";
+    }
+
+    function positionFloatingMenu(menu, x, y) {
+      const margin = 12;
+      menu.style.visibility = "hidden";
+      menu.style.left = "0px";
+      menu.style.top = "0px";
+
+      requestAnimationFrame(() => {
+        const rect = menu.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - margin;
+        const maxTop = window.innerHeight - rect.height - margin;
+        const left = Math.max(margin, Math.min(x, maxLeft));
+        const top = Math.max(margin, Math.min(y, maxTop));
+
+        menu.style.left = `${left}px`;
+        menu.style.top = `${top}px`;
+        menu.style.visibility = "visible";
+      });
     }
 
     function openAddUserModal() {
@@ -254,6 +287,21 @@
           closeUserMenu();
           loadUsers();
         });
+    }
+
+    function openLogoutConfirm() {
+      closeUserMenu();
+      document.getElementById("logoutConfirmModal").style.display = "flex";
+    }
+
+    function closeLogoutConfirm() {
+      document.getElementById("logoutConfirmModal").style.display = "none";
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem("username");
+      localStorage.removeItem("password");
+      window.location.href = appPath("/login");
     }
 
     document.addEventListener("click", closeUserMenu);
