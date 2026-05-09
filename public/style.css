@@ -439,6 +439,13 @@ input,
   border-radius: 0;
 }
 
+.link-icon.custom-link-icon img {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
 .link-icon.system-icon {
   color: var(--accent-color);
   background: color-mix(in srgb, var(--accent-color), transparent 86%);
@@ -812,9 +819,46 @@ input,
   width: 100%;
 }
 
+.icon-edit-card {
+  width: min(90vw, 360px);
+}
+
+.custom-icon-preview {
+  align-items: center;
+  background: var(--surface-color);
+  border: 1px solid var(--soft-border-color);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  margin: 14px 0;
+  min-height: 84px;
+}
+
+.custom-icon-preview .link-icon {
+  height: 42px;
+  width: 42px;
+  flex-basis: 42px;
+}
+
+.custom-icon-preview .link-icon img,
+.custom-icon-preview .link-icon svg {
+  height: 30px;
+  width: 30px;
+}
+
+.icon-edit-message {
+  margin-bottom: 10px;
+  min-height: 18px;
+}
+
+.icon-edit-actions {
+  flex-wrap: wrap;
+}
+
 @media (max-width: 420px) {
   .smart-add-cancel .ui-btn,
-  .smart-link-form .form-actions .ui-btn {
+  .smart-link-form .form-actions .ui-btn,
+  .icon-edit-actions .ui-btn {
     flex: 1;
   }
 }

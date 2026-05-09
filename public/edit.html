@@ -489,7 +489,7 @@
                     left.className = "link-main";
 
                     // icon
-                    const icon = createLinkIcon(link.finalUrl || link.url, link.type);
+                    const icon = createLinkIcon(link.finalUrl || link.url, link.type, link.customIcon);
 
                     // text
                     const text = document.createElement('span');
@@ -748,7 +748,12 @@
             const cleanUrl = normalizeUrl(url);
             if (!cleanName || !cleanUrl) return;
 
-            currentUser.links[index] = { name: cleanName, url: cleanUrl };
+            currentUser.links[index] = {
+                ...currentUser.links[index],
+                name: cleanName,
+                url: cleanUrl,
+                finalUrl: cleanUrl
+            };
             editingLinkIndex = null;
             saveUser();
         }
@@ -795,6 +800,7 @@
             }
 
             menu.appendChild(createMenuItem("Edit", "edit"));
+            menu.appendChild(createMenuItem("Edit icon", "edit-icon"));
             menu.appendChild(createMenuItem("Delete", "delete"));
 
             menu.style.display = "flex";
@@ -851,6 +857,10 @@
                 editLink(selectedIndex);
             }
 
+            if (action === "edit-icon") {
+                openIconModal(selectedIndex);
+            }
+
             if (action === "delete") {
                 deleteLink(selectedIndex);
             }
@@ -873,6 +883,12 @@
         document.addEventListener("keydown", (event) => {
             if (event.key !== "Escape") return;
 
+            const iconModal = document.getElementById("iconEditModal");
+            if (iconModal && iconModal.style.display === "flex") {
+                closeIconModal();
+                return;
+            }
+
             const smartModal = document.getElementById("smartLinkModal");
             if (smartModal && smartModal.style.display === "flex") {
                 closeSmartLinkModal();
@@ -894,6 +910,85 @@
         let currentAction = null;
         let selectedSmartLink = null;
         let inlineEditField = null;
+        let editingIconIndex = null;
+        const customIconMaxBytes = 800 * 1024;
+
+        function openIconModal(index) {
+            editingIconIndex = index;
+            const link = currentUser.links[index];
+            const modal = document.getElementById("iconEditModal");
+            const preview = document.getElementById("customIconPreview");
+            const message = document.getElementById("iconEditMessage");
+
+            message.innerText = "";
+            document.getElementById("customIconInput").value = "";
+            preview.innerHTML = "";
+            preview.appendChild(createLinkIcon(link.finalUrl || link.url, link.type, link.customIcon));
+            document.getElementById("resetIconBtn").style.display = link.customIcon ? "inline-flex" : "none";
+            modal.style.display = "flex";
+        }
+
+        function closeIconModal() {
+            editingIconIndex = null;
+            document.getElementById("customIconInput").value = "";
+            document.getElementById("iconEditMessage").innerText = "";
+            document.getElementById("iconEditModal").style.display = "none";
+        }
+
+        function chooseCustomIcon() {
+            document.getElementById("customIconInput").click();
+        }
+
+        function showIconMessage(message) {
+            document.getElementById("iconEditMessage").innerText = message || "";
+        }
+
+        function handleCustomIconUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file || editingIconIndex === null) return;
+
+            if (!file.type.startsWith("image/")) {
+                showIconMessage("Please choose an image file.");
+                event.target.value = "";
+                return;
+            }
+
+            if (file.size > customIconMaxBytes) {
+                showIconMessage("Image is too large. Please use an image under 800 KB.");
+                event.target.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                const image = new Image();
+                image.onload = () => {
+                    currentUser.links[editingIconIndex] = {
+                        ...currentUser.links[editingIconIndex],
+                        customIcon: reader.result
+                    };
+                    saveUser();
+                    closeIconModal();
+                };
+                image.onerror = () => {
+                    showIconMessage("This image could not be loaded.");
+                    event.target.value = "";
+                };
+                image.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetCustomIcon() {
+            if (editingIconIndex === null) return;
+
+            currentUser.links[editingIconIndex] = {
+                ...currentUser.links[editingIconIndex],
+                customIcon: ""
+            };
+            saveUser();
+            closeIconModal();
+        }
 
         function startInlineEdit(field) {
             if (!isOwner || currentTab !== "edit" || !currentUser || inlineEditField) return;
@@ -1722,11 +1817,23 @@
             return brandImg;
         }
 
-        function createLinkIcon(url, type = "") {
+        function createLinkIcon(url, type = "", customIcon = "") {
             const icon = document.createElement('span');
             icon.className = "link-icon";
             if (!showDefaultLinkIcon(icon)) {
                 hideLinkIcon(icon);
+                return icon;
+            }
+
+            if (customIcon) {
+                const img = document.createElement("img");
+                img.src = customIcon;
+                img.alt = "";
+                img.decoding = "async";
+                img.onerror = () => showDefaultLinkIcon(icon);
+                icon.classList.add("custom-link-icon");
+                icon.innerHTML = "";
+                icon.appendChild(img);
                 return icon;
             }
 
@@ -1845,6 +1952,20 @@
         </div>
     </div>
 
+    <div id="iconEditModal" class="smart-modal" onclick="closeIconModal()">
+        <div class="modal-card icon-edit-card" onclick="event.stopPropagation()">
+            <div class="modal-title">Edit icon</div>
+            <div class="smart-add-subtitle">Upload a square image for this block, or reset it to use the automatic icon.</div>
+            <div id="customIconPreview" class="custom-icon-preview"></div>
+            <div id="iconEditMessage" class="admin-message icon-edit-message"></div>
+            <div class="form-actions icon-edit-actions">
+                <button type="button" id="resetIconBtn" class="ui-btn secondary" onclick="resetCustomIcon()">Reset</button>
+                <button type="button" class="ui-btn secondary" onclick="closeIconModal()">Cancel</button>
+                <button type="button" class="ui-btn primary" onclick="chooseCustomIcon()">Upload</button>
+            </div>
+        </div>
+    </div>
+
     <div id="inputModal" style="
   position: fixed;
   top: 0;
@@ -1879,6 +2000,7 @@
 
     </div>
 
+    <input type="file" id="customIconInput" accept="image/*" onchange="handleCustomIconUpload(event)" style="display:none;">
     <input type="file" id="avatarInput" accept="image/*" style="display:none;">
 
 </body>

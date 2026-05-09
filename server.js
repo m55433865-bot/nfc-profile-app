@@ -30,7 +30,14 @@ app.use(express.static(publicDir));
 
 function sanitizeLinks(links) {
   return Array.isArray(links)
-    ? links.filter((link) => link && link.name && link.url)
+    ? links
+      .filter((link) => link && link.name && link.url)
+      .map((link) => ({
+        ...link,
+        customIcon: typeof link.customIcon === "string" && link.customIcon.startsWith("data:image/")
+          ? link.customIcon
+          : ""
+      }))
     : [];
 }
 
