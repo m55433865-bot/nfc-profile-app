@@ -580,41 +580,6 @@ input,
   text-align: left;
 }
 
-.modal-header-row {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.modal-header-row .modal-title {
-  margin-bottom: 0;
-}
-
-.modal-close-btn {
-  align-items: center;
-  background: var(--surface-color);
-  border: 1px solid var(--soft-border-color);
-  border-radius: 9px;
-  color: var(--text-color);
-  cursor: pointer;
-  display: inline-flex;
-  flex: 0 0 38px;
-  font-size: 22px;
-  height: 38px;
-  justify-content: center;
-  line-height: 1;
-  touch-action: manipulation;
-  transition: background 0.18s ease, transform 0.18s ease;
-  width: 38px;
-}
-
-.modal-close-btn:hover {
-  background: var(--surface-hover-color);
-  transform: translateY(-1px);
-}
-
 .smart-modal {
   position: fixed;
   inset: 0;
@@ -630,7 +595,16 @@ input,
   width: min(92vw, 420px);
   max-width: 420px;
   max-height: min(86vh, 680px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.smart-link-card .smart-add-options {
+  margin-right: -4px;
   overflow-y: auto;
+  padding-bottom: 88px;
+  padding-right: 4px;
 }
 
 .appearance-card {
@@ -820,7 +794,22 @@ input,
 }
 
 .smart-add-cancel {
-  margin-top: 14px;
+  position: sticky;
+  bottom: 0;
+  justify-content: stretch;
+  margin: 14px -18px -18px;
+  padding: 12px 18px 18px;
+  background: linear-gradient(
+    to top,
+    var(--card-color) 72%,
+    color-mix(in srgb, var(--card-color), transparent 18%)
+  );
+  border-top: 1px solid var(--soft-border-color);
+  z-index: 2;
+}
+
+.smart-add-cancel .ui-btn {
+  width: 100%;
 }
 
 @media (max-width: 420px) {
