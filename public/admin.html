@@ -4,7 +4,7 @@
 <head>
   <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/nfc/style.css">
 </head>
 
 <body>
@@ -55,6 +55,9 @@
   <script>
     const ADMIN_USERNAME = "66546788";
     const ADMIN_PASSWORD = "123";
+    const BASE_PATH = "/nfc";
+    const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
+    const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
 
     const storedUsername = localStorage.getItem("username");
     const storedPassword = localStorage.getItem("password");
@@ -84,7 +87,7 @@
     }
 
     function loadUsers() {
-      fetch("/api/admin/users", {
+      fetch(apiPath("/admin/users"), {
         headers: adminHeaders()
       })
         .then(res => res.json())
@@ -193,7 +196,7 @@
         return;
       }
 
-      fetch("/api/admin/users", {
+      fetch(apiPath("/admin/users"), {
         method: "POST",
         headers: adminHeaders(),
         body: JSON.stringify({ username, password })
@@ -215,7 +218,7 @@
       const password = passwordInput.value.trim();
       if (!selectedUsername || !password) return;
 
-      fetch(`/api/admin/users/${selectedUsername}/password`, {
+      fetch(apiPath(`/admin/users/${selectedUsername}/password`), {
         method: "POST",
         headers: adminHeaders(),
         body: JSON.stringify({ password })
@@ -236,7 +239,7 @@
     function deleteSelectedUser() {
       if (!selectedUsername || selectedUsername === ADMIN_USERNAME) return;
 
-      fetch(`/api/admin/users/${selectedUsername}`, {
+      fetch(apiPath(`/admin/users/${selectedUsername}`), {
         method: "DELETE",
         headers: adminHeaders()
       })
@@ -256,7 +259,7 @@
     document.addEventListener("click", closeUserMenu);
 
     if (!isAdmin) {
-      window.location.href = "/login.html";
+      window.location.href = appPath("/login");
     } else {
       loadUsers();
     }

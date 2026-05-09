@@ -6,6 +6,8 @@ const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = 3000;
+const BASE_PATH = "/nfc";
+const publicDir = path.join(__dirname, "public");
 const ADMIN_USERNAME = "66546788";
 const ADMIN_PASSWORD = "123";
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://icxhlqummrtfpxzegbvd.supabase.co";
@@ -22,8 +24,9 @@ const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   : null;
 const supabaseServer = supabaseAdmin || supabaseAnon;
 
-app.use(express.static('public'));
 app.use(express.json({ limit: '10mb' }));
+app.use(BASE_PATH, express.static(publicDir));
+app.use(express.static(publicDir));
 
 function sanitizeLinks(links) {
   return Array.isArray(links)
@@ -207,8 +210,10 @@ function sendSupabaseError(res, error) {
   });
 }
 
+const apiRouter = express.Router();
+
 // LOGIN
-app.post('/api/login', async (req, res) => {
+apiRouter.post('/login', async (req, res) => {
   try {
     const username = (req.body.username || "").trim().toLowerCase();
     const password = (req.body.password || "").trim();
@@ -234,7 +239,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ADMIN: list users
-app.get('/api/admin/users', async (req, res) => {
+apiRouter.get('/admin/users', async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!requireServiceRole(res)) return;
 
@@ -258,7 +263,7 @@ app.get('/api/admin/users', async (req, res) => {
 });
 
 // ADMIN: create user
-app.post('/api/admin/users', async (req, res) => {
+apiRouter.post('/admin/users', async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!requireServiceRole(res)) return;
 
@@ -282,7 +287,7 @@ app.post('/api/admin/users', async (req, res) => {
 });
 
 // ADMIN: change password
-app.post('/api/admin/users/:username/password', async (req, res) => {
+apiRouter.post('/admin/users/:username/password', async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!requireServiceRole(res)) return;
 
@@ -311,7 +316,7 @@ app.post('/api/admin/users/:username/password', async (req, res) => {
 });
 
 // ADMIN: delete user
-app.delete('/api/admin/users/:username', async (req, res) => {
+apiRouter.delete('/admin/users/:username', async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!requireServiceRole(res)) return;
 
@@ -335,7 +340,7 @@ app.delete('/api/admin/users/:username', async (req, res) => {
 });
 
 // GET user
-app.get('/api/:username', async (req, res) => {
+apiRouter.get('/:username', async (req, res) => {
   try {
     const username = req.params.username.toLowerCase();
     const user = await getUser(username);
@@ -351,7 +356,7 @@ app.get('/api/:username', async (req, res) => {
 });
 
 // UPDATE user theme
-app.post('/api/:username/theme', async (req, res) => {
+apiRouter.post('/:username/theme', async (req, res) => {
   try {
     const username = req.params.username.toLowerCase();
     const theme = req.body ? req.body.theme : undefined;
@@ -404,7 +409,7 @@ app.post('/api/:username/theme', async (req, res) => {
 });
 
 // UPDATE user
-app.post('/api/:username', async (req, res) => {
+apiRouter.post('/:username', async (req, res) => {
   try {
     const username = req.params.username.toLowerCase();
     const user = await getUser(username);
@@ -457,13 +462,48 @@ app.post('/api/:username', async (req, res) => {
   }
 });
 
+app.use('/api', apiRouter);
+app.use(`${BASE_PATH}/api`, apiRouter);
+
 // page
 app.get('/', (req, res) => {
-  res.redirect('/login.html');
+  res.redirect(`${BASE_PATH}/login`);
+});
+
+app.get(`${BASE_PATH}`, (req, res) => {
+  res.redirect(`${BASE_PATH}/login`);
+});
+
+app.get(`${BASE_PATH}/login`, (req, res) => {
+  res.sendFile(path.join(publicDir, 'login.html'));
+});
+
+app.get(`${BASE_PATH}/admin`, (req, res) => {
+  res.sendFile(path.join(publicDir, 'admin.html'));
+});
+
+app.get(`${BASE_PATH}/profile/:username`, (req, res) => {
+  res.sendFile(path.join(publicDir, 'edit.html'));
+});
+
+app.get(`${BASE_PATH}/:username`, (req, res) => {
+  res.redirect(`${BASE_PATH}/profile/${encodeURIComponent(req.params.username)}`);
+});
+
+app.get('/login', (req, res) => {
+  res.redirect(`${BASE_PATH}/login`);
+});
+
+app.get('/admin', (req, res) => {
+  res.redirect(`${BASE_PATH}/admin`);
+});
+
+app.get('/profile/:username', (req, res) => {
+  res.redirect(`${BASE_PATH}/profile/${encodeURIComponent(req.params.username)}`);
 });
 
 app.get('/:username', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'edit.html'));
+  res.redirect(`${BASE_PATH}/profile/${encodeURIComponent(req.params.username)}`);
 });
 
 app.listen(PORT, () => {

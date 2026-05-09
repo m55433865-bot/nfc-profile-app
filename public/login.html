@@ -160,6 +160,10 @@
   </main>
 
   <script>
+    const BASE_PATH = "/nfc";
+    const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
+    const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
+
     function login() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
@@ -172,7 +176,7 @@
         return;
       }
 
-      fetch("/api/login", {
+      fetch(apiPath("/login"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -190,11 +194,11 @@
           localStorage.setItem('password', password);
 
           if (data.isAdmin) {
-            window.location.href = "/admin.html";
+            window.location.href = appPath("/admin");
             return;
           }
 
-          window.location.href = `/${data.username || username}`;
+          window.location.href = appPath(`/profile/${data.username || username}`);
         })
         .catch(() => {
           error.innerText = "Login failed. Try again.";
