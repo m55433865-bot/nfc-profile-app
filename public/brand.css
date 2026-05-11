@@ -1,19 +1,22 @@
 .brand-mark {
   --brand-accent: var(--accent-color, #00c896);
-  --brand-cyan: #30f4ff;
+  --brand-cyan: var(--brand-secondary, #30f4ff);
+  --brand-glow-soft: color-mix(in srgb, var(--brand-accent) 20%, transparent);
+  --brand-glow-medium: color-mix(in srgb, var(--brand-accent) 28%, transparent);
+  --brand-glow-ring: color-mix(in srgb, var(--brand-accent) 12%, transparent);
   align-items: center;
   aspect-ratio: 1;
   background:
-    radial-gradient(circle at 28% 18%, rgba(48, 244, 255, 0.24), transparent 34%),
+    radial-gradient(circle at 28% 18%, color-mix(in srgb, var(--brand-cyan) 24%, transparent), transparent 34%),
     linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.03)),
     rgba(18, 24, 27, 0.84);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 0 0 1px rgba(0, 200, 150, 0.08),
+    0 0 0 1px var(--brand-glow-ring),
     0 18px 42px rgba(0, 0, 0, 0.35),
-    0 0 26px rgba(0, 200, 150, 0.2);
+    0 0 26px var(--brand-glow-soft);
   color: var(--brand-accent);
   display: inline-flex;
   height: 58px;
@@ -34,7 +37,7 @@
 
 .brand-mark::after {
   animation: brandGlowPulse 2.8s ease-in-out infinite;
-  border: 1px solid rgba(48, 244, 255, 0.2);
+  border: 1px solid color-mix(in srgb, var(--brand-cyan) 24%, transparent);
   border-radius: inherit;
   content: "";
   inset: 5px;
@@ -51,7 +54,7 @@
 
 .brand-mark-n {
   fill: none;
-  filter: drop-shadow(0 0 7px rgba(0, 200, 150, 0.55));
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--brand-accent) 55%, transparent));
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 6.4;
@@ -84,12 +87,15 @@
 }
 
 .brand-mark-login {
+  --brand-accent: #00c896;
+  --brand-cyan: #30f4ff;
   height: 64px;
   margin-bottom: 14px;
   width: 64px;
 }
 
 .brand-mark-loading {
+  --brand-cyan: color-mix(in srgb, var(--brand-accent) 68%, #30f4ff);
   height: 50px;
   margin-bottom: 8px;
   width: 50px;
@@ -101,7 +107,7 @@
     opacity: 0.62;
   }
   50% {
-    box-shadow: 0 0 18px rgba(0, 200, 150, 0.28);
+    box-shadow: 0 0 18px var(--brand-glow-medium);
     opacity: 1;
   }
 }
