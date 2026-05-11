@@ -804,16 +804,10 @@
 
         function openProfileQrModal() {
             const profileUrl = getPublicProfileUrl();
-            const displayName = (currentUser && (currentUser.displayName || currentUser.username)) || username;
             const modal = document.getElementById("profileQrModal");
             const img = document.getElementById("profileQrImage");
             const fallback = document.getElementById("profileQrFallback");
-            const nameEl = document.getElementById("profileQrName");
-            const urlEl = document.getElementById("profileQrUrl");
 
-            nameEl.innerText = displayName;
-            urlEl.innerText = profileUrl;
-            urlEl.href = profileUrl;
             img.style.display = "block";
             fallback.style.display = "none";
             img.alt = `QR code for ${profileUrl}`;
@@ -2089,23 +2083,12 @@
 
     <div id="profileQrModal" class="smart-modal qr-modal" onclick="closeProfileQrModal()">
         <div class="modal-card profile-qr-card" onclick="event.stopPropagation()">
-            <div class="profile-qr-header">
-                <div>
-                    <div class="modal-title">Profile QR</div>
-                    <div class="profile-qr-subtitle">Scan to open profile</div>
-                </div>
-                <button type="button" class="profile-qr-close" onclick="closeProfileQrModal()" aria-label="Close QR code">&times;</button>
-            </div>
-
             <div class="profile-qr-frame">
                 <img id="profileQrImage" alt="" onerror="handleProfileQrError(this)">
                 <div id="profileQrFallback" class="settings-qr-fallback">QR unavailable</div>
             </div>
 
-            <div class="profile-qr-meta">
-                <div id="profileQrName" class="profile-qr-name"></div>
-                <a id="profileQrUrl" class="profile-qr-url" href="#" target="_blank" rel="noopener"></a>
-            </div>
+            <button type="button" class="ui-btn secondary profile-qr-close-btn" onclick="closeProfileQrModal()">Close</button>
         </div>
     </div>
 
