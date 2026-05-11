@@ -814,7 +814,7 @@
             const left = document.createElement("div");
             left.className = "link-main";
 
-            const icon = createSystemIcon("phone");
+            const icon = createLinkIcon("", "export");
             icon.setAttribute("aria-hidden", "true");
 
             const text = document.createElement("span");
@@ -2168,11 +2168,12 @@
             portfolio: `<path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1"/><path d="M3 7h18v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M3 13h18"/>`,
             custom: `<path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93"/><path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07L13 19.07"/>`,
             booking: `<path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="m9 16 2 2 4-5"/>`,
-            maps: `<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`
+            maps: `<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`,
+            export: `<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>`
         };
 
         const systemIconTypes = new Set(Object.keys(systemIconPaths));
-        const forcedSystemLinkTypes = new Set(["phone", "email", "sms", "website", "store", "portfolio", "booking", "maps"]);
+        const forcedSystemLinkTypes = new Set(["phone", "email", "sms", "website", "store", "portfolio", "booking", "maps", "export"]);
 
         function getSystemIconType(type) {
             if (type === "maps") return "maps";
@@ -2180,6 +2181,7 @@
             if (type === "store") return "store";
             if (type === "portfolio") return "portfolio";
             if (type === "booking") return "booking";
+            if (type === "export") return "export";
             if (type === "custom") return "custom";
             if (systemIconTypes.has(type)) return type;
             return "";
