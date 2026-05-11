@@ -890,31 +890,102 @@ input,
   align-items: stretch;
   display: none;
   min-width: 0;
+  position: relative;
 }
 
-.phone-country-select {
-  appearance: none;
+.phone-country-button {
+  align-items: center;
   background:
-    linear-gradient(45deg, transparent 50%, var(--muted-text-color) 50%) calc(100% - 17px) 52% / 6px 6px no-repeat,
-    linear-gradient(135deg, var(--muted-text-color) 50%, transparent 50%) calc(100% - 12px) 52% / 6px 6px no-repeat,
     color-mix(in srgb, var(--surface-color), var(--input-bg) 42%);
   border: 0;
-  border-radius: 0;
   border-right: 1px solid var(--border-color);
   color: var(--text-color);
   cursor: pointer;
+  display: flex;
   font-size: 14px;
+  gap: 8px;
   height: 44px;
+  justify-content: space-between;
+  line-height: 1;
+  min-width: 0;
   outline: none;
-  padding: 0 34px 0 12px;
+  padding: 0 12px;
+  text-align: left;
   touch-action: manipulation;
   transition: background 0.2s ease;
   width: 100%;
 }
 
-.phone-country-select:focus {
+.phone-country-button span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-country-button:focus,
+.phone-country-field.open .phone-country-button {
   background-color: var(--surface-hover-color);
   box-shadow: none;
+}
+
+.phone-country-arrow {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--muted-text-color);
+  flex: 0 0 auto;
+  height: 0;
+  width: 0;
+}
+
+.phone-country-menu {
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 14px 34px var(--shadow-color);
+  display: none;
+  left: 0;
+  max-height: 220px;
+  min-width: 220px;
+  overflow-y: auto;
+  padding: 6px;
+  position: absolute;
+  top: calc(100% + 8px);
+  width: max-content;
+  z-index: 2600;
+}
+
+.phone-country-field.open .phone-country-menu {
+  display: grid;
+  gap: 2px;
+}
+
+.phone-country-option {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--text-color);
+  cursor: pointer;
+  display: grid;
+  font-size: 13px;
+  gap: 10px;
+  grid-template-columns: 48px 1fr;
+  min-height: 36px;
+  padding: 8px 10px;
+  text-align: left;
+  touch-action: manipulation;
+  width: 100%;
+}
+
+.phone-country-option:hover,
+.phone-country-option.active {
+  background: var(--surface-hover-color);
+}
+
+.phone-country-option span:first-child {
+  color: var(--accent-color);
+  font-weight: 700;
 }
 
 .smart-phone-row.phone-active .theme-input {
@@ -951,7 +1022,7 @@ input,
     grid-template-columns: minmax(152px, 0.76fr) minmax(0, 1.24fr);
   }
 
-  .phone-country-select,
+  .phone-country-button,
   .smart-phone-row .theme-input {
     min-height: 46px;
   }
