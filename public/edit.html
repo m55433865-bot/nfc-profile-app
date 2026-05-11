@@ -1661,7 +1661,8 @@
             document.getElementById('smartLinkForm').style.display = "block";
             document.getElementById('smartAddCancel').style.display = "none";
             document.getElementById('smartLinkValue').value = "";
-            document.getElementById('smartLinkLabel').value = selectedSmartLink.label;
+            document.getElementById('smartLinkLabel').value = "";
+            document.getElementById('smartLinkLabel').placeholder = `Name this block, e.g. ${selectedSmartLink.label}`;
             document.getElementById('smartLinkValue').placeholder = selectedSmartLink.placeholder || "Paste value or link";
             const isPhoneType = isPhoneSmartType(type);
             document.getElementById('phoneCountryField').style.display = isPhoneType ? "flex" : "none";
@@ -1683,8 +1684,8 @@
             const activeType = getActiveSmartLinkType(value);
             const activeConfig = getSmartLinkConfig(activeType);
 
-            if (detected.type && activeType !== selectedSmartLink.type && (!labelInput.value || labelInput.value === selectedSmartLink.label)) {
-                labelInput.value = activeConfig.label;
+            if (detected.type && activeType !== selectedSmartLink.type && !labelInput.value) {
+                labelInput.placeholder = `Name this block, e.g. ${activeConfig.label}`;
             }
 
             const finalUrl = buildFinalUrl(activeType, value, getSelectedPhoneCountryCode());
