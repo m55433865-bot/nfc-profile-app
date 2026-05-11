@@ -723,6 +723,10 @@
                     linksEl.appendChild(a);
                 });
 
+                if (currentTab === "view") {
+                    linksEl.appendChild(createSaveContactButton(user));
+                }
+
                 if (isOwner && currentTab === "edit") {
                     const addRow = document.createElement('div');
                     addRow.className = "link edit-mode-link no-sort";
@@ -800,6 +804,171 @@
 
         function getProfileQrUrl(profileUrl, size = 320) {
             return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=14&data=${encodeURIComponent(profileUrl)}`;
+        }
+
+        function createSaveContactButton(user) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "save-contact-card no-sort";
+            button.innerHTML = `
+                <span class="save-contact-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9.5" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M19 8v6M22 11h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <span class="save-contact-text">
+                    <span>Save Contact</span>
+                </span>
+            `;
+            button.onclick = () => downloadContactCard(user);
+            return button;
+        }
+
+        function downloadContactCard(user) {
+            const vcard = buildVCard(user);
+            const displayName = getContactDisplayName(user);
+            const safeFileName = (displayName || "profile")
+                .replace(/[\\/:*?"<>|]+/g, "")
+                .replace(/\s+/g, "-")
+                .toLowerCase() || "profile";
+            const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = `${safeFileName}.vcf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function buildVCard(user) {
+            const displayName = getContactDisplayName(user);
+            const links = Array.isArray(user.links) ? user.links : [];
+            const phones = [];
+            const emails = [];
+            const websites = [getPublicProfileUrl()];
+            const title = user.bio || "";
+
+            links.forEach(link => {
+                const url = (link.finalUrl || link.url || "").trim();
+                const type = (link.type || "").toLowerCase();
+                const phone = extractPhoneFromContactUrl(url);
+                const email = extractEmailFromContactUrl(url);
+
+                if (phone && (["phone", "whatsapp", "sms"].includes(type) || isContactPhoneUrl(url))) {
+                    addUnique(phones, phone);
+                    return;
+                }
+
+                if (email) {
+                    addUnique(emails, email);
+                    return;
+                }
+
+                const normalized = normalizeContactWebsiteUrl(url);
+                if (normalized) addUnique(websites, normalized);
+            });
+
+            const lines = [
+                "BEGIN:VCARD",
+                "VERSION:3.0",
+                `FN:${escapeVCardValue(displayName)}`,
+                `N:${escapeVCardValue(displayName)};;;;`
+            ];
+
+            if (title) {
+                lines.push(`TITLE:${escapeVCardValue(title)}`);
+            }
+
+            phones.forEach(phone => {
+                lines.push(`TEL;TYPE=CELL:${escapeVCardValue(phone)}`);
+            });
+
+            emails.forEach(email => {
+                lines.push(`EMAIL;TYPE=INTERNET:${escapeVCardValue(email)}`);
+            });
+
+            websites.forEach(site => {
+                lines.push(`URL:${escapeVCardValue(site)}`);
+            });
+
+            lines.push("END:VCARD");
+            return `${lines.join("\r\n")}\r\n`;
+        }
+
+        function getContactDisplayName(user) {
+            return (user && (user.displayName || user.username)) || username || "Profile";
+        }
+
+        function addUnique(list, value) {
+            if (value && !list.includes(value)) list.push(value);
+        }
+
+        function isContactPhoneUrl(url) {
+            const cleanUrl = (url || "").toLowerCase();
+            return cleanUrl.startsWith("tel:") || cleanUrl.startsWith("sms:") || cleanUrl.includes("wa.me/") || cleanUrl.includes("whatsapp.com/send");
+        }
+
+        function extractPhoneFromContactUrl(url) {
+            const cleanUrl = (url || "").trim();
+            if (!cleanUrl) return "";
+
+            if (/^(tel|sms):/i.test(cleanUrl)) {
+                return normalizeContactPhone(cleanUrl.replace(/^(tel|sms):/i, "").split(/[?;&]/)[0]);
+            }
+
+            try {
+                const parsed = new URL(normalizeUrl(cleanUrl));
+                if (parsed.hostname.includes("wa.me")) {
+                    return normalizeContactPhone(parsed.pathname.replace(/\D/g, ""));
+                }
+
+                if (parsed.hostname.includes("whatsapp.com")) {
+                    return normalizeContactPhone(parsed.searchParams.get("phone") || "");
+                }
+            } catch (error) {
+                return "";
+            }
+
+            return "";
+        }
+
+        function normalizeContactPhone(value) {
+            const raw = (value || "").trim();
+            let digits = raw.replace(/\D/g, "");
+            if (!digits) return "";
+            if (raw.startsWith("00")) digits = digits.replace(/^00/, "");
+            return `+${digits}`;
+        }
+
+        function extractEmailFromContactUrl(url) {
+            const cleanUrl = (url || "").trim();
+            if (!cleanUrl) return "";
+
+            if (/^mailto:/i.test(cleanUrl)) {
+                return cleanUrl.replace(/^mailto:/i, "").split(/[?;]/)[0];
+            }
+
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanUrl) ? cleanUrl : "";
+        }
+
+        function normalizeContactWebsiteUrl(url) {
+            const cleanUrl = (url || "").trim();
+            if (!cleanUrl || /^(tel|sms|mailto):/i.test(cleanUrl)) return "";
+            return normalizeUrl(cleanUrl);
+        }
+
+        function escapeVCardValue(value) {
+            return String(value || "")
+                .replace(/\\/g, "\\\\")
+                .replace(/\n/g, "\\n")
+                .replace(/\r/g, "")
+                .replace(/,/g, "\\,")
+                .replace(/;/g, "\\;");
         }
 
         function openProfileQrModal() {
