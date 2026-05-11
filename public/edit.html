@@ -770,6 +770,9 @@
         }
 
         function renderSettings() {
+            const profileUrl = getPublicProfileUrl();
+            const qrUrl = getProfileQrUrl(profileUrl);
+
             linksEl.innerHTML = `
                 <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
                     Settings
@@ -777,6 +780,19 @@
                 <div class="link no-sort" onclick="openAppearanceModal()" style="cursor:pointer;">
                     <span>Theme</span>
                     <span>›</span>
+                </div>
+                <div class="settings-qr-card no-sort">
+                    <div class="settings-qr-copy">
+                        <div class="settings-qr-title">Profile QR Code</div>
+                        <div class="settings-qr-subtitle">Scan to open profile</div>
+                    </div>
+                    <div class="settings-qr-frame">
+                        <img src="${escapeAttr(qrUrl)}" alt="QR code for ${escapeAttr(profileUrl)}" onerror="handleProfileQrError(this)">
+                        <div class="settings-qr-fallback">QR unavailable</div>
+                    </div>
+                    <a class="settings-qr-url" href="${escapeAttr(profileUrl)}" target="_blank" rel="noopener">
+                        ${escapeHtml(profileUrl)}
+                    </a>
                 </div>
                 <div class="link no-sort" onclick="openModal('password')" style="cursor:pointer;">
                     <span>Change Password</span>
@@ -787,6 +803,34 @@
                     <span>›</span>
                 </div>
             `;
+        }
+
+        function getPublicProfileUrl() {
+            const profileUsername = (currentUser && currentUser.username) || username;
+            return `${window.location.origin}${appPath(`/profile/${encodeURIComponent(profileUsername)}`)}`;
+        }
+
+        function getProfileQrUrl(profileUrl) {
+            return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=${encodeURIComponent(profileUrl)}`;
+        }
+
+        function handleProfileQrError(img) {
+            img.style.display = "none";
+            const fallback = img.parentElement ? img.parentElement.querySelector(".settings-qr-fallback") : null;
+            if (fallback) fallback.style.display = "flex";
+        }
+
+        function escapeHtml(value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function escapeAttr(value) {
+            return escapeHtml(value);
         }
 
         function logoutUser() {
