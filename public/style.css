@@ -1049,6 +1049,91 @@ input,
   }
 }
 
+#smartLinkModal .phone-input-group.phone-active {
+  align-items: stretch !important;
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0 !important;
+  min-height: 46px !important;
+  overflow: hidden !important;
+}
+
+#smartLinkModal .phone-input-group.phone-active:focus-within {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 3px var(--accent-faint) !important;
+}
+
+#smartLinkModal .phone-input-group.phone-active #phoneCountryField {
+  display: flex !important;
+  flex: 0 0 174px !important;
+  min-width: 0 !important;
+}
+
+#smartLinkModal .phone-country-select.phone-control-select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-color: var(--surface-color) !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-text-color) 50%),
+    linear-gradient(135deg, var(--muted-text-color) 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 18px) 52%,
+    calc(100% - 13px) 52% !important;
+  background-repeat: no-repeat !important;
+  background-size: 6px 6px, 6px 6px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-right: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+  color-scheme: dark;
+  font: inherit !important;
+  font-size: 14px !important;
+  height: 46px !important;
+  outline: none !important;
+  padding: 0 34px 0 12px !important;
+  width: 100% !important;
+}
+
+#smartLinkModal .phone-country-select.phone-control-select option {
+  background: #1f1f1f !important;
+  color: #ffffff !important;
+}
+
+#smartLinkModal .phone-input-group.phone-active .phone-control-input {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--text-color) !important;
+  flex: 1 1 auto !important;
+  height: 46px !important;
+  min-width: 0 !important;
+}
+
+#smartLinkModal .phone-input-group.phone-active .phone-control-input:focus {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 380px) {
+  #smartLinkModal .phone-input-group.phone-active {
+    flex-direction: column !important;
+  }
+
+  #smartLinkModal .phone-input-group.phone-active #phoneCountryField {
+    flex-basis: auto !important;
+  }
+
+  #smartLinkModal .phone-country-select.phone-control-select {
+    border-bottom: 1px solid var(--border-color) !important;
+    border-right: 0 !important;
+  }
+}
+
 .smart-link-preview {
   min-height: 42px;
   display: flex;

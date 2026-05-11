@@ -69,7 +69,7 @@
             root.style.setProperty("--shadow-color", mode === "light" ? "rgba(17, 24, 39, 0.14)" : "rgba(0, 0, 0, 0.42)");
         })();
     </script>
-    <link rel="stylesheet" href="/nfc/style.css">
+    <link rel="stylesheet" href="/nfc/style.css?v=phone-input-group-2">
     <link rel="stylesheet" href="/nfc/brand.css">
 
 </head>
@@ -2145,9 +2145,9 @@
                 <div class="link-edit-fields">
                     <div id="phoneInputGroup" class="phone-input-group">
                         <div id="phoneCountryField" class="phone-country-field">
-                            <select id="phoneCountryCode" class="phone-country-select" onchange="updatePhoneCountryCode(this.value)"></select>
+                            <select id="phoneCountryCode" class="phone-country-select phone-control-select" onchange="updatePhoneCountryCode(this.value)"></select>
                         </div>
-                        <input id="smartLinkValue" class="theme-input phone-number-input" placeholder="Paste value or link"
+                        <input id="smartLinkValue" class="theme-input phone-number-input phone-control-input" placeholder="Paste value or link"
                             oninput="updateSmartLinkPreview()">
                     </div>
                     <input id="smartLinkLabel" class="theme-input" placeholder="Label">
