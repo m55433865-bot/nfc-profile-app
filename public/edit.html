@@ -70,6 +70,7 @@
         })();
     </script>
     <link rel="stylesheet" href="/nfc/style.css">
+    <link rel="stylesheet" href="/nfc/brand.css">
 
 </head>
 
@@ -90,6 +91,21 @@
     <div class="container">
 
         <div id="profileHeader">
+            <div id="profileLoaderBrand" class="brand-mark brand-mark-loading" aria-label="Loading profile">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="brandNGradientLoading" x1="16" y1="48" x2="48" y2="16"
+                            gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#00c896" />
+                            <stop offset="1" stop-color="#30f4ff" />
+                        </linearGradient>
+                    </defs>
+                    <rect class="brand-mark-chip" x="14" y="14" width="36" height="36" rx="10" />
+                    <path class="brand-mark-n" stroke="url(#brandNGradientLoading)" d="M19 46V18l26 28V18" />
+                    <path class="brand-mark-wave" d="M47 24c4 4 4 12 0 16" />
+                    <path class="brand-mark-wave wave-2" d="M52 18c7 8 7 20 0 28" />
+                </svg>
+            </div>
             <div id="avatarContainer"></div>
             <h1 id="name">Loading...</h1>
             <p id="bio"></p>
@@ -408,6 +424,9 @@
                 user.theme = sanitizeTheme(user.theme);
                 console.log("loaded user.theme", user.theme);
                 applyTheme(user.theme);
+
+                const loaderBrand = document.getElementById('profileLoaderBrand');
+                if (loaderBrand) loaderBrand.style.display = "none";
 
                 const avatarContainer = document.getElementById('avatarContainer');
 
