@@ -1334,6 +1334,7 @@
                 ? selectedPhoneCountryCode
                 : getDefaultPhoneCountryCode();
             select.value = selectedPhoneCountryCode;
+            stylePhoneInputGroup();
         }
 
         function getSelectedPhoneCountryCode() {
@@ -1345,6 +1346,72 @@
         function updatePhoneCountryCode(value) {
             selectedPhoneCountryCode = value;
             updateSmartLinkPreview();
+        }
+
+        function stylePhoneInputGroup() {
+            const group = document.getElementById("phoneInputGroup");
+            const countryField = document.getElementById("phoneCountryField");
+            const select = document.getElementById("phoneCountryCode");
+            const input = document.getElementById("smartLinkValue");
+            if (!group || !countryField || !select || !input) return;
+
+            group.style.cssText = `
+                display:flex;
+                align-items:stretch;
+                width:100%;
+                min-height:46px;
+                background:var(--input-bg);
+                border:1px solid var(--border-color);
+                border-radius:10px;
+                overflow:hidden;
+                gap:0;
+            `;
+
+            countryField.style.cssText = `
+                display:flex;
+                flex:0 0 174px;
+                min-width:0;
+            `;
+
+            select.style.cssText = `
+                appearance:none;
+                -webkit-appearance:none;
+                -moz-appearance:none;
+                width:100%;
+                height:46px;
+                border:0;
+                border-right:1px solid var(--border-color);
+                border-radius:0;
+                background-color:var(--surface-color);
+                color:var(--text-color);
+                color-scheme:dark;
+                font:inherit;
+                font-size:14px;
+                outline:none;
+                padding:0 34px 0 12px;
+            `;
+
+            input.style.cssText = `
+                flex:1 1 auto;
+                min-width:0;
+                height:46px;
+                background:transparent;
+                border:0;
+                border-radius:0;
+                box-shadow:none;
+                color:var(--text-color);
+            `;
+        }
+
+        function resetPhoneInputGroupStyles() {
+            const group = document.getElementById("phoneInputGroup");
+            const countryField = document.getElementById("phoneCountryField");
+            const select = document.getElementById("phoneCountryCode");
+            const input = document.getElementById("smartLinkValue");
+            if (group) group.removeAttribute("style");
+            if (countryField) countryField.style.display = "none";
+            if (select) select.removeAttribute("style");
+            if (input) input.removeAttribute("style");
         }
 
         setupPhoneCountrySelect();
@@ -1365,8 +1432,8 @@
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
-            document.getElementById('phoneCountryField').style.display = "none";
             document.getElementById('phoneInputGroup').classList.remove("phone-active");
+            resetPhoneInputGroupStyles();
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkPreview').innerHTML = "Choose a type, then paste a number, username, email, or link.";
             renderSmartLinkOptions();
@@ -1377,8 +1444,8 @@
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
-            document.getElementById('phoneCountryField').style.display = "none";
             document.getElementById('phoneInputGroup').classList.remove("phone-active");
+            resetPhoneInputGroupStyles();
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkModal').style.display = "none";
         }
@@ -1429,6 +1496,7 @@
             document.getElementById('phoneCountryField').style.display = isPhoneType ? "flex" : "none";
             document.getElementById('phoneInputGroup').classList.toggle("phone-active", isPhoneType);
             setupPhoneCountrySelect();
+            if (isPhoneType) stylePhoneInputGroup();
             updateSmartLinkPreview();
             document.getElementById('smartLinkValue').focus();
         }
