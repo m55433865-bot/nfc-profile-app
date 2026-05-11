@@ -864,6 +864,44 @@ input,
   border-top: 1px solid var(--soft-border-color);
 }
 
+.phone-country-field {
+  align-items: stretch;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.phone-country-field label {
+  color: var(--muted-text-color);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.phone-country-select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--muted-text-color) 50%) calc(100% - 17px) 50% / 6px 6px no-repeat,
+    linear-gradient(135deg, var(--muted-text-color) 50%, transparent 50%) calc(100% - 12px) 50% / 6px 6px no-repeat,
+    var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 44px;
+  outline: none;
+  padding: 11px 34px 11px 12px;
+  touch-action: manipulation;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  width: 100%;
+}
+
+.phone-country-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-faint);
+}
+
 .smart-add-cancel {
   position: sticky;
   bottom: 0;

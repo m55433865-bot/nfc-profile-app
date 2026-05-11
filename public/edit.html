@@ -1126,6 +1126,7 @@
 
         let currentAction = null;
         let selectedSmartLink = null;
+        let selectedPhoneCountryCode = "+1";
         let inlineEditField = null;
         const customIconMaxBytes = 800 * 1024;
 
@@ -1209,11 +1210,11 @@
             {
                 title: "Communication",
                 items: [
-                    { type: "phone", label: "Phone Number", placeholder: "99123456", hint: "Creates a tap-to-call link." },
-                    { type: "whatsapp", label: "WhatsApp", placeholder: "99123456", hint: "Creates a WhatsApp chat link." },
+                    { type: "phone", label: "Phone Number", placeholder: "Phone number", hint: "Creates a tap-to-call link." },
+                    { type: "whatsapp", label: "WhatsApp", placeholder: "Phone number", hint: "Creates a WhatsApp chat link." },
                     { type: "telegram", label: "Telegram", placeholder: "username or t.me/username", hint: "Creates a Telegram link." },
                     { type: "email", label: "Email", placeholder: "test@gmail.com", hint: "Creates an email link." },
-                    { type: "sms", label: "SMS", placeholder: "99123456", hint: "Creates a text-message link." }
+                    { type: "sms", label: "SMS", placeholder: "Phone number", hint: "Creates a text-message link." }
                 ]
             },
             {
@@ -1247,6 +1248,107 @@
             }
         ];
 
+        const phoneCountryOptions = [
+            { code: "+965", label: "Kuwait" },
+            { code: "+1", label: "US / Canada" },
+            { code: "+44", label: "United Kingdom" },
+            { code: "+971", label: "UAE" },
+            { code: "+966", label: "Saudi Arabia" },
+            { code: "+974", label: "Qatar" },
+            { code: "+973", label: "Bahrain" },
+            { code: "+968", label: "Oman" },
+            { code: "+20", label: "Egypt" },
+            { code: "+962", label: "Jordan" },
+            { code: "+961", label: "Lebanon" },
+            { code: "+91", label: "India" },
+            { code: "+92", label: "Pakistan" },
+            { code: "+63", label: "Philippines" },
+            { code: "+90", label: "Turkey" },
+            { code: "+49", label: "Germany" },
+            { code: "+33", label: "France" }
+        ];
+
+        function getDefaultPhoneCountryCode() {
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+            const locale = navigator.language || "";
+            const timeZoneMap = [
+                [/Kuwait/i, "+965"],
+                [/Riyadh/i, "+966"],
+                [/Dubai/i, "+971"],
+                [/Qatar/i, "+974"],
+                [/Bahrain/i, "+973"],
+                [/Muscat/i, "+968"],
+                [/Cairo/i, "+20"],
+                [/Amman/i, "+962"],
+                [/Beirut/i, "+961"],
+                [/New_York|Chicago|Denver|Los_Angeles|Toronto|Vancouver/i, "+1"],
+                [/London/i, "+44"],
+                [/Kolkata/i, "+91"],
+                [/Karachi/i, "+92"],
+                [/Manila/i, "+63"],
+                [/Istanbul/i, "+90"],
+                [/Berlin/i, "+49"],
+                [/Paris/i, "+33"]
+            ];
+            const localeMap = {
+                KW: "+965",
+                US: "+1",
+                CA: "+1",
+                GB: "+44",
+                AE: "+971",
+                SA: "+966",
+                QA: "+974",
+                BH: "+973",
+                OM: "+968",
+                EG: "+20",
+                JO: "+962",
+                LB: "+961",
+                IN: "+91",
+                PK: "+92",
+                PH: "+63",
+                TR: "+90",
+                DE: "+49",
+                FR: "+33"
+            };
+
+            const zoneMatch = timeZoneMap.find(([pattern]) => pattern.test(timeZone));
+            if (zoneMatch) return zoneMatch[1];
+
+            const region = locale.split("-")[1];
+            return localeMap[region] || "+1";
+        }
+
+        function isPhoneSmartType(type) {
+            return ["phone", "whatsapp", "sms"].includes(type);
+        }
+
+        function setupPhoneCountrySelect() {
+            const select = document.getElementById("phoneCountryCode");
+            if (!select) return;
+
+            select.innerHTML = phoneCountryOptions
+                .map(country => `<option value="${country.code}">${country.code} ${country.label}</option>`)
+                .join("");
+
+            selectedPhoneCountryCode = phoneCountryOptions.some(country => country.code === selectedPhoneCountryCode)
+                ? selectedPhoneCountryCode
+                : getDefaultPhoneCountryCode();
+            select.value = selectedPhoneCountryCode;
+        }
+
+        function getSelectedPhoneCountryCode() {
+            const select = document.getElementById("phoneCountryCode");
+            const code = select ? select.value : selectedPhoneCountryCode;
+            return /^\+\d{1,4}$/.test(code) ? code : getDefaultPhoneCountryCode();
+        }
+
+        function updatePhoneCountryCode(value) {
+            selectedPhoneCountryCode = value;
+            updateSmartLinkPreview();
+        }
+
+        setupPhoneCountrySelect();
+
         function getSmartLinkItems() {
             return smartLinkCategories.flatMap(category => category.items);
         }
@@ -1257,10 +1359,13 @@
 
         function openSmartLinkModal() {
             selectedSmartLink = null;
+            selectedPhoneCountryCode = getDefaultPhoneCountryCode();
+            setupPhoneCountrySelect();
             document.getElementById('smartLinkModal').style.display = "flex";
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
+            document.getElementById('phoneCountryField').style.display = "none";
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkPreview').innerHTML = "Choose a type, then paste a number, username, email, or link.";
             renderSmartLinkOptions();
@@ -1271,6 +1376,7 @@
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
+            document.getElementById('phoneCountryField').style.display = "none";
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkModal').style.display = "none";
         }
@@ -1317,6 +1423,8 @@
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = selectedSmartLink.label;
             document.getElementById('smartLinkValue').placeholder = selectedSmartLink.placeholder || "Paste value or link";
+            document.getElementById('phoneCountryField').style.display = isPhoneSmartType(type) ? "flex" : "none";
+            setupPhoneCountrySelect();
             updateSmartLinkPreview();
             document.getElementById('smartLinkValue').focus();
         }
@@ -1336,7 +1444,7 @@
                 labelInput.value = activeConfig.label;
             }
 
-            const finalUrl = buildFinalUrl(activeType, value);
+            const finalUrl = buildFinalUrl(activeType, value, getSelectedPhoneCountryCode());
             if (!value) {
                 preview.innerHTML = selectedSmartLink.hint || "Paste a username, number, email, or full link.";
                 return;
@@ -1361,7 +1469,7 @@
             const rawValue = document.getElementById('smartLinkValue').value.trim();
             const type = getActiveSmartLinkType(rawValue);
             const config = getSmartLinkConfig(type);
-            const finalUrl = buildFinalUrl(type, rawValue);
+            const finalUrl = buildFinalUrl(type, rawValue, getSelectedPhoneCountryCode());
             const label = document.getElementById('smartLinkLabel').value.trim() || config.label;
 
             if (!rawValue || !finalUrl) return;
@@ -1588,12 +1696,18 @@
             return digits.length >= 7 && digits.length <= 15;
         }
 
-        function normalizePhone(value, withPlus = true) {
-            let digits = (value || "").replace(/\D/g, "");
+        function normalizePhone(value, withPlus = true, countryCode = getSelectedPhoneCountryCode()) {
+            const rawValue = (value || "").trim();
+            let digits = rawValue.replace(/\D/g, "");
             if (!digits) return "";
 
-            if (digits.length === 8) {
-                digits = `965${digits}`;
+            const selectedCode = (countryCode || "").replace(/\D/g, "");
+            const startsWithInternationalPrefix = rawValue.startsWith("+") || rawValue.startsWith("00");
+
+            if (rawValue.startsWith("00")) {
+                digits = digits.replace(/^00/, "");
+            } else if (!startsWithInternationalPrefix && selectedCode && !digits.startsWith(selectedCode)) {
+                digits = `${selectedCode}${digits}`;
             }
 
             return withPlus ? `+${digits}` : digits;
@@ -1614,11 +1728,11 @@
 
         function getPreviewUrlForType(type) {
             const previews = {
-                phone: "tel:+96599123456",
-                whatsapp: "https://wa.me/96599123456",
+                phone: "tel:+[country-code][phone-number]",
+                whatsapp: "https://wa.me/[country-code][phone-number]",
                 telegram: "https://t.me/telegram",
                 email: "mailto:test@example.com",
-                sms: "sms:+96599123456",
+                sms: "sms:+[country-code][phone-number]",
                 instagram: "https://instagram.com/instagram",
                 tiktok: "https://tiktok.com/@tiktok",
                 snapchat: "https://snapchat.com/add/snapchat",
@@ -1698,21 +1812,21 @@
             return `${baseUrl}${usernamePrefix}${encodeURIComponent(username)}`;
         }
 
-        function buildFinalUrl(type, value) {
+        function buildFinalUrl(type, value, countryCode = getSelectedPhoneCountryCode()) {
             const cleanValue = (value || "").trim();
             if (!cleanValue) return "";
 
             switch (type) {
                 case "phone":
-                    return isLikelyPhone(cleanValue) ? `tel:${normalizePhone(cleanValue)}` : normalizeUrl(cleanValue);
+                    return isLikelyPhone(cleanValue) ? `tel:${normalizePhone(cleanValue, true, countryCode)}` : normalizeUrl(cleanValue);
                 case "whatsapp":
-                    return isLikelyPhone(cleanValue) ? `https://wa.me/${normalizePhone(cleanValue, false)}` : normalizeUrl(cleanValue);
+                    return isLikelyPhone(cleanValue) ? `https://wa.me/${normalizePhone(cleanValue, false, countryCode)}` : normalizeUrl(cleanValue);
                 case "telegram":
                     return buildSocialUrl(type, cleanValue, "https://t.me/");
                 case "email":
                     return cleanValue.startsWith("mailto:") ? cleanValue : `mailto:${cleanValue}`;
                 case "sms":
-                    return isLikelyPhone(cleanValue) ? `sms:${normalizePhone(cleanValue)}` : normalizeUrl(cleanValue);
+                    return isLikelyPhone(cleanValue) ? `sms:${normalizePhone(cleanValue, true, countryCode)}` : normalizeUrl(cleanValue);
                 case "instagram":
                     return buildSocialUrl(type, cleanValue, "https://instagram.com/");
                 case "tiktok":
@@ -2025,6 +2139,10 @@
 
             <div id="smartLinkForm" class="smart-link-form">
                 <div class="link-edit-fields">
+                    <div id="phoneCountryField" class="phone-country-field">
+                        <label for="phoneCountryCode">Country code</label>
+                        <select id="phoneCountryCode" class="phone-country-select" onchange="updatePhoneCountryCode(this.value)"></select>
+                    </div>
                     <input id="smartLinkValue" class="theme-input" placeholder="Paste value or link"
                         oninput="updateSmartLinkPreview()">
                     <input id="smartLinkLabel" class="theme-input" placeholder="Label">
