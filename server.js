@@ -427,6 +427,36 @@ apiRouter.post('/login', async (req, res) => {
   }
 });
 
+apiRouter.post('/signup', async (req, res) => {
+  if (!requireServiceRole(res)) return;
+
+  try {
+    const username = (req.body.username || "").trim().toLowerCase();
+    const password = (req.body.password || "").trim();
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password are required" });
+    }
+
+    if (!/^[a-z0-9_]{3,32}$/.test(username)) {
+      return res.status(400).json({ error: "Username must be 3-32 letters, numbers, or underscores" });
+    }
+
+    if (password.length < 3) {
+      return res.status(400).json({ error: "Password must be at least 3 characters" });
+    }
+
+    if (username === ADMIN_USERNAME || await getUser(username, supabaseAdmin)) {
+      return res.status(409).json({ error: "Username already exists" });
+    }
+
+    await createUser(username, password, supabaseAdmin);
+    res.json({ success: true, username });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
 apiRouter.get('/auth/google/config', (req, res) => {
   res.json({
     enabled: Boolean(GOOGLE_CLIENT_ID),
