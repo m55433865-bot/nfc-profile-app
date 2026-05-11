@@ -1112,8 +1112,6 @@
             }
         });
 
-        document.addEventListener("click", closePhoneCountryMenu);
-
         function addBio() {
             startInlineEdit("bio");
         }
@@ -1325,59 +1323,28 @@
         }
 
         function setupPhoneCountrySelect() {
+            const select = document.getElementById("phoneCountryCode");
+            if (!select) return;
+
+            select.innerHTML = phoneCountryOptions
+                .map(country => `<option value="${country.code}">${country.code} ${country.label}</option>`)
+                .join("");
+
             selectedPhoneCountryCode = phoneCountryOptions.some(country => country.code === selectedPhoneCountryCode)
                 ? selectedPhoneCountryCode
                 : getDefaultPhoneCountryCode();
-
-            renderPhoneCountryPicker();
+            select.value = selectedPhoneCountryCode;
         }
 
         function getSelectedPhoneCountryCode() {
-            return /^\+\d{1,4}$/.test(selectedPhoneCountryCode) ? selectedPhoneCountryCode : getDefaultPhoneCountryCode();
+            const select = document.getElementById("phoneCountryCode");
+            const code = select ? select.value : selectedPhoneCountryCode;
+            return /^\+\d{1,4}$/.test(code) ? code : getDefaultPhoneCountryCode();
         }
 
         function updatePhoneCountryCode(value) {
             selectedPhoneCountryCode = value;
-            renderPhoneCountryPicker();
             updateSmartLinkPreview();
-        }
-
-        function renderPhoneCountryPicker() {
-            const text = document.getElementById("phoneCountryText");
-            const menu = document.getElementById("phoneCountryMenu");
-            if (!text || !menu) return;
-
-            const selectedCountry = phoneCountryOptions.find(country => country.code === selectedPhoneCountryCode) || phoneCountryOptions[0];
-            text.innerText = `${selectedCountry.code} ${selectedCountry.label}`;
-            menu.innerHTML = "";
-
-            phoneCountryOptions.forEach(country => {
-                const option = document.createElement("button");
-                option.type = "button";
-                option.className = `phone-country-option ${country.code === selectedCountry.code ? "active" : ""}`;
-                option.innerHTML = `
-                    <span>${country.code}</span>
-                    <span>${country.label}</span>
-                `;
-                option.onclick = (event) => {
-                    event.stopPropagation();
-                    updatePhoneCountryCode(country.code);
-                    closePhoneCountryMenu();
-                };
-                menu.appendChild(option);
-            });
-        }
-
-        function togglePhoneCountryMenu(event) {
-            event.stopPropagation();
-            const field = document.getElementById("phoneCountryField");
-            if (!field) return;
-            field.classList.toggle("open");
-        }
-
-        function closePhoneCountryMenu() {
-            const field = document.getElementById("phoneCountryField");
-            if (field) field.classList.remove("open");
         }
 
         setupPhoneCountrySelect();
@@ -1400,7 +1367,6 @@
             document.getElementById('smartLinkForm').style.display = "none";
             document.getElementById('phoneCountryField').style.display = "none";
             document.getElementById('smartPhoneRow').classList.remove("phone-active");
-            closePhoneCountryMenu();
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkPreview').innerHTML = "Choose a type, then paste a number, username, email, or link.";
             renderSmartLinkOptions();
@@ -1413,7 +1379,6 @@
             document.getElementById('smartLinkForm').style.display = "none";
             document.getElementById('phoneCountryField').style.display = "none";
             document.getElementById('smartPhoneRow').classList.remove("phone-active");
-            closePhoneCountryMenu();
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkModal').style.display = "none";
         }
@@ -1463,7 +1428,6 @@
             const isPhoneType = isPhoneSmartType(type);
             document.getElementById('phoneCountryField').style.display = isPhoneType ? "flex" : "none";
             document.getElementById('smartPhoneRow').classList.toggle("phone-active", isPhoneType);
-            closePhoneCountryMenu();
             setupPhoneCountrySelect();
             updateSmartLinkPreview();
             document.getElementById('smartLinkValue').focus();
@@ -2181,11 +2145,7 @@
                 <div class="link-edit-fields">
                     <div id="smartPhoneRow" class="smart-phone-row">
                         <div id="phoneCountryField" class="phone-country-field">
-                            <button id="phoneCountryButton" class="phone-country-button" type="button" onclick="togglePhoneCountryMenu(event)">
-                                <span id="phoneCountryText"></span>
-                                <span class="phone-country-arrow" aria-hidden="true"></span>
-                            </button>
-                            <div id="phoneCountryMenu" class="phone-country-menu"></div>
+                            <select id="phoneCountryCode" class="phone-country-select" onchange="updatePhoneCountryCode(this.value)"></select>
                         </div>
                         <input id="smartLinkValue" class="theme-input" placeholder="Paste value or link"
                             oninput="updateSmartLinkPreview()">
