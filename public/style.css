@@ -871,42 +871,63 @@ input,
   width: 100%;
 }
 
+.smart-phone-row.phone-active {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  gap: 0;
+  grid-template-columns: minmax(132px, 0.92fr) minmax(0, 1.08fr);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.smart-phone-row.phone-active:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-faint);
+}
+
 .phone-country-field {
   align-items: stretch;
   display: none;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.phone-country-field label {
-  color: var(--muted-text-color);
-  font-size: 12px;
-  font-weight: 600;
-  text-align: left;
+  min-width: 0;
 }
 
 .phone-country-select {
   appearance: none;
   background:
-    linear-gradient(45deg, transparent 50%, var(--muted-text-color) 50%) calc(100% - 17px) 50% / 6px 6px no-repeat,
-    linear-gradient(135deg, var(--muted-text-color) 50%, transparent 50%) calc(100% - 12px) 50% / 6px 6px no-repeat,
-    var(--input-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
+    linear-gradient(45deg, transparent 50%, var(--muted-text-color) 50%) calc(100% - 17px) 52% / 6px 6px no-repeat,
+    linear-gradient(135deg, var(--muted-text-color) 50%, transparent 50%) calc(100% - 12px) 52% / 6px 6px no-repeat,
+    color-mix(in srgb, var(--surface-color), var(--input-bg) 42%);
+  border: 0;
+  border-radius: 0;
+  border-right: 1px solid var(--border-color);
   color: var(--text-color);
   cursor: pointer;
   font-size: 14px;
-  min-height: 44px;
+  height: 44px;
   outline: none;
-  padding: 11px 34px 11px 12px;
+  padding: 0 34px 0 12px;
   touch-action: manipulation;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: background 0.2s ease;
   width: 100%;
 }
 
 .phone-country-select:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px var(--accent-faint);
+  background-color: var(--surface-hover-color);
+  box-shadow: none;
+}
+
+.smart-phone-row.phone-active .theme-input {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  height: 44px;
+}
+
+.smart-phone-row.phone-active .theme-input:focus {
+  border: 0;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
@@ -927,12 +948,7 @@ input,
 
   .smart-phone-row.phone-active {
     align-items: end;
-    grid-template-columns: minmax(148px, 0.78fr) minmax(0, 1.22fr);
-    gap: 10px;
-  }
-
-  .phone-country-field label {
-    padding-left: 2px;
+    grid-template-columns: minmax(152px, 0.76fr) minmax(0, 1.24fr);
   }
 
   .phone-country-select,
