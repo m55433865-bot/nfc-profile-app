@@ -770,9 +770,6 @@
         }
 
         function renderSettings() {
-            const profileUrl = getPublicProfileUrl();
-            const qrUrl = getProfileQrUrl(profileUrl);
-
             linksEl.innerHTML = `
                 <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
                     Settings
@@ -781,18 +778,9 @@
                     <span>Theme</span>
                     <span>›</span>
                 </div>
-                <div class="settings-qr-card no-sort">
-                    <div class="settings-qr-copy">
-                        <div class="settings-qr-title">Profile QR Code</div>
-                        <div class="settings-qr-subtitle">Scan to open profile</div>
-                    </div>
-                    <div class="settings-qr-frame">
-                        <img src="${escapeAttr(qrUrl)}" alt="QR code for ${escapeAttr(profileUrl)}" onerror="handleProfileQrError(this)">
-                        <div class="settings-qr-fallback">QR unavailable</div>
-                    </div>
-                    <a class="settings-qr-url" href="${escapeAttr(profileUrl)}" target="_blank" rel="noopener">
-                        ${escapeHtml(profileUrl)}
-                    </a>
+                <div class="link no-sort" onclick="openProfileQrModal()" style="cursor:pointer;">
+                    <span>Profile QR</span>
+                    <span>›</span>
                 </div>
                 <div class="link no-sort" onclick="openModal('password')" style="cursor:pointer;">
                     <span>Change Password</span>
@@ -810,8 +798,31 @@
             return `${window.location.origin}${appPath(`/profile/${encodeURIComponent(profileUsername)}`)}`;
         }
 
-        function getProfileQrUrl(profileUrl) {
-            return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=${encodeURIComponent(profileUrl)}`;
+        function getProfileQrUrl(profileUrl, size = 320) {
+            return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=14&data=${encodeURIComponent(profileUrl)}`;
+        }
+
+        function openProfileQrModal() {
+            const profileUrl = getPublicProfileUrl();
+            const displayName = (currentUser && (currentUser.displayName || currentUser.username)) || username;
+            const modal = document.getElementById("profileQrModal");
+            const img = document.getElementById("profileQrImage");
+            const fallback = document.getElementById("profileQrFallback");
+            const nameEl = document.getElementById("profileQrName");
+            const urlEl = document.getElementById("profileQrUrl");
+
+            nameEl.innerText = displayName;
+            urlEl.innerText = profileUrl;
+            urlEl.href = profileUrl;
+            img.style.display = "block";
+            fallback.style.display = "none";
+            img.alt = `QR code for ${profileUrl}`;
+            img.src = getProfileQrUrl(profileUrl);
+            modal.style.display = "flex";
+        }
+
+        function closeProfileQrModal() {
+            document.getElementById("profileQrModal").style.display = "none";
         }
 
         function handleProfileQrError(img) {
@@ -2072,6 +2083,28 @@
             <div class="form-actions">
                 <button type="button" class="ui-btn secondary" onclick="closeAppearanceModal(false)">Cancel</button>
                 <button type="button" class="ui-btn primary" onclick="closeAppearanceModal(true)">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="profileQrModal" class="smart-modal qr-modal" onclick="closeProfileQrModal()">
+        <div class="modal-card profile-qr-card" onclick="event.stopPropagation()">
+            <div class="profile-qr-header">
+                <div>
+                    <div class="modal-title">Profile QR</div>
+                    <div class="profile-qr-subtitle">Scan to open profile</div>
+                </div>
+                <button type="button" class="profile-qr-close" onclick="closeProfileQrModal()" aria-label="Close QR code">&times;</button>
+            </div>
+
+            <div class="profile-qr-frame">
+                <img id="profileQrImage" alt="" onerror="handleProfileQrError(this)">
+                <div id="profileQrFallback" class="settings-qr-fallback">QR unavailable</div>
+            </div>
+
+            <div class="profile-qr-meta">
+                <div id="profileQrName" class="profile-qr-name"></div>
+                <a id="profileQrUrl" class="profile-qr-url" href="#" target="_blank" rel="noopener"></a>
             </div>
         </div>
     </div>
