@@ -809,19 +809,21 @@
         function createSaveContactButton(user) {
             const button = document.createElement("button");
             button.type = "button";
-            button.className = "save-contact-card no-sort";
-            button.innerHTML = `
-                <span class="save-contact-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="9.5" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>
-                        <path d="M19 8v6M22 11h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    </svg>
-                </span>
-                <span class="save-contact-text">
-                    <span>Save Contact</span>
-                </span>
-            `;
+            button.className = "link save-contact-link no-sort";
+
+            const left = document.createElement("div");
+            left.className = "link-main";
+
+            const icon = createSystemIcon("phone");
+            icon.setAttribute("aria-hidden", "true");
+
+            const text = document.createElement("span");
+            text.className = "link-title";
+            text.innerText = "Save Contact";
+
+            left.appendChild(icon);
+            left.appendChild(text);
+            button.appendChild(left);
             button.onclick = () => downloadContactCard(user);
             return button;
         }
