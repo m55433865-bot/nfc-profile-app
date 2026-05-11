@@ -63,6 +63,11 @@
       margin-bottom: 22px;
     }
 
+    .onboarding-brand-mark {
+      --brand-accent: var(--accent);
+      --brand-secondary: color-mix(in srgb, var(--accent), #30f4ff 34%);
+    }
+
     .setup-brand h1 {
       font-size: 26px;
       line-height: 1.05;
@@ -213,6 +218,24 @@
       color: var(--text);
     }
 
+    .setup-btn.ghost {
+      align-items: center;
+      background: color-mix(in srgb, var(--accent), transparent 88%);
+      border-color: color-mix(in srgb, var(--accent), transparent 58%);
+      color: var(--text);
+      display: inline-flex;
+      justify-content: center;
+    }
+
+    .setup-actions.contact-actions #addStarterBlockBtn {
+      display: inline-flex;
+    }
+
+    #addStarterBlockBtn {
+      display: none;
+      flex: 1;
+    }
+
     .setup-btn:hover {
       filter: brightness(1.05);
       transform: translateY(-1px);
@@ -223,6 +246,49 @@
       font-size: 13px;
       min-height: 18px;
       margin-top: 12px;
+    }
+
+    .starter-block-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .starter-block-item {
+      align-items: center;
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      color: var(--text);
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      min-height: 46px;
+      padding: 9px 10px 9px 12px;
+    }
+
+    .starter-block-title {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .starter-block-type {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .starter-remove-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 7px 10px;
     }
 
     .preview-panel {
@@ -362,6 +428,16 @@
       .contact-grid {
         grid-template-columns: 1fr;
       }
+
+      .setup-actions.contact-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .setup-actions.contact-actions #addStarterBlockBtn,
+      .setup-actions.contact-actions #nextBtn {
+        grid-column: span 2;
+      }
     }
   </style>
 </head>
@@ -370,13 +446,13 @@
   <main class="onboarding-shell">
     <section class="setup-panel">
       <div class="setup-brand">
-        <div class="brand-mark wave-static" aria-hidden="true">
+        <div class="brand-mark wave-static onboarding-brand-mark" aria-hidden="true">
           <svg viewBox="0 0 64 64" aria-hidden="true">
             <defs>
               <linearGradient id="onboardingBrandGradient" x1="16" y1="48" x2="48" y2="16"
                 gradientUnits="userSpaceOnUse">
-                <stop offset="0" stop-color="#00c896" />
-                <stop offset="1" stop-color="#30f4ff" />
+                <stop offset="0" style="stop-color: var(--brand-accent, #00c896)" />
+                <stop offset="1" style="stop-color: var(--brand-secondary, #30f4ff)" />
               </linearGradient>
             </defs>
             <rect class="brand-mark-chip" x="14" y="14" width="36" height="36" rx="10" />
@@ -420,21 +496,23 @@
       </section>
 
       <section class="setup-step" data-step="2">
-        <h2 class="section-title">Add your first contact block</h2>
-        <p class="section-copy">Optional, but useful. This appears instantly in the live preview.</p>
+        <h2 class="section-title">Add starter blocks</h2>
+        <p class="section-copy">Add one or a few ways people can reach you. Each block appears instantly in the live preview.</p>
         <div id="contactOptions" class="contact-grid"></div>
         <div class="field-grid">
           <label>Contact value
             <input id="contactValueInput" placeholder="Phone number, WhatsApp number, or email">
           </label>
-          <label>Block name
-            <input id="contactLabelInput" placeholder="Name this block, e.g. My Number">
+          <label>Display label
+            <input id="contactLabelInput" placeholder="Display label, e.g. My Number">
           </label>
         </div>
+        <div id="starterBlocksList" class="starter-block-list"></div>
       </section>
 
       <div class="setup-actions">
         <button id="backBtn" class="setup-btn secondary" type="button">Back</button>
+        <button id="addStarterBlockBtn" class="setup-btn ghost" type="button">Add another block</button>
         <button id="nextBtn" class="setup-btn primary" type="button">Continue</button>
       </div>
       <div id="setupError" class="setup-error"></div>
@@ -469,7 +547,8 @@
     const contactTypes = [
       { type: "phone", label: "Phone Number", placeholder: "Phone number" },
       { type: "whatsapp", label: "WhatsApp", placeholder: "WhatsApp number" },
-      { type: "email", label: "Email", placeholder: "Email address" }
+      { type: "email", label: "Email", placeholder: "Email address" },
+      { type: "instagram", label: "Instagram", placeholder: "Instagram username or URL" }
     ];
 
     const state = {
@@ -480,7 +559,8 @@
       theme: { mode: "dark", preset: "midnight", accent: "#00c896" },
       contactType: "phone",
       contactValue: "",
-      contactLabel: ""
+      contactLabel: "",
+      starterLinks: []
     };
 
     if (!username || !password) {
@@ -562,7 +642,7 @@
         button.onclick = () => {
           state.contactType = item.type;
           document.getElementById("contactValueInput").placeholder = item.placeholder;
-          document.getElementById("contactLabelInput").placeholder = `Name this block, e.g. ${item.label}`;
+          document.getElementById("contactLabelInput").placeholder = `Display label, e.g. ${item.label}`;
           renderContactOptions();
           updatePreview();
         };
@@ -577,6 +657,7 @@
       document.querySelectorAll(".step-pill").forEach((pill, index) => {
         pill.classList.toggle("active", index === state.step);
       });
+      document.querySelector(".setup-actions").classList.toggle("contact-actions", state.step === 2);
       document.getElementById("backBtn").style.visibility = state.step === 0 ? "hidden" : "visible";
       document.getElementById("nextBtn").innerText = state.step === 2 ? "Finish setup" : "Continue";
     }
@@ -602,15 +683,33 @@
       document.getElementById("previewName").innerText = name;
       document.getElementById("previewTitle").innerText = state.title || "Your title";
 
-      const links = [];
-      if (state.contactValue) {
-        const config = contactTypes.find(item => item.type === state.contactType) || contactTypes[0];
-        links.push({
-          type: state.contactType,
-          label: state.contactLabel || config.label
-        });
-      }
+      const links = [...state.starterLinks];
+      const draft = buildContactLink();
+      if (draft) links.push(draft);
       renderPreviewLinks(links);
+    }
+
+    function renderStarterBlocks() {
+      const el = document.getElementById("starterBlocksList");
+      el.innerHTML = "";
+      state.starterLinks.forEach((link, index) => {
+        const config = contactTypes.find(item => item.type === link.type) || contactTypes[0];
+        const row = document.createElement("div");
+        row.className = "starter-block-item";
+        row.innerHTML = `
+          <span>
+            <span class="starter-block-title">${escapeHtml(link.label || link.name || config.label)}</span>
+            <span class="starter-block-type">${escapeHtml(config.label)}</span>
+          </span>
+          <button class="starter-remove-btn" type="button">Remove</button>
+        `;
+        row.querySelector("button").onclick = () => {
+          state.starterLinks.splice(index, 1);
+          renderStarterBlocks();
+          updatePreview();
+        };
+        el.appendChild(row);
+      });
     }
 
     function renderPreviewLinks(links) {
@@ -636,31 +735,54 @@
       const icons = {
         phone: `<svg viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.32 1.77.59 2.61a2 2 0 0 1-.45 2.11L8 9.69a16 16 0 0 0 6.31 6.31l1.25-1.25a2 2 0 0 1 2.11-.45c.84.27 1.71.47 2.61.59A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.8"/></svg>`,
         whatsapp: `<svg viewBox="0 0 24 24" fill="none"><path d="M20 11.5A8 8 0 0 1 8.2 18.5L4 20l1.5-4A8 8 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M9 8.5c.2 3 2.5 5.3 5.5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-        email: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.8"/><path d="m22 6-10 7L2 6" stroke="currentColor" stroke-width="1.8"/></svg>`
+        email: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.8"/><path d="m22 6-10 7L2 6" stroke="currentColor" stroke-width="1.8"/></svg>`,
+        instagram: `<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.8"/><path d="M17.5 6.8h.01" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>`
       };
       return icons[type] || icons.phone;
     }
 
-    function buildContactLink() {
-      const value = state.contactValue.trim();
+    function buildContactLink(type = state.contactType, rawValue = state.contactValue, rawLabel = state.contactLabel) {
+      const value = String(rawValue || "").trim();
       if (!value) return null;
-      const config = contactTypes.find(item => item.type === state.contactType) || contactTypes[0];
+      const config = contactTypes.find(item => item.type === type) || contactTypes[0];
+      const label = String(rawLabel || "").trim() || config.label;
       let url = value;
-      if (state.contactType === "email") {
+      if (type === "email") {
         url = value.startsWith("mailto:") ? value : `mailto:${value}`;
+      } else if (type === "instagram") {
+        const handle = value.replace(/^@/, "");
+        url = /^https?:\/\//i.test(value) ? value : `https://instagram.com/${handle.replace(/^instagram\.com\//i, "")}`;
       } else {
         const digits = value.replace(/\D/g, "");
         if (!digits) return null;
-        url = state.contactType === "whatsapp" ? `https://wa.me/${digits}` : `tel:+${digits}`;
+        url = type === "whatsapp" ? `https://wa.me/${digits}` : `tel:+${digits}`;
       }
       return {
-        name: state.contactLabel || config.label,
-        label: state.contactLabel || config.label,
-        type: state.contactType,
+        name: label,
+        label,
+        type,
         value,
         url,
         finalUrl: url
       };
+    }
+
+    function addStarterBlock() {
+      const error = document.getElementById("setupError");
+      error.innerText = "";
+      updatePreview();
+      const link = buildContactLink();
+      if (!link) {
+        error.innerText = "Add a valid contact value first.";
+        return;
+      }
+      state.starterLinks.push(link);
+      state.contactValue = "";
+      state.contactLabel = "";
+      document.getElementById("contactValueInput").value = "";
+      document.getElementById("contactLabelInput").value = "";
+      renderStarterBlocks();
+      updatePreview();
     }
 
     function finishSetup() {
@@ -675,7 +797,7 @@
         return;
       }
 
-      const links = [];
+      const links = [...state.starterLinks];
       const contact = buildContactLink();
       if (contact) links.push(contact);
 
@@ -732,12 +854,14 @@
       finishSetup();
     };
 
+    document.getElementById("addStarterBlockBtn").onclick = addStarterBlock;
+
     ["displayNameInput", "titleInput", "contactValueInput", "contactLabelInput"].forEach(id => {
       document.getElementById(id).addEventListener("input", updatePreview);
     });
 
     document.getElementById("contactValueInput").placeholder = contactTypes[0].placeholder;
-    document.getElementById("contactLabelInput").placeholder = `Name this block, e.g. ${contactTypes[0].label}`;
+    document.getElementById("contactLabelInput").placeholder = `Display label, e.g. ${contactTypes[0].label}`;
     loadUser();
   </script>
 </body>
