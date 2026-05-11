@@ -155,6 +155,19 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
 
+function isMissingEmailColumnError(error) {
+  const text = [
+    error?.message,
+    error?.details,
+    error?.hint
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return text.includes("'email' column") ||
+    text.includes('"email" column') ||
+    text.includes("email column") ||
+    text.includes("could not find") && text.includes("email") && text.includes("schema cache");
+}
+
 function buildCreateUserPayload(username, password, email = "") {
   return {
     username,
@@ -166,6 +179,12 @@ function buildCreateUserPayload(username, password, email = "") {
     links: [],
     theme: DEFAULT_THEME
   };
+}
+
+function withoutEmail(payload) {
+  const copy = { ...payload };
+  delete copy.email;
+  return copy;
 }
 
 function buildGooglePassword(googleSub) {
@@ -255,9 +274,17 @@ async function createUser(username, password, client = supabaseServer, email = "
   const cleanEmail = String(email || "").trim().toLowerCase();
   const payload = buildCreateUserPayload(cleanUsername, cleanPassword, cleanEmail);
 
-  const { error } = await client
+  let { error } = await client
     .from('users')
     .insert(payload);
+
+  if (error && cleanEmail && isMissingEmailColumnError(error)) {
+    console.warn("users.email column is missing; creating user without storing email. Run the Supabase email migration.");
+    const retry = await client
+      .from('users')
+      .insert(withoutEmail(payload));
+    error = retry.error;
+  }
 
   if (error) {
     error.insertPayload = {
@@ -275,11 +302,22 @@ async function createGoogleUser(username, password, profile, client = supabaseSe
     displayname: cleanUsername
   };
 
-  const { data, error } = await client
+  let { data, error } = await client
     .from('users')
     .insert(payload)
     .select('*')
     .single();
+
+  if (error && profile.email && isMissingEmailColumnError(error)) {
+    console.warn("users.email column is missing; creating Google user without storing email. Run the Supabase email migration.");
+    const retry = await client
+      .from('users')
+      .insert(withoutEmail(payload))
+      .select('*')
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) {
     error.insertPayload = {
@@ -306,8 +344,13 @@ async function findOrCreateGoogleUser(profile) {
     const existing = await getUser(candidate, supabaseAdmin);
     if (existing && existing.password === password) {
       if (!existing.email && profile.email) {
-        const updatedUser = await updateUser(candidate, { email: profile.email.toLowerCase() }, supabaseAdmin);
-        return { user: updatedUser, password, created: false };
+        try {
+          const updatedUser = await updateUser(candidate, { email: profile.email.toLowerCase() }, supabaseAdmin);
+          return { user: updatedUser, password, created: false };
+        } catch (error) {
+          if (!isMissingEmailColumnError(error)) throw error;
+          console.warn("users.email column is missing; Google login will continue without storing email.");
+        }
       }
 
       return { user: existing, password, created: false };

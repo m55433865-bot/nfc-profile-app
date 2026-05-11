@@ -278,7 +278,7 @@
         <div class="google-button-shell">
           <div id="googleButton"></div>
         </div>
-        <p id="googleNote" class="google-note">New Google users will be guided through profile setup.</p>
+        <p id="googleNote" class="google-note">Use Google to sign up or log in. New users go to profile setup.</p>
       </div>
 
       <p id="authSwitchCopy" class="auth-switch-copy">
@@ -379,8 +379,8 @@
       document.getElementById("primaryAuthBtn").innerText = isSignup ? "Create account" : "Login";
       document.getElementById("password").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
       document.getElementById("googleNote").innerText = isSignup
-        ? "You can also create your profile instantly with Google."
-        : "New Google users will be guided through profile setup.";
+        ? "Use Google to sign up instantly, no extra form needed."
+        : "Use Google to sign up or log in. New users go to profile setup.";
       document.getElementById("authSwitchCopy").innerHTML = isSignup
         ? `Already have an account? <button type="button" onclick="setAuthMode('login')">Log in</button>`
         : `New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button>`;
