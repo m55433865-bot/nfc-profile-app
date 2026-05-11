@@ -119,6 +119,7 @@ function normalizeUser(row) {
   return {
     id: row.id,
     username,
+    email: row.email || "",
     password: row.password || "",
     displayName: row.displayname || username,
     bio: row.bio || "",
@@ -150,9 +151,14 @@ async function listUsers(client = supabaseServer) {
   return (data || []).map(normalizeUser);
 }
 
-function buildCreateUserPayload(username, password) {
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+}
+
+function buildCreateUserPayload(username, password, email = "") {
   return {
     username,
+    email: String(email || "").trim().toLowerCase(),
     password,
     displayname: username,
     bio: "",
@@ -243,10 +249,11 @@ async function verifyGoogleIdToken(credential) {
   };
 }
 
-async function createUser(username, password, client = supabaseServer) {
+async function createUser(username, password, client = supabaseServer, email = "") {
   const cleanUsername = username.trim().toLowerCase();
   const cleanPassword = password.trim();
-  const payload = buildCreateUserPayload(cleanUsername, cleanPassword);
+  const cleanEmail = String(email || "").trim().toLowerCase();
+  const payload = buildCreateUserPayload(cleanUsername, cleanPassword, cleanEmail);
 
   const { error } = await client
     .from('users')
@@ -264,7 +271,7 @@ async function createUser(username, password, client = supabaseServer) {
 async function createGoogleUser(username, password, profile, client = supabaseServer) {
   const cleanUsername = username.trim().toLowerCase();
   const payload = {
-    ...buildCreateUserPayload(cleanUsername, password),
+    ...buildCreateUserPayload(cleanUsername, password, profile.email),
     displayname: cleanUsername
   };
 
@@ -298,6 +305,11 @@ async function findOrCreateGoogleUser(profile) {
   for (const candidate of candidates) {
     const existing = await getUser(candidate, supabaseAdmin);
     if (existing && existing.password === password) {
+      if (!existing.email && profile.email) {
+        const updatedUser = await updateUser(candidate, { email: profile.email.toLowerCase() }, supabaseAdmin);
+        return { user: updatedUser, password, created: false };
+      }
+
       return { user: existing, password, created: false };
     }
   }
@@ -431,11 +443,16 @@ apiRouter.post('/signup', async (req, res) => {
   if (!requireServiceRole(res)) return;
 
   try {
+    const email = (req.body.email || "").trim().toLowerCase();
     const username = (req.body.username || "").trim().toLowerCase();
     const password = (req.body.password || "").trim();
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username and password are required" });
+    if (!email || !username || !password) {
+      return res.status(400).json({ error: "Email, username, and password are required" });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
     }
 
     if (!/^[a-z0-9_]{3,32}$/.test(username)) {
@@ -450,7 +467,7 @@ apiRouter.post('/signup', async (req, res) => {
       return res.status(409).json({ error: "Username already exists" });
     }
 
-    await createUser(username, password, supabaseAdmin);
+    await createUser(username, password, supabaseAdmin, email);
     res.json({ success: true, username });
   } catch (error) {
     sendSupabaseError(res, error);

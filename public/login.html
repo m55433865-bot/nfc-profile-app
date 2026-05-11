@@ -249,6 +249,11 @@
         <button id="signupModeBtn" type="button" onclick="setAuthMode('signup')">Create account</button>
       </div>
 
+      <div id="emailField" class="field hidden">
+        <label for="email">Email</label>
+        <input id="email" placeholder="Enter email" type="email" autocomplete="email">
+      </div>
+
       <div class="field">
         <label for="username">Username</label>
         <input id="username" placeholder="Enter username" autocomplete="username">
@@ -369,6 +374,7 @@
       error.innerText = "";
       document.getElementById("loginModeBtn").classList.toggle("active", !isSignup);
       document.getElementById("signupModeBtn").classList.toggle("active", isSignup);
+      document.getElementById("emailField").classList.toggle("hidden", !isSignup);
       document.getElementById("confirmPasswordField").classList.toggle("hidden", !isSignup);
       document.getElementById("primaryAuthBtn").innerText = isSignup ? "Create account" : "Login";
       document.getElementById("password").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
@@ -389,7 +395,12 @@
       login();
     }
 
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+    }
+
     function signup() {
+      const email = document.getElementById('email').value.trim().toLowerCase();
       const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value.trim();
       const confirmPassword = document.getElementById('confirmPassword').value.trim();
@@ -397,8 +408,13 @@
 
       error.innerText = "";
 
-      if (!username || !password || !confirmPassword) {
-        error.innerText = "Choose a username and password.";
+      if (!email || !username || !password || !confirmPassword) {
+        error.innerText = "Enter your email, username, and password.";
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        error.innerText = "Enter a valid email address.";
         return;
       }
 
@@ -412,7 +428,7 @@
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ email, username, password })
       })
         .then(readJsonResponse)
         .then(data => {
