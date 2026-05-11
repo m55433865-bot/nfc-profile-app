@@ -1505,7 +1505,6 @@
                 ? selectedPhoneCountryCode
                 : getDefaultPhoneCountryCode();
             select.value = selectedPhoneCountryCode;
-            stylePhoneInputGroup();
         }
 
         function getSelectedPhoneCountryCode() {
@@ -1665,6 +1664,7 @@
             document.getElementById('smartLinkLabel').placeholder = `Name this block, e.g. ${selectedSmartLink.label}`;
             document.getElementById('smartLinkValue').placeholder = selectedSmartLink.placeholder || "Paste value or link";
             const isPhoneType = isPhoneSmartType(type);
+            resetPhoneInputGroupStyles();
             document.getElementById('phoneCountryField').style.display = isPhoneType ? "flex" : "none";
             document.getElementById('phoneInputGroup').classList.toggle("phone-active", isPhoneType);
             setupPhoneCountrySelect();
