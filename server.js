@@ -1,6 +1,7 @@
 require('dotenv').config(); //added for .env
 const express = require('express');
 const path = require('path');
+const fs = require('fs/promises');
 const browserSync = require('browser-sync').create();
 const { createClient } = require('@supabase/supabase-js');
 
@@ -66,6 +67,45 @@ function redactUpdatesForLog(updates) {
     ...updates,
     ...(updates.password ? { password: "[redacted]" } : {})
   };
+}
+
+function safeScriptJson(value) {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
+async function sendProfilePage(req, res) {
+  const username = (req.params.username || "").toLowerCase();
+  let initialTheme = null;
+
+  try {
+    const user = await getUser(username);
+    if (user) {
+      initialTheme = user.theme;
+    }
+  } catch (error) {
+    console.error("Initial profile theme load failed", {
+      username,
+      message: error.message,
+      code: error.code
+    });
+  }
+
+  try {
+    const html = await fs.readFile(path.join(publicDir, "edit.html"), "utf8");
+    const themedHtml = html.replace(
+      "window.__INITIAL_PROFILE_THEME__ = null;",
+      `window.__INITIAL_PROFILE_THEME__ = ${safeScriptJson(initialTheme)};`
+    );
+    res.type("html").send(themedHtml);
+  } catch (error) {
+    console.error("Profile page read failed", error);
+    res.status(500).send("Profile page unavailable");
+  }
 }
 
 function normalizeUser(row) {
@@ -489,9 +529,7 @@ app.get(`${BASE_PATH}/admin`, (req, res) => {
   res.sendFile(path.join(publicDir, 'admin.html'));
 });
 
-app.get(`${BASE_PATH}/profile/:username`, (req, res) => {
-  res.sendFile(path.join(publicDir, 'edit.html'));
-});
+app.get(`${BASE_PATH}/profile/:username`, sendProfilePage);
 
 app.get(`${BASE_PATH}/:username`, (req, res) => {
   res.redirect(`${BASE_PATH}/profile/${encodeURIComponent(req.params.username)}`);
