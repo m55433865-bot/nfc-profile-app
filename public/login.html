@@ -5,6 +5,7 @@
   <title>Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/nfc/brand.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     * {
       box-sizing: border-box;
@@ -116,6 +117,49 @@
     button:active {
       transform: scale(0.98);
     }
+
+    .auth-divider {
+      align-items: center;
+      color: #777;
+      display: flex;
+      font-size: 12px;
+      gap: 10px;
+      margin: 16px 0;
+      text-transform: uppercase;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      background: #2f2f2f;
+      content: "";
+      flex: 1;
+      height: 1px;
+    }
+
+    .google-auth {
+      display: none;
+    }
+
+    .google-auth.active {
+      display: block;
+    }
+
+    .google-button-shell {
+      background: #151515;
+      border: 1px solid #333;
+      border-radius: 12px;
+      min-height: 44px;
+      overflow: hidden;
+      padding: 2px;
+    }
+
+    .google-note {
+      color: #888;
+      font-size: 12px;
+      line-height: 1.35;
+      margin: 10px 0 0;
+      text-align: center;
+    }
   </style>
 </head>
 
@@ -155,6 +199,14 @@
       <div id="error" class="error"></div>
 
       <button type="button" onclick="login()">Login</button>
+
+      <div id="googleAuth" class="google-auth">
+        <div class="auth-divider">or</div>
+        <div class="google-button-shell">
+          <div id="googleButton"></div>
+        </div>
+        <p class="google-note">New Google users will be guided through profile setup.</p>
+      </div>
     </section>
   </main>
 
@@ -164,6 +216,7 @@
     const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
     const storedUsername = localStorage.getItem("username");
     const storedPassword = localStorage.getItem("password");
+    let googleLoginInitialized = false;
 
     if (storedUsername && storedPassword) {
       routeAfterLogin(storedUsername, storedPassword);
@@ -234,6 +287,84 @@
           error.innerText = "Login failed. Try again.";
         });
     }
+
+    async function readJsonResponse(response) {
+      const text = await response.text();
+      let data = {};
+
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (error) {
+        throw new Error(text || "Unexpected server response");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || "Request failed");
+      }
+
+      return data;
+    }
+
+    function handleGoogleCredential(response) {
+      const error = document.getElementById('error');
+      error.innerText = "";
+
+      fetch(apiPath("/auth/google"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ credential: response.credential })
+      })
+        .then(readJsonResponse)
+        .then(data => {
+          localStorage.setItem("username", data.username);
+          localStorage.setItem("password", data.password);
+          if (data.created) {
+            localStorage.removeItem(`onboardingComplete:${data.username}`);
+          }
+          routeAfterLogin(data.username, data.password);
+        })
+        .catch((err) => {
+          error.innerText = err.message || "Google login failed. Try again.";
+        });
+    }
+
+    function initializeGoogleLogin(clientId) {
+      if (googleLoginInitialized) return;
+
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+        setTimeout(() => initializeGoogleLogin(clientId), 120);
+        return;
+      }
+
+      googleLoginInitialized = true;
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredential,
+        ux_mode: "popup"
+      });
+
+      document.getElementById("googleAuth").classList.add("active");
+      google.accounts.id.renderButton(document.getElementById("googleButton"), {
+        theme: "filled_black",
+        size: "large",
+        shape: "pill",
+        text: "continue_with",
+        width: 318
+      });
+    }
+
+    fetch(apiPath("/auth/google/config"))
+      .then(readJsonResponse)
+      .then((config) => {
+        if (config.enabled && config.clientId) {
+          initializeGoogleLogin(config.clientId);
+        }
+      })
+      .catch(() => {
+        // Normal login remains available if Google auth is not configured.
+      });
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {

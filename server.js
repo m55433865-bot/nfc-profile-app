@@ -2,6 +2,7 @@ require('dotenv').config(); //added for .env
 const express = require('express');
 const path = require('path');
 const fs = require('fs/promises');
+const crypto = require('crypto');
 const browserSync = require('browser-sync').create();
 const { createClient } = require('@supabase/supabase-js');
 
@@ -14,6 +15,8 @@ const ADMIN_PASSWORD = "123";
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://icxhlqummrtfpxzegbvd.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljeGhscXVtbXJ0ZnB4emVnYnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjYyODQsImV4cCI6MjA5Mzc0MjI4NH0.15teqmpk7adjnANdLAWlrmfTJDRlXyGhiy-JiNqWnSI";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const GOOGLE_AUTH_SECRET = process.env.GOOGLE_AUTH_SECRET || "";
 const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -159,6 +162,87 @@ function buildCreateUserPayload(username, password) {
   };
 }
 
+function buildGooglePassword(googleSub) {
+  if (!GOOGLE_AUTH_SECRET) {
+    throw new Error("GOOGLE_AUTH_SECRET is required for Google login");
+  }
+
+  return `google:${crypto
+    .createHmac("sha256", GOOGLE_AUTH_SECRET)
+    .update(String(googleSub))
+    .digest("hex")}`;
+}
+
+function normalizeGoogleUsername(value) {
+  const clean = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/@.*/, "")
+    .replace(/[^a-z0-9]/g, "");
+
+  return clean || "user";
+}
+
+function buildGoogleUsernameCandidates(profile) {
+  const emailBase = normalizeGoogleUsername(profile.email);
+  const nameBase = normalizeGoogleUsername(profile.name);
+  const suffix = String(profile.sub || "").replace(/\D/g, "").slice(-6) || crypto
+    .createHash("sha256")
+    .update(String(profile.sub || profile.email || "google"))
+    .digest("hex")
+    .slice(0, 6);
+  const candidates = [
+    emailBase,
+    nameBase,
+    `${emailBase}${suffix}`,
+    `google${suffix}`
+  ];
+
+  return [...new Set(candidates)]
+    .filter((candidate) => candidate && candidate !== ADMIN_USERNAME)
+    .map((candidate) => candidate.slice(0, 32));
+}
+
+async function verifyGoogleIdToken(credential) {
+  if (!GOOGLE_CLIENT_ID) {
+    throw new Error("GOOGLE_CLIENT_ID is required for Google login");
+  }
+
+  const token = String(credential || "").trim();
+  if (!token) {
+    const error = new Error("Google credential is required");
+    error.status = 400;
+    throw error;
+  }
+
+  const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
+  const profile = await response.json().catch(() => null);
+
+  if (!response.ok || !profile) {
+    const error = new Error(profile?.error_description || "Google token verification failed");
+    error.status = 401;
+    throw error;
+  }
+
+  const validIssuer = profile.iss === "accounts.google.com" || profile.iss === "https://accounts.google.com";
+  const validAudience = profile.aud === GOOGLE_CLIENT_ID;
+  const notExpired = Number(profile.exp || 0) > Math.floor(Date.now() / 1000);
+  const emailVerified = profile.email_verified === true || profile.email_verified === "true";
+
+  if (!validIssuer || !validAudience || !notExpired || !emailVerified || !profile.sub || !profile.email) {
+    const error = new Error("Invalid Google account token");
+    error.status = 401;
+    throw error;
+  }
+
+  return {
+    sub: profile.sub,
+    email: profile.email,
+    name: profile.name || profile.email.split("@")[0],
+    picture: profile.picture || ""
+  };
+}
+
 async function createUser(username, password, client = supabaseServer) {
   const cleanUsername = username.trim().toLowerCase();
   const cleanPassword = password.trim();
@@ -175,6 +259,60 @@ async function createUser(username, password, client = supabaseServer) {
     };
     throw error;
   }
+}
+
+async function createGoogleUser(username, password, profile, client = supabaseServer) {
+  const cleanUsername = username.trim().toLowerCase();
+  const payload = {
+    ...buildCreateUserPayload(cleanUsername, password),
+    displayname: cleanUsername
+  };
+
+  const { data, error } = await client
+    .from('users')
+    .insert(payload)
+    .select('*')
+    .single();
+
+  if (error) {
+    error.insertPayload = {
+      ...payload,
+      password: "[redacted]"
+    };
+    throw error;
+  }
+
+  return normalizeUser(data);
+}
+
+async function findOrCreateGoogleUser(profile) {
+  if (!supabaseAdmin) {
+    const error = new Error("SUPABASE_SERVICE_ROLE_KEY is required for Google user creation");
+    error.status = 500;
+    throw error;
+  }
+
+  const password = buildGooglePassword(profile.sub);
+  const candidates = buildGoogleUsernameCandidates(profile);
+
+  for (const candidate of candidates) {
+    const existing = await getUser(candidate, supabaseAdmin);
+    if (existing && existing.password === password) {
+      return { user: existing, password, created: false };
+    }
+  }
+
+  for (const candidate of candidates) {
+    const existing = await getUser(candidate, supabaseAdmin);
+    if (!existing) {
+      const user = await createGoogleUser(candidate, password, profile, supabaseAdmin);
+      return { user, password, created: true };
+    }
+  }
+
+  const error = new Error("Could not create a unique username for this Google account");
+  error.status = 409;
+  throw error;
 }
 
 async function updateUser(username, updates, client = supabaseServer) {
@@ -249,6 +387,10 @@ function sendSupabaseError(res, error) {
     return res.status(403).json({ error: "Permission denied" });
   }
 
+  if (error.status) {
+    return res.status(error.status).json({ error: error.message || "Request failed" });
+  }
+
   res.status(500).json({
     error: error.message || "Database error",
     code: error.code,
@@ -280,6 +422,32 @@ apiRouter.post('/login', async (req, res) => {
     }
 
     res.json({ success: true, isAdmin: false, username });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.get('/auth/google/config', (req, res) => {
+  res.json({
+    enabled: Boolean(GOOGLE_CLIENT_ID),
+    clientId: GOOGLE_CLIENT_ID
+  });
+});
+
+apiRouter.post('/auth/google', async (req, res) => {
+  try {
+    const profile = await verifyGoogleIdToken(req.body.credential);
+    const { user, password, created } = await findOrCreateGoogleUser(profile);
+
+    res.json({
+      success: true,
+      isAdmin: false,
+      provider: "google",
+      created,
+      username: user.username,
+      password,
+      user
+    });
   } catch (error) {
     sendSupabaseError(res, error);
   }
