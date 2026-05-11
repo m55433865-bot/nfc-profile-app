@@ -1366,6 +1366,7 @@
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
             document.getElementById('phoneCountryField').style.display = "none";
+            document.getElementById('smartPhoneRow').classList.remove("phone-active");
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkPreview').innerHTML = "Choose a type, then paste a number, username, email, or link.";
             renderSmartLinkOptions();
@@ -1377,6 +1378,7 @@
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
             document.getElementById('phoneCountryField').style.display = "none";
+            document.getElementById('smartPhoneRow').classList.remove("phone-active");
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkModal').style.display = "none";
         }
@@ -1423,7 +1425,9 @@
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = selectedSmartLink.label;
             document.getElementById('smartLinkValue').placeholder = selectedSmartLink.placeholder || "Paste value or link";
-            document.getElementById('phoneCountryField').style.display = isPhoneSmartType(type) ? "flex" : "none";
+            const isPhoneType = isPhoneSmartType(type);
+            document.getElementById('phoneCountryField').style.display = isPhoneType ? "flex" : "none";
+            document.getElementById('smartPhoneRow').classList.toggle("phone-active", isPhoneType);
             setupPhoneCountrySelect();
             updateSmartLinkPreview();
             document.getElementById('smartLinkValue').focus();
@@ -2139,12 +2143,14 @@
 
             <div id="smartLinkForm" class="smart-link-form">
                 <div class="link-edit-fields">
-                    <div id="phoneCountryField" class="phone-country-field">
-                        <label for="phoneCountryCode">Country code</label>
-                        <select id="phoneCountryCode" class="phone-country-select" onchange="updatePhoneCountryCode(this.value)"></select>
+                    <div id="smartPhoneRow" class="smart-phone-row">
+                        <div id="phoneCountryField" class="phone-country-field">
+                            <label for="phoneCountryCode">Country code</label>
+                            <select id="phoneCountryCode" class="phone-country-select" onchange="updatePhoneCountryCode(this.value)"></select>
+                        </div>
+                        <input id="smartLinkValue" class="theme-input" placeholder="Paste value or link"
+                            oninput="updateSmartLinkPreview()">
                     </div>
-                    <input id="smartLinkValue" class="theme-input" placeholder="Paste value or link"
-                        oninput="updateSmartLinkPreview()">
                     <input id="smartLinkLabel" class="theme-input" placeholder="Label">
                     <div id="smartLinkPreview" class="smart-link-preview">Choose a type, then paste a number, username,
                         email, or link.</div>

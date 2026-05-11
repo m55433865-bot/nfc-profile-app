@@ -864,6 +864,13 @@ input,
   border-top: 1px solid var(--soft-border-color);
 }
 
+.smart-phone-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  width: 100%;
+}
+
 .phone-country-field {
   align-items: stretch;
   display: none;
@@ -900,6 +907,38 @@ input,
 .phone-country-select:focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px var(--accent-faint);
+}
+
+@media (min-width: 640px) {
+  .smart-link-card {
+    max-width: 460px;
+    padding: 22px;
+    width: min(90vw, 460px);
+  }
+
+  .smart-link-form {
+    margin-top: 18px;
+    padding-top: 16px;
+  }
+
+  .smart-link-form .link-edit-fields {
+    gap: 10px;
+  }
+
+  .smart-phone-row.phone-active {
+    align-items: end;
+    grid-template-columns: minmax(148px, 0.78fr) minmax(0, 1.22fr);
+    gap: 10px;
+  }
+
+  .phone-country-field label {
+    padding-left: 2px;
+  }
+
+  .phone-country-select,
+  .smart-phone-row .theme-input {
+    min-height: 46px;
+  }
 }
 
 .smart-add-cancel {
