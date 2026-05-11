@@ -529,6 +529,10 @@ app.get(`${BASE_PATH}/admin`, (req, res) => {
   res.sendFile(path.join(publicDir, 'admin.html'));
 });
 
+app.get(`${BASE_PATH}/onboarding`, (req, res) => {
+  res.sendFile(path.join(publicDir, 'onboarding.html'));
+});
+
 app.get(`${BASE_PATH}/profile/:username`, sendProfilePage);
 
 app.get(`${BASE_PATH}/:username`, (req, res) => {
@@ -541,6 +545,10 @@ app.get('/login', (req, res) => {
 
 app.get('/admin', (req, res) => {
   res.redirect(`${BASE_PATH}/admin`);
+});
+
+app.get('/onboarding', (req, res) => {
+  res.redirect(`${BASE_PATH}/onboarding`);
 });
 
 app.get('/profile/:username', (req, res) => {

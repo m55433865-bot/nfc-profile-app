@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Profile Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/nfc/brand.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #080a12;
+      --panel: rgba(17, 21, 37, 0.88);
+      --panel-soft: rgba(255, 255, 255, 0.055);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #f7f9ff;
+      --muted: #9aa6ce;
+      --accent: #00c896;
+      --shadow: rgba(0, 0, 0, 0.42);
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--accent), transparent 78%), transparent 32%),
+        radial-gradient(circle at 92% 12%, rgba(48, 244, 255, 0.12), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .onboarding-shell {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: minmax(320px, 0.95fr) minmax(320px, 0.85fr);
+      margin: 0 auto;
+      max-width: 1120px;
+      min-height: 100vh;
+      padding: 34px 22px;
+      width: 100%;
+    }
+
+    .setup-panel,
+    .preview-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 26px 70px var(--shadow);
+      overflow: hidden;
+    }
+
+    .setup-panel {
+      padding: 24px;
+    }
+
+    .setup-brand {
+      align-items: center;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .setup-brand h1 {
+      font-size: 26px;
+      line-height: 1.05;
+      margin: 0;
+    }
+
+    .setup-brand p,
+    .section-copy {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+      margin: 6px 0 0;
+    }
+
+    .step-list {
+      display: flex;
+      gap: 8px;
+      margin: 0 0 22px;
+    }
+
+    .step-pill {
+      background: var(--panel-soft);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--muted);
+      flex: 1;
+      font-size: 12px;
+      padding: 9px 10px;
+      text-align: center;
+    }
+
+    .step-pill.active {
+      border-color: color-mix(in srgb, var(--accent), transparent 35%);
+      color: var(--text);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 88%);
+    }
+
+    .setup-step {
+      display: none;
+      animation: fadeIn 0.22s ease both;
+    }
+
+    .setup-step.active {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    label {
+      color: var(--muted);
+      display: grid;
+      font-size: 12px;
+      font-weight: 700;
+      gap: 7px;
+      text-align: left;
+    }
+
+    input,
+    select {
+      appearance: none;
+      background: rgba(4, 7, 14, 0.58);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      color: var(--text);
+      font-size: 15px;
+      min-height: 48px;
+      outline: none;
+      padding: 13px 14px;
+      width: 100%;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 86%);
+    }
+
+    .theme-grid,
+    .contact-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 18px;
+    }
+
+    .theme-option,
+    .contact-option {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      cursor: pointer;
+      min-height: 58px;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .theme-option.active,
+    .contact-option.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 88%);
+    }
+
+    .theme-swatch {
+      border-radius: 10px;
+      display: block;
+      height: 24px;
+      margin-bottom: 8px;
+    }
+
+    .setup-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 22px;
+    }
+
+    .setup-btn {
+      border: 1px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      min-height: 44px;
+      padding: 11px 14px;
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    .setup-btn.primary {
+      background: var(--accent);
+      color: #06110e;
+      flex: 1;
+    }
+
+    .setup-btn.secondary {
+      background: var(--panel-soft);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .setup-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .setup-error {
+      color: #ff8b8b;
+      font-size: 13px;
+      min-height: 18px;
+      margin-top: 12px;
+    }
+
+    .preview-panel {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+      padding: 26px;
+      position: sticky;
+      top: 20px;
+      height: calc(100vh - 40px);
+      min-height: 620px;
+    }
+
+    .phone-preview {
+      background: var(--preview-bg, #0f0f0f);
+      border: 1px solid color-mix(in srgb, var(--preview-border, #333), transparent 20%);
+      border-radius: 34px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 70px rgba(0, 0, 0, 0.38);
+      max-width: 360px;
+      min-height: 590px;
+      padding: 28px 18px;
+      transition: background 0.24s ease, border-color 0.24s ease;
+      width: 100%;
+    }
+
+    .preview-avatar {
+      align-items: center;
+      background: color-mix(in srgb, var(--accent), transparent 86%);
+      border: 1px solid color-mix(in srgb, var(--accent), transparent 55%);
+      border-radius: 50%;
+      color: var(--accent);
+      display: flex;
+      font-size: 24px;
+      font-weight: 800;
+      height: 82px;
+      justify-content: center;
+      margin: 0 auto 16px;
+      width: 82px;
+    }
+
+    .preview-name {
+      font-size: 21px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      text-align: center;
+    }
+
+    .preview-title {
+      color: var(--preview-muted, #aaa);
+      font-size: 14px;
+      margin: 0 0 22px;
+      text-align: center;
+    }
+
+    .preview-links {
+      display: grid;
+      gap: 10px;
+    }
+
+    .preview-link {
+      align-items: center;
+      background: var(--preview-surface, #202020);
+      border: 1px solid color-mix(in srgb, var(--preview-border, #333), transparent 35%);
+      border-radius: 12px;
+      color: var(--preview-text, #fff);
+      display: flex;
+      gap: 12px;
+      min-height: 52px;
+      padding: 11px 13px;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .preview-link-icon {
+      align-items: center;
+      background: color-mix(in srgb, var(--accent), transparent 85%);
+      border: 1px solid color-mix(in srgb, var(--accent), transparent 65%);
+      border-radius: 10px;
+      color: var(--accent);
+      display: inline-flex;
+      flex: 0 0 32px;
+      height: 32px;
+      justify-content: center;
+      width: 32px;
+    }
+
+    .preview-link-icon svg {
+      height: 20px;
+      width: 20px;
+    }
+
+    .preview-empty {
+      border: 1px dashed color-mix(in srgb, var(--preview-border, #333), transparent 10%);
+      border-radius: 14px;
+      color: var(--preview-muted, #aaa);
+      font-size: 13px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .onboarding-shell {
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .preview-panel {
+        height: auto;
+        min-height: 0;
+        order: -1;
+        position: static;
+      }
+
+      .phone-preview {
+        min-height: 420px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .setup-panel,
+      .preview-panel {
+        border-radius: 18px;
+      }
+
+      .theme-grid,
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="onboarding-shell">
+    <section class="setup-panel">
+      <div class="setup-brand">
+        <div class="brand-mark wave-static" aria-hidden="true">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <defs>
+              <linearGradient id="onboardingBrandGradient" x1="16" y1="48" x2="48" y2="16"
+                gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#00c896" />
+                <stop offset="1" stop-color="#30f4ff" />
+              </linearGradient>
+            </defs>
+            <rect class="brand-mark-chip" x="14" y="14" width="36" height="36" rx="10" />
+            <path class="brand-mark-n" stroke="url(#onboardingBrandGradient)" d="M19 46V18l26 28V18" />
+            <path class="brand-mark-wave" d="M47 24c4 4 4 12 0 16" />
+            <path class="brand-mark-wave wave-2" d="M52 18c7 8 7 20 0 28" />
+          </svg>
+        </div>
+        <div>
+          <h1>Build your profile</h1>
+          <p>Create a polished NFC identity in a few quick steps.</p>
+        </div>
+      </div>
+
+      <div class="step-list">
+        <div class="step-pill active">Identity</div>
+        <div class="step-pill">Look</div>
+        <div class="step-pill">Contact</div>
+      </div>
+
+      <section class="setup-step active" data-step="0">
+        <h2 class="section-title">Start with your identity</h2>
+        <p class="section-copy">Your profile slug is already reserved. Add the name and role people should see.</p>
+        <div class="field-grid">
+          <label>Profile slug
+            <input id="slugInput" disabled>
+          </label>
+          <label>Display name
+            <input id="displayNameInput" placeholder="Mohamed Mahdi">
+          </label>
+          <label>Title / role
+            <input id="titleInput" placeholder="Developer, Founder, Designer...">
+          </label>
+        </div>
+      </section>
+
+      <section class="setup-step" data-step="1">
+        <h2 class="section-title">Choose a first impression</h2>
+        <p class="section-copy">Pick a profile theme. You can change this later from Settings.</p>
+        <div id="themeOptions" class="theme-grid"></div>
+      </section>
+
+      <section class="setup-step" data-step="2">
+        <h2 class="section-title">Add your first contact block</h2>
+        <p class="section-copy">Optional, but useful. This appears instantly in the live preview.</p>
+        <div id="contactOptions" class="contact-grid"></div>
+        <div class="field-grid">
+          <label>Contact value
+            <input id="contactValueInput" placeholder="Phone number, WhatsApp number, or email">
+          </label>
+          <label>Block name
+            <input id="contactLabelInput" placeholder="Name this block, e.g. My Number">
+          </label>
+        </div>
+      </section>
+
+      <div class="setup-actions">
+        <button id="backBtn" class="setup-btn secondary" type="button">Back</button>
+        <button id="nextBtn" class="setup-btn primary" type="button">Continue</button>
+      </div>
+      <div id="setupError" class="setup-error"></div>
+    </section>
+
+    <aside class="preview-panel">
+      <div id="previewPhone" class="phone-preview">
+        <div id="previewAvatar" class="preview-avatar">N</div>
+        <h2 id="previewName" class="preview-name">Your Name</h2>
+        <p id="previewTitle" class="preview-title">Your title</p>
+        <div id="previewLinks" class="preview-links"></div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const BASE_PATH = "/nfc";
+    const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
+    const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
+    const username = (localStorage.getItem("username") || "").trim().toLowerCase();
+    const password = localStorage.getItem("password") || "";
+
+    const themes = {
+      midnight: { label: "Midnight", bg: "#0f0f0f", surface: "#202020", text: "#ffffff", muted: "#aaa", border: "#333", accent: "#00c896" },
+      ocean: { label: "Ocean", bg: "#071317", surface: "#142a32", text: "#f2fbff", muted: "#9fb8c2", border: "#24434d", accent: "#22d3ee" },
+      purple: { label: "Purple", bg: "#120e1f", surface: "#28213f", text: "#fbf8ff", muted: "#b6aacd", border: "#3d3357", accent: "#a855f7" },
+      gold: { label: "Gold", bg: "#17130a", surface: "#2d2515", text: "#fffaf0", muted: "#c6b790", border: "#4a3c20", accent: "#d6a83f" },
+      forest: { label: "Forest", bg: "#0d160f", surface: "#1d2f23", text: "#f3fff6", muted: "#a4bda9", border: "#304b38", accent: "#22c55e" },
+      neon: { label: "Neon", bg: "#080a12", surface: "#171d33", text: "#f6f8ff", muted: "#9aa6ce", border: "#2c3558", accent: "#00c896" }
+    };
+
+    const contactTypes = [
+      { type: "phone", label: "Phone Number", placeholder: "Phone number" },
+      { type: "whatsapp", label: "WhatsApp", placeholder: "WhatsApp number" },
+      { type: "email", label: "Email", placeholder: "Email address" }
+    ];
+
+    const state = {
+      step: 0,
+      user: null,
+      displayName: "",
+      title: "",
+      theme: { mode: "dark", preset: "midnight", accent: "#00c896" },
+      contactType: "phone",
+      contactValue: "",
+      contactLabel: ""
+    };
+
+    if (!username || !password) {
+      window.location.replace(appPath("/login"));
+    }
+
+    function needsOnboarding(user) {
+      const displayName = (user.displayName || "").trim().toLowerCase();
+      const userName = (user.username || "").trim().toLowerCase();
+      return displayName === userName && !(user.bio || "").trim() && (!Array.isArray(user.links) || user.links.length === 0);
+    }
+
+    function loadUser() {
+      fetch(apiPath(`/${username}`))
+        .then(res => res.json())
+        .then(user => {
+          if (user.error) {
+            window.location.replace(appPath("/login"));
+            return;
+          }
+
+          if (!needsOnboarding(user) || localStorage.getItem(`onboardingComplete:${username}`) === "true") {
+            window.location.replace(appPath(`/profile/${username}`));
+            return;
+          }
+
+          state.user = user;
+          state.displayName = user.displayName || user.username;
+          state.title = user.bio || "";
+          state.theme = sanitizeTheme(user.theme);
+          document.getElementById("slugInput").value = `${window.location.origin}${appPath(`/profile/${user.username}`)}`;
+          document.getElementById("displayNameInput").value = state.displayName;
+          document.getElementById("titleInput").value = state.title;
+          renderThemeOptions();
+          renderContactOptions();
+          renderStep();
+          updatePreview();
+        })
+        .catch(() => {
+          document.getElementById("setupError").innerText = "Could not load your profile.";
+        });
+    }
+
+    function sanitizeTheme(theme) {
+      const safe = theme && typeof theme === "object" ? theme : {};
+      const preset = themes[safe.preset] ? safe.preset : "midnight";
+      return {
+        mode: "dark",
+        preset,
+        accent: /^#[0-9a-f]{6}$/i.test(safe.accent || "") ? safe.accent : themes[preset].accent
+      };
+    }
+
+    function renderThemeOptions() {
+      const el = document.getElementById("themeOptions");
+      el.innerHTML = "";
+      Object.entries(themes).forEach(([key, theme]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `theme-option ${state.theme.preset === key ? "active" : ""}`;
+        button.innerHTML = `<span class="theme-swatch" style="background:${theme.bg}; border:1px solid ${theme.border};"></span>${theme.label}`;
+        button.onclick = () => {
+          state.theme = { mode: "dark", preset: key, accent: theme.accent };
+          renderThemeOptions();
+          updatePreview();
+        };
+        el.appendChild(button);
+      });
+    }
+
+    function renderContactOptions() {
+      const el = document.getElementById("contactOptions");
+      el.innerHTML = "";
+      contactTypes.forEach(item => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `contact-option ${state.contactType === item.type ? "active" : ""}`;
+        button.innerText = item.label;
+        button.onclick = () => {
+          state.contactType = item.type;
+          document.getElementById("contactValueInput").placeholder = item.placeholder;
+          document.getElementById("contactLabelInput").placeholder = `Name this block, e.g. ${item.label}`;
+          renderContactOptions();
+          updatePreview();
+        };
+        el.appendChild(button);
+      });
+    }
+
+    function renderStep() {
+      document.querySelectorAll(".setup-step").forEach((step, index) => {
+        step.classList.toggle("active", index === state.step);
+      });
+      document.querySelectorAll(".step-pill").forEach((pill, index) => {
+        pill.classList.toggle("active", index === state.step);
+      });
+      document.getElementById("backBtn").style.visibility = state.step === 0 ? "hidden" : "visible";
+      document.getElementById("nextBtn").innerText = state.step === 2 ? "Finish setup" : "Continue";
+    }
+
+    function updatePreview() {
+      state.displayName = document.getElementById("displayNameInput").value.trim();
+      state.title = document.getElementById("titleInput").value.trim();
+      state.contactValue = document.getElementById("contactValueInput").value.trim();
+      state.contactLabel = document.getElementById("contactLabelInput").value.trim();
+
+      const theme = themes[state.theme.preset] || themes.midnight;
+      const accent = state.theme.accent || theme.accent;
+      document.documentElement.style.setProperty("--accent", accent);
+      const preview = document.getElementById("previewPhone");
+      preview.style.setProperty("--preview-bg", theme.bg);
+      preview.style.setProperty("--preview-surface", theme.surface);
+      preview.style.setProperty("--preview-text", theme.text);
+      preview.style.setProperty("--preview-muted", theme.muted);
+      preview.style.setProperty("--preview-border", theme.border);
+
+      const name = state.displayName || state.user?.username || "Your Name";
+      document.getElementById("previewAvatar").innerText = name.trim()[0]?.toUpperCase() || "N";
+      document.getElementById("previewName").innerText = name;
+      document.getElementById("previewTitle").innerText = state.title || "Your title";
+
+      const links = [];
+      if (state.contactValue) {
+        const config = contactTypes.find(item => item.type === state.contactType) || contactTypes[0];
+        links.push({
+          type: state.contactType,
+          label: state.contactLabel || config.label
+        });
+      }
+      renderPreviewLinks(links);
+    }
+
+    function renderPreviewLinks(links) {
+      const el = document.getElementById("previewLinks");
+      el.innerHTML = "";
+      if (!links.length) {
+        el.innerHTML = `<div class="preview-empty">Your first contact block will appear here.</div>`;
+        return;
+      }
+
+      links.forEach(link => {
+        const row = document.createElement("div");
+        row.className = "preview-link";
+        row.innerHTML = `
+          <span class="preview-link-icon">${getIconSvg(link.type)}</span>
+          <span>${escapeHtml(link.label)}</span>
+        `;
+        el.appendChild(row);
+      });
+    }
+
+    function getIconSvg(type) {
+      const icons = {
+        phone: `<svg viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.32 1.77.59 2.61a2 2 0 0 1-.45 2.11L8 9.69a16 16 0 0 0 6.31 6.31l1.25-1.25a2 2 0 0 1 2.11-.45c.84.27 1.71.47 2.61.59A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.8"/></svg>`,
+        whatsapp: `<svg viewBox="0 0 24 24" fill="none"><path d="M20 11.5A8 8 0 0 1 8.2 18.5L4 20l1.5-4A8 8 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M9 8.5c.2 3 2.5 5.3 5.5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+        email: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.8"/><path d="m22 6-10 7L2 6" stroke="currentColor" stroke-width="1.8"/></svg>`
+      };
+      return icons[type] || icons.phone;
+    }
+
+    function buildContactLink() {
+      const value = state.contactValue.trim();
+      if (!value) return null;
+      const config = contactTypes.find(item => item.type === state.contactType) || contactTypes[0];
+      let url = value;
+      if (state.contactType === "email") {
+        url = value.startsWith("mailto:") ? value : `mailto:${value}`;
+      } else {
+        const digits = value.replace(/\D/g, "");
+        if (!digits) return null;
+        url = state.contactType === "whatsapp" ? `https://wa.me/${digits}` : `tel:+${digits}`;
+      }
+      return {
+        name: state.contactLabel || config.label,
+        label: state.contactLabel || config.label,
+        type: state.contactType,
+        value,
+        url,
+        finalUrl: url
+      };
+    }
+
+    function finishSetup() {
+      const error = document.getElementById("setupError");
+      error.innerText = "";
+      updatePreview();
+
+      if (!state.displayName) {
+        error.innerText = "Add a display name to continue.";
+        state.step = 0;
+        renderStep();
+        return;
+      }
+
+      const links = [];
+      const contact = buildContactLink();
+      if (contact) links.push(contact);
+
+      fetch(apiPath(`/${username}`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          password,
+          displayName: state.displayName,
+          bio: state.title,
+          avatar: state.user.avatar || "",
+          links,
+          theme: state.theme
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            error.innerText = data.error;
+            return;
+          }
+
+          localStorage.setItem(`onboardingComplete:${username}`, "true");
+          window.location.href = appPath(`/profile/${username}`);
+        })
+        .catch(() => {
+          error.innerText = "Setup could not be saved. Try again.";
+        });
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    document.getElementById("backBtn").onclick = () => {
+      if (state.step > 0) {
+        state.step -= 1;
+        renderStep();
+      }
+    };
+
+    document.getElementById("nextBtn").onclick = () => {
+      if (state.step < 2) {
+        state.step += 1;
+        renderStep();
+        updatePreview();
+        return;
+      }
+      finishSetup();
+    };
+
+    ["displayNameInput", "titleInput", "contactValueInput", "contactLabelInput"].forEach(id => {
+      document.getElementById(id).addEventListener("input", updatePreview);
+    });
+
+    document.getElementById("contactValueInput").placeholder = contactTypes[0].placeholder;
+    document.getElementById("contactLabelInput").placeholder = `Name this block, e.g. ${contactTypes[0].label}`;
+    loadUser();
+  </script>
+</body>
+
+</html>

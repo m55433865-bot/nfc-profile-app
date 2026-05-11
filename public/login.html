@@ -166,10 +166,37 @@
     const storedPassword = localStorage.getItem("password");
 
     if (storedUsername && storedPassword) {
-      const target = storedUsername === "66546788"
-        ? appPath("/admin")
-        : appPath(`/profile/${storedUsername}`);
-      window.location.replace(target);
+      routeAfterLogin(storedUsername, storedPassword);
+    }
+
+    function needsOnboarding(user) {
+      const displayName = (user.displayName || "").trim().toLowerCase();
+      const userName = (user.username || "").trim().toLowerCase();
+      return displayName === userName && !(user.bio || "").trim() && (!Array.isArray(user.links) || user.links.length === 0);
+    }
+
+    function routeAfterLogin(username, password) {
+      const cleanUsername = (username || "").trim().toLowerCase();
+
+      if (cleanUsername === "66546788") {
+        window.location.replace(appPath("/admin"));
+        return;
+      }
+
+      fetch(apiPath(`/${cleanUsername}`))
+        .then(res => res.json())
+        .then(user => {
+          const completeKey = `onboardingComplete:${cleanUsername}`;
+          if (user && !user.error && needsOnboarding(user) && localStorage.getItem(completeKey) !== "true") {
+            window.location.replace(appPath("/onboarding"));
+            return;
+          }
+
+          window.location.replace(appPath(`/profile/${cleanUsername}`));
+        })
+        .catch(() => {
+          window.location.replace(appPath(`/profile/${cleanUsername}`));
+        });
     }
 
     function login() {
@@ -201,12 +228,7 @@
           localStorage.setItem('username', data.username || username);
           localStorage.setItem('password', password);
 
-          if (data.isAdmin) {
-            window.location.href = appPath("/admin");
-            return;
-          }
-
-          window.location.href = appPath(`/profile/${data.username || username}`);
+          routeAfterLogin(data.username || username, password);
         })
         .catch(() => {
           error.innerText = "Login failed. Try again.";
