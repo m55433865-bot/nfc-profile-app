@@ -252,13 +252,13 @@
         </div>
 
         <div id="emailField" class="field hidden">
-          <label for="email">Email</label>
-          <input id="email" name="email" placeholder="Email address" type="email" autocomplete="email">
+          <label for="signupEmail">Email</label>
+          <input id="signupEmail" name="signup_email" placeholder="Email address" type="email" autocomplete="email">
         </div>
 
         <div class="field">
-          <label for="username">Username</label>
-          <input id="username" name="username" type="text" placeholder="Username" autocomplete="off">
+          <label for="signupUsername">Username</label>
+          <input id="signupUsername" name="signup_username" type="text" placeholder="Username" autocomplete="username">
         </div>
 
         <div class="field">
@@ -302,6 +302,26 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       setAuthMode("login");
+
+      const usernameInput = document.getElementById('signupUsername');
+      if (usernameInput) {
+        usernameInput.addEventListener('input', () => {
+          const error = document.getElementById('error');
+          if (authMode === 'signup' && usernameInput.value.includes('@')) {
+            usernameInput.value = "";
+            error.innerText = "Please choose a username, not an email.";
+          }
+        });
+      }
+
+      setTimeout(() => {
+        const usernameInput = document.getElementById('signupUsername');
+        const error = document.getElementById('error');
+        if (usernameInput && usernameInput.value.includes('@')) {
+          usernameInput.value = "";
+          error.innerText = "Please choose a username, not an email.";
+        }
+      }, 200);
     });
 
     if (storedUsername && storedPassword) {
@@ -339,7 +359,7 @@
     }
 
     function login() {
-      const username = document.getElementById('username').value.trim();
+      const username = document.getElementById('signupUsername').value.trim();
       const password = document.getElementById('password').value.trim();
       const error = document.getElementById('error');
 
@@ -386,7 +406,7 @@
       document.getElementById("confirmPasswordField").classList.toggle("hidden", !isSignup);
       document.getElementById("primaryAuthBtn").innerText = isSignup ? "Create account" : "Login";
       document.getElementById("password").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
-      document.getElementById("username").setAttribute("autocomplete", isSignup ? "off" : "username");
+      document.getElementById("signupUsername").setAttribute("autocomplete", "username");
       document.getElementById("googleNote").innerText = isSignup
         ? "Use Google to sign up instantly, no extra form needed."
         : "Use Google to sign up or log in. New users go to profile setup.";
@@ -409,8 +429,8 @@
     }
 
     function signup() {
-      const email = document.getElementById('email').value.trim().toLowerCase();
-      const username = document.getElementById('username').value.trim().toLowerCase();
+      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+      const username = document.getElementById('signupUsername').value.trim().toLowerCase();
       const password = document.getElementById('password').value.trim();
       const confirmPassword = document.getElementById('confirmPassword').value.trim();
       const error = document.getElementById('error');
@@ -423,7 +443,8 @@
       }
 
       if (username.includes('@')) {
-        error.innerText = "Username should not be an email address.";
+        document.getElementById('signupUsername').value = "";
+        error.innerText = "Please choose a username, not an email.";
         return;
       }
 
