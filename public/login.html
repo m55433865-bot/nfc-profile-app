@@ -309,8 +309,20 @@
 
     function routeAfterLogin(email, password) {
       const cleanEmail = (email || "").trim().toLowerCase();
+      const ADMIN_EMAIL = "66546788@yourteck.com";
 
-      fetch(apiPath("/auth/user"))
+      if (cleanEmail === ADMIN_EMAIL) {
+        window.location.replace(appPath("/admin"));
+        return;
+      }
+
+      fetch(apiPath("/auth/user"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email: cleanEmail, password })
+      })
         .then(res => res.json())
         .then(user => {
           if (user && user.username) {

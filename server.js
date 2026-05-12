@@ -11,7 +11,8 @@ const PORT = 3000;
 const BASE_PATH = "/nfc";
 const publicDir = path.join(__dirname, "public");
 const ADMIN_USERNAME = "66546788";
-const ADMIN_PASSWORD = "123";
+const ADMIN_EMAIL = "66546788@yourteck.com";
+const ADMIN_PASSWORD = "yourteck@66546788";
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://icxhlqummrtfpxzegbvd.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljeGhscXVtbXJ0ZnB4emVnYnZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjYyODQsImV4cCI6MjA5Mzc0MjI4NH0.15teqmpk7adjnANdLAWlrmfTJDRlXyGhiy-JiNqWnSI";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -476,6 +477,10 @@ apiRouter.post('/login', async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      return res.json({ success: true, isAdmin: true, email, username: ADMIN_USERNAME });
     }
 
     const user = await getUserByEmail(email);
