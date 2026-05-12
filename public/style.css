@@ -761,31 +761,8 @@ input,
 
 .appearance-preset-grid {
   display: grid;
-  gap: 8px;
-}
-
-.appearance-preset-group {
-  display: grid;
-  gap: 8px;
-}
-
-.appearance-preset-group + .appearance-preset-group {
-  margin-top: 14px;
-}
-
-.appearance-group-label {
-  color: var(--muted-text-color);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-align: left;
-  text-transform: uppercase;
-}
-
-.appearance-preset-grid-inner {
-  display: grid;
-  gap: 8px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .appearance-preset {

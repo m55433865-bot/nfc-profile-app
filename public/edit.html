@@ -197,41 +197,62 @@
             return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
         }
 
-        function renderThemePreviewSwatch(palette, accent, key = "theme") {
-            const stops = Array.isArray(palette.preview) && palette.preview.length
-                ? palette.preview
-                : [palette.bg, palette.bg, accent];
-            const gradientId = `themePreviewBg-${String(key).replace(/[^a-z0-9_-]/gi, "")}`;
-            return `
-                <svg class="theme-preview-svg" viewBox="0 0 48 36" aria-hidden="true" focusable="false">
-                    <defs>
-                        <linearGradient id="${gradientId}" x1="0" y1="0" x2="48" y2="36" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="${stops[0]}" />
-                            <stop offset="52%" stop-color="${stops[1] || stops[0]}" />
-                            <stop offset="100%" stop-color="${stops[2] || stops[1] || stops[0]}" />
-                        </linearGradient>
-                    </defs>
-                    <rect x="0.5" y="0.5" width="47" height="35" rx="11" fill="url(#${gradientId})" stroke="${palette.border}" />
-                    <circle cx="11" cy="9" r="9" fill="${accent}" opacity="0.14" />
-                    <rect x="10" y="7" width="28" height="22" rx="7" fill="${palette.surface}" stroke="${palette.border}" />
-                    <circle cx="24" cy="14" r="3.3" fill="${accent}" />
-                    <rect x="17" y="20" width="14" height="2.6" rx="1.3" fill="${accent}" opacity="0.48" />
-                    <rect x="15" y="25" width="18" height="3" rx="1.5" fill="${accent}" opacity="0.92" />
-                </svg>
-            `;
+        function isGradientPresetKey(key) {
+            return themePresets[key] && themePresets[key].category === "gradient";
         }
 
-        function getThemePresetGroups() {
-            return [
-                {
-                    label: "Classic Colors",
-                    presets: Object.entries(themePresets).filter(([, preset]) => (preset.category || "classic") !== "gradient")
-                },
-                {
-                    label: "Gradient Themes",
-                    presets: Object.entries(themePresets).filter(([, preset]) => preset.category === "gradient")
-                }
-            ].filter(group => group.presets.length);
+        function getFirstPresetKey(category = "classic") {
+            const entry = Object.entries(themePresets).find(([, preset]) => {
+                const presetCategory = preset.category || "classic";
+                return category === "gradient" ? presetCategory === "gradient" : presetCategory !== "gradient";
+            });
+            return entry ? entry[0] : defaultTheme.preset;
+        }
+
+        function getActiveThemeView(theme) {
+            if (isGradientPresetKey(theme.preset)) return "gradient";
+            return theme.mode === "light" ? "light" : "dark";
+        }
+
+        function setThemeView(theme, view) {
+            if (view === "gradient") {
+                return sanitizeTheme({
+                    ...theme,
+                    mode: "dark",
+                    preset: isGradientPresetKey(theme.preset) ? theme.preset : getFirstPresetKey("gradient")
+                });
+            }
+
+            return sanitizeTheme({
+                ...theme,
+                mode: view,
+                preset: isGradientPresetKey(theme.preset) ? getFirstPresetKey("classic") : theme.preset
+            });
+        }
+
+        function getVisibleThemePresets(theme) {
+            const view = getActiveThemeView(theme);
+            return Object.entries(themePresets).filter(([, preset]) => {
+                const category = preset.category || "classic";
+                return view === "gradient" ? category === "gradient" : category !== "gradient";
+            });
+        }
+
+        function renderThemePreviewSwatch(palette, accent) {
+            const stops = Array.isArray(palette.preview) && palette.preview.length
+                ? palette.preview
+                : [palette.bg, palette.surface, accent];
+            return `
+                <svg class="theme-preview-svg theme-chip-svg" viewBox="0 0 48 36" aria-hidden="true" focusable="false">
+                    <rect x="0.5" y="0.5" width="47" height="35" rx="11" fill="${palette.surface}" stroke="${palette.border}" />
+                    <circle cx="20" cy="18" r="9.5" fill="${stops[0]}" />
+                    <circle cx="28" cy="14" r="9.5" fill="${stops[1] || stops[0]}" />
+                    <circle cx="28" cy="23" r="9.5" fill="${stops[2] || accent}" />
+                    <circle cx="20" cy="18" r="9.5" fill="none" stroke="rgba(255,255,255,0.24)" />
+                    <circle cx="28" cy="14" r="9.5" fill="none" stroke="rgba(255,255,255,0.24)" />
+                    <circle cx="28" cy="23" r="9.5" fill="none" stroke="rgba(255,255,255,0.24)" />
+                </svg>
+            `;
         }
 
         function applyTheme(theme) {
@@ -266,13 +287,17 @@
             const accentEl = document.getElementById("themeAccentOptions");
 
             modeEl.innerHTML = "";
-            ["dark", "light", "system"].forEach(mode => {
+            [
+                { value: "dark", label: "Dark" },
+                { value: "light", label: "Light" },
+                { value: "gradient", label: "Gradient" }
+            ].forEach(option => {
                 const button = document.createElement("button");
                 button.type = "button";
-                button.className = `appearance-chip ${draftTheme.mode === mode ? "active" : ""}`;
-                button.innerText = mode[0].toUpperCase() + mode.slice(1);
+                button.className = `appearance-chip ${getActiveThemeView(draftTheme) === option.value ? "active" : ""}`;
+                button.innerText = option.label;
                 button.onclick = () => {
-                    draftTheme.mode = mode;
+                    draftTheme = setThemeView(draftTheme, option.value);
                     applyTheme(draftTheme);
                     renderAppearanceOptions();
                 };
@@ -280,32 +305,23 @@
             });
 
             presetEl.innerHTML = "";
-            getThemePresetGroups().forEach(group => {
-                const groupEl = document.createElement("div");
-                groupEl.className = "appearance-preset-group";
-                groupEl.innerHTML = `<div class="appearance-group-label">${group.label}</div><div class="appearance-preset-grid-inner"></div>`;
-                const gridEl = groupEl.querySelector(".appearance-preset-grid-inner");
-
-                group.presets.forEach(([key, preset]) => {
-                    const palette = preset[getResolvedThemeMode(draftTheme.mode)] || preset.dark;
-                    const button = document.createElement("button");
-                    button.type = "button";
-                    button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
-                    button.innerHTML = `
-                        <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
-                            ${renderThemePreviewSwatch(palette, draftTheme.accent, key)}
-                        </span>
-                        <span>${preset.label}</span>
-                    `;
-                    button.onclick = () => {
-                        draftTheme.preset = key;
-                        applyTheme(draftTheme);
-                        renderAppearanceOptions();
-                    };
-                    gridEl.appendChild(button);
-                });
-
-                presetEl.appendChild(groupEl);
+            getVisibleThemePresets(draftTheme).forEach(([key, preset]) => {
+                const palette = preset[getResolvedThemeMode(draftTheme.mode)] || preset.dark;
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
+                button.innerHTML = `
+                    <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
+                        ${renderThemePreviewSwatch(palette, draftTheme.accent)}
+                    </span>
+                    <span>${preset.label}</span>
+                `;
+                button.onclick = () => {
+                    draftTheme.preset = key;
+                    applyTheme(draftTheme);
+                    renderAppearanceOptions();
+                };
+                presetEl.appendChild(button);
             });
 
             accentEl.innerHTML = "";
@@ -2443,7 +2459,7 @@
             <div class="smart-add-subtitle">Choose how this profile looks for you and public visitors.</div>
 
             <div class="appearance-section">
-                <div class="appearance-label">Theme Mode</div>
+                <div class="appearance-label">Theme Style</div>
                 <div id="themeModeOptions" class="appearance-row"></div>
             </div>
 
