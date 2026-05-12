@@ -23,6 +23,8 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "";
 const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000;
 const VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000;
 const VERIFICATION_MAX_ATTEMPTS = 6;
+const PASSWORD_RESET_TTL_MS = 30 * 60 * 1000;
+const PASSWORD_RESET_COOLDOWN_MS = 60 * 1000;
 const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -35,6 +37,7 @@ const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
 const supabaseServer = supabaseAdmin || supabaseAnon;
 const pendingEmailSignups = new Map();
 
+app.set("trust proxy", true);
 app.use(express.json({ limit: '10mb' }));
 app.use(BASE_PATH, express.static(publicDir));
 app.use(express.static(publicDir));
@@ -414,6 +417,97 @@ async function sendVerificationEmail(email, code) {
   }
 }
 
+function getAppBaseUrl(req) {
+  const host = req.get("host") || "localhost:3000";
+  const forwardedProto = String(req.get("x-forwarded-proto") || "").split(",")[0].trim();
+  const protocol = host.includes("localhost") || host.startsWith("127.0.0.1")
+    ? "http"
+    : (forwardedProto || "https");
+  return `${protocol}://${host}${BASE_PATH}`;
+}
+
+function generatePasswordResetToken() {
+  return crypto.randomBytes(32).toString("base64url");
+}
+
+function hashPasswordResetToken(token) {
+  return crypto
+    .createHash("sha256")
+    .update(String(token || ""))
+    .digest("hex");
+}
+
+function getIsoDateFromNow(ms) {
+  return new Date(Date.now() + ms).toISOString();
+}
+
+async function sendPasswordResetEmail(email, resetUrl) {
+  if (!RESEND_API_KEY || !EMAIL_FROM) {
+    const error = new Error("Password reset email is not configured");
+    error.status = 500;
+    throw error;
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: [email],
+      subject: "Reset your YourTeck password",
+      html: `
+        <div style="font-family:Arial,sans-serif;background:#0f0f0f;color:#ffffff;padding:28px;">
+          <div style="max-width:460px;margin:0 auto;background:#1f1f1f;border:1px solid #333;border-radius:16px;padding:24px;">
+            <h1 style="font-size:22px;margin:0 0 10px;">Reset your password</h1>
+            <p style="color:#bdbdbd;margin:0 0 18px;">Use this secure link to choose a new password for your YourTeck NFC profile.</p>
+            <a href="${resetUrl}" style="display:block;background:#00c896;color:#07110e;text-decoration:none;font-weight:700;border-radius:12px;padding:14px 16px;text-align:center;">Reset password</a>
+            <p style="color:#888;font-size:13px;margin:18px 0 0;">This link expires in 30 minutes. If you did not request it, you can ignore this email.</p>
+          </div>
+        </div>
+      `,
+      text: `Reset your YourTeck password: ${resetUrl}\n\nThis link expires in 30 minutes.`
+    })
+  });
+
+  if (!response.ok) {
+    const details = await response.text().catch(() => "");
+    const error = new Error(details || "Password reset email could not be sent");
+    error.status = 502;
+    throw error;
+  }
+}
+
+async function createPasswordResetToken(user, req) {
+  const token = generatePasswordResetToken();
+  const tokenHash = hashPasswordResetToken(token);
+  const email = String(user.email || "").trim().toLowerCase();
+  const resetUrl = `${getAppBaseUrl(req)}/reset-password?token=${encodeURIComponent(token)}`;
+
+  const { error: updateError } = await supabaseAdmin
+    .from("password_reset_tokens")
+    .update({ used_at: new Date().toISOString() })
+    .eq("email", email)
+    .is("used_at", null);
+
+  if (updateError) throw updateError;
+
+  const { error } = await supabaseAdmin
+    .from("password_reset_tokens")
+    .insert({
+      user_id: user.id,
+      email,
+      token_hash: tokenHash,
+      expires_at: getIsoDateFromNow(PASSWORD_RESET_TTL_MS)
+    });
+
+  if (error) throw error;
+
+  await sendPasswordResetEmail(email, resetUrl);
+}
+
 async function createGoogleUser(username, password, profile, client = supabaseServer) {
   const cleanUsername = username.trim().toLowerCase();
   const payload = {
@@ -596,6 +690,97 @@ apiRouter.post('/login', async (req, res) => {
     }
 
     res.json({ success: true, isAdmin: false, email, username: user.username });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.post('/password-reset/request', async (req, res) => {
+  if (!requireServiceRole(res)) return;
+
+  const genericResponse = {
+    success: true,
+    message: "If an account exists, we sent a reset link."
+  };
+
+  try {
+    const email = (req.body.email || "").trim().toLowerCase();
+
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
+    }
+
+    const user = await getUserByEmail(email, supabaseAdmin);
+    if (!user || !user.email || String(user.password || "").startsWith("google:")) {
+      return res.json(genericResponse);
+    }
+
+    const cooldownSince = new Date(Date.now() - PASSWORD_RESET_COOLDOWN_MS).toISOString();
+    const { data: recentToken, error: recentError } = await supabaseAdmin
+      .from("password_reset_tokens")
+      .select("created_at")
+      .eq("email", email)
+      .gte("created_at", cooldownSince)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (recentError) throw recentError;
+
+    if (!recentToken) {
+      await createPasswordResetToken(user, req);
+    }
+
+    res.json(genericResponse);
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.post('/password-reset/complete', async (req, res) => {
+  if (!requireServiceRole(res)) return;
+
+  try {
+    const token = String(req.body.token || "").trim();
+    const password = String(req.body.password || "").trim();
+
+    if (!token || !password) {
+      return res.status(400).json({ error: "Reset token and new password are required" });
+    }
+
+    if (password.length < 3) {
+      return res.status(400).json({ error: "Password must be at least 3 characters" });
+    }
+
+    const tokenHash = hashPasswordResetToken(token);
+    const { data: resetToken, error } = await supabaseAdmin
+      .from("password_reset_tokens")
+      .select("*")
+      .eq("token_hash", tokenHash)
+      .is("used_at", null)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!resetToken || new Date(resetToken.expires_at).getTime() <= Date.now()) {
+      return res.status(400).json({ error: "Reset link is invalid or expired. Please request a new one." });
+    }
+
+    const user = await getUserByEmail(resetToken.email, supabaseAdmin);
+    if (!user || String(user.password || "").startsWith("google:")) {
+      return res.status(400).json({ error: "Reset link is invalid or expired. Please request a new one." });
+    }
+
+    await updateUser(user.username, { password }, supabaseAdmin);
+
+    const { error: usedError } = await supabaseAdmin
+      .from("password_reset_tokens")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", resetToken.id);
+
+    if (usedError) throw usedError;
+
+    res.json({ success: true });
   } catch (error) {
     sendSupabaseError(res, error);
   }
@@ -1062,6 +1247,10 @@ app.get(`${BASE_PATH}/login`, (req, res) => {
   res.sendFile(path.join(publicDir, 'login.html'));
 });
 
+app.get(`${BASE_PATH}/reset-password`, (req, res) => {
+  res.sendFile(path.join(publicDir, 'reset-password.html'));
+});
+
 app.get(`${BASE_PATH}/admin`, (req, res) => {
   res.sendFile(path.join(publicDir, 'admin.html'));
 });
@@ -1078,6 +1267,11 @@ app.get(`${BASE_PATH}/:username`, (req, res) => {
 
 app.get('/login', (req, res) => {
   res.redirect(`${BASE_PATH}/login`);
+});
+
+app.get('/reset-password', (req, res) => {
+  const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+  res.redirect(`${BASE_PATH}/reset-password${query}`);
 });
 
 app.get('/admin', (req, res) => {

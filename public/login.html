@@ -100,10 +100,38 @@
       display: none;
     }
 
+    .forgot-password-row {
+      margin: -4px 0 12px;
+      text-align: right;
+    }
+
+    .forgot-password-row.hidden {
+      display: none;
+    }
+
+    .forgot-password-row button {
+      background: transparent;
+      border: 0;
+      color: #00c896;
+      display: inline;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0;
+      width: auto;
+    }
+
+    .forgot-password-row button:hover {
+      filter: none;
+      text-decoration: underline;
+      transform: none;
+    }
+
+    .forgot-panel.hidden,
     .verification-panel.hidden {
       display: none;
     }
 
+    .forgot-panel,
     .verification-panel {
       background: rgba(0, 200, 150, 0.08);
       border: 1px solid rgba(0, 200, 150, 0.18);
@@ -112,11 +140,20 @@
       padding: 13px;
     }
 
+    .forgot-copy,
     .verification-copy {
       color: #b9c7c3;
       font-size: 13px;
       line-height: 1.4;
       margin: 0 0 12px;
+    }
+
+    .success-message {
+      color: #8ff7d8;
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 8px 0 0;
+      min-height: 18px;
     }
 
     .verification-actions {
@@ -314,10 +351,19 @@
           <input id="password" name="password" placeholder="Password" type="password" autocomplete="current-password">
         </div>
 
+        <div id="forgotPasswordRow" class="forgot-password-row">
+          <button type="button" onclick="setAuthMode('forgot')">Forgot password?</button>
+        </div>
+
         <div id="confirmPasswordField" class="field hidden">
           <label for="confirmPassword">Confirm password</label>
           <input id="confirmPassword" name="confirm-password" placeholder="Confirm password" type="password"
             autocomplete="new-password">
+        </div>
+
+        <div id="forgotPanel" class="forgot-panel hidden">
+          <p class="forgot-copy">Enter your account email. If it exists, we will send a secure password reset link.</p>
+          <div id="forgotSuccess" class="success-message"></div>
         </div>
 
         <div id="verificationPanel" class="verification-panel hidden">
@@ -449,20 +495,25 @@
     }
 
     function setAuthMode(mode) {
-      authMode = mode === "verify" ? "verify" : mode === "signup" ? "signup" : "login";
+      authMode = mode === "verify" ? "verify" : mode === "forgot" ? "forgot" : mode === "signup" ? "signup" : "login";
       const isSignup = authMode === "signup";
       const isVerify = authMode === "verify";
+      const isForgot = authMode === "forgot";
       const error = document.getElementById('error');
 
       error.innerText = "";
+      document.getElementById("forgotSuccess").innerText = "";
       document.getElementById("loginModeBtn").classList.toggle("active", authMode === "login");
-      document.getElementById("signupModeBtn").classList.toggle("active", isSignup || isVerify);
+      document.getElementById("signupModeBtn").classList.toggle("active", isSignup || isVerify || isForgot);
+      document.getElementById("password").parentElement.classList.toggle("hidden", isForgot);
+      document.getElementById("forgotPasswordRow").classList.toggle("hidden", authMode !== "login");
       document.getElementById("confirmPasswordField").classList.toggle("hidden", !isSignup);
+      document.getElementById("forgotPanel").classList.toggle("hidden", !isForgot);
       document.getElementById("verificationPanel").classList.toggle("hidden", !isVerify);
-      document.getElementById("googleAuth").classList.toggle("hidden", isVerify);
+      document.getElementById("googleAuth").classList.toggle("hidden", isVerify || isForgot);
       document.getElementById("email").disabled = isVerify;
       document.getElementById("password").disabled = isVerify;
-      document.getElementById("primaryAuthBtn").innerText = isVerify ? "Verify email" : isSignup ? "Create account" : "Login";
+      document.getElementById("primaryAuthBtn").innerText = isForgot ? "Send reset link" : isVerify ? "Verify email" : isSignup ? "Create account" : "Login";
       document.getElementById("password").setAttribute("autocomplete", isSignup || isVerify ? "new-password" : "current-password");
       document.getElementById("googleNote").innerText = isSignup
         ? "Use Google to sign up instantly, no extra form needed."
@@ -471,6 +522,8 @@
         ? `Already have an account? <button type="button" onclick="setAuthMode('login')">Log in</button>`
         : isVerify
           ? `Need a different email? <button type="button" onclick="setAuthMode('signup')">Edit signup details</button>`
+        : isForgot
+          ? `Remembered it? <button type="button" onclick="setAuthMode('login')">Back to login</button>`
         : `New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button>`;
 
       if (!isVerify) {
@@ -480,6 +533,11 @@
     }
 
     function submitAuth() {
+      if (authMode === "forgot") {
+        requestPasswordReset();
+        return;
+      }
+
       if (authMode === "verify") {
         verifySignupCode();
         return;
@@ -495,6 +553,35 @@
 
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+    }
+
+    function requestPasswordReset() {
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const error = document.getElementById('error');
+      const success = document.getElementById("forgotSuccess");
+
+      error.innerText = "";
+      success.innerText = "";
+
+      if (!email || !isValidEmail(email)) {
+        error.innerText = "Enter a valid email address.";
+        return;
+      }
+
+      fetch(apiPath("/password-reset/request"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      })
+        .then(readJsonResponse)
+        .then(data => {
+          success.innerText = data.message || "If an account exists, we sent a reset link.";
+        })
+        .catch((err) => {
+          error.innerText = err.message || "Reset link could not be sent.";
+        });
     }
 
     function signup() {
