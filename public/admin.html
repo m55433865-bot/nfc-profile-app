@@ -162,37 +162,7 @@
           }
         };
 
-        const name = document.createElement("div");
-        name.className = "admin-user-summary";
-        name.innerHTML = `
-          <span class="admin-row-name">${escapeHtml(user.displayName || user.username)}</span>
-          <span class="admin-row-subtitle">${escapeHtml(user.email || user.username)}</span>
-          ${user.isAdmin ? `<span class="admin-row-meta">admin</span>` : ""}
-        `;
-
-        row.appendChild(name);
-
-        const actions = document.createElement("span");
-        actions.className = "admin-row-actions";
-        const chevron = document.createElement("span");
-        chevron.className = "admin-chevron";
-        chevron.innerHTML = "⌄";
-        actions.appendChild(chevron);
-
-        if (!user.isAdmin) {
-          const menuBtn = document.createElement("button");
-          menuBtn.type = "button";
-          menuBtn.className = "menu-btn edit-icon edit-menu-btn";
-          menuBtn.innerText = "⋮";
-          menuBtn.onclick = (event) => {
-            event.stopPropagation();
-            showUserMenu(user.username, event);
-          };
-
-          actions.appendChild(menuBtn);
-        }
-
-        row.appendChild(actions);
+        row.innerHTML = `<span class="admin-row-email">${escapeHtml(user.email || user.username)}</span>`;
 
         const details = document.createElement("div");
         details.className = "admin-user-details";
@@ -211,31 +181,20 @@
     }
 
     function renderUserDetails(user) {
-      const email = user.email || "Not added";
+      const displayName = user.displayName || user.username || "Not added";
       const phone = getUserPhone(user) || "Not added";
-      const profilePath = appPath(`/profile/${encodeURIComponent(user.username)}`);
-      const profileUrl = `${window.location.origin}${profilePath}`;
 
       return `
         <div class="admin-detail-grid">
           <div class="admin-detail-item">
-            <span>Email</span>
-            <strong>${escapeHtml(email)}</strong>
+            <span>Displayed name</span>
+            <strong>${escapeHtml(displayName)}</strong>
           </div>
           <div class="admin-detail-item">
-            <span>Profile slug</span>
-            <strong>${escapeHtml(user.username)}</strong>
-          </div>
-          <div class="admin-detail-item">
-            <span>Phone</span>
+            <span>Mobile number</span>
             <strong>${escapeHtml(phone)}</strong>
           </div>
-          <div class="admin-detail-item">
-            <span>Public profile</span>
-            <a href="${profilePath}" target="_blank" rel="noopener">View Profile</a>
-          </div>
         </div>
-        <div class="admin-profile-url">${escapeHtml(profileUrl)}</div>
       `;
     }
 

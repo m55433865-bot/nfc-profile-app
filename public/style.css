@@ -1211,15 +1211,15 @@ input,
 
 .admin-user-row {
   align-items: center;
-  background: transparent;
+  background: var(--surface-color);
   border: 0;
   color: var(--text-color);
   cursor: pointer;
   display: flex;
   font: inherit;
-  justify-content: space-between;
-  min-height: 54px;
-  padding: 12px;
+  justify-content: flex-start;
+  min-height: 56px;
+  padding: 0 12px;
   text-align: left;
   width: 100%;
 }
@@ -1233,6 +1233,16 @@ input,
   outline-offset: -2px;
 }
 
+.admin-row-email {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .admin-user-summary {
   display: grid;
   gap: 3px;
@@ -1242,10 +1252,6 @@ input,
 .admin-row-name {
   display: block;
   font-weight: 600;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .admin-row-subtitle {
@@ -1285,21 +1291,19 @@ input,
 }
 
 .admin-user-details {
-  border-top: 1px solid transparent;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  padding: 0 12px;
+  padding: 0 14px;
   text-align: left;
   transform: translateY(-4px);
-  transition: max-height 0.24s ease, opacity 0.18s ease, padding 0.24s ease, transform 0.24s ease, border-color 0.18s ease;
+  transition: max-height 0.24s ease, opacity 0.18s ease, padding 0.24s ease, transform 0.24s ease;
 }
 
 .admin-user-card.expanded .admin-user-details {
-  border-top-color: var(--border-color);
-  max-height: 300px;
+  max-height: 140px;
   opacity: 1;
-  padding: 10px 12px 12px;
+  padding: 0 14px 12px;
   transform: translateY(0);
 }
 
@@ -1311,13 +1315,14 @@ input,
 
 .admin-detail-item {
   align-items: center;
-  background: transparent;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color), transparent 45%);
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   display: flex;
   gap: 12px;
   justify-content: space-between;
   min-width: 0;
-  padding: 9px 0;
+  padding: 9px 10px;
 }
 
 .admin-detail-item span {
