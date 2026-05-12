@@ -309,6 +309,12 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
+    .theme-preview-svg {
+      display: block;
+      height: 36px;
+      width: 48px;
+    }
+
     .theme-preview-card {
       background: var(--theme-preview-surface);
       border: 1px solid var(--theme-preview-border);
@@ -900,6 +906,19 @@
       return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
     }
 
+    function renderThemePreviewSwatch(palette, accent) {
+      return `
+        <svg class="theme-preview-svg" viewBox="0 0 48 36" aria-hidden="true" focusable="false">
+          <rect x="0.5" y="0.5" width="47" height="35" rx="11" fill="${palette.bg}" stroke="${palette.border}" />
+          <circle cx="11" cy="9" r="9" fill="${accent}" opacity="0.14" />
+          <rect x="10" y="7" width="28" height="22" rx="7" fill="${palette.surface}" stroke="${palette.border}" />
+          <circle cx="24" cy="14" r="3.3" fill="${accent}" />
+          <rect x="17" y="20" width="14" height="2.6" rx="1.3" fill="${accent}" opacity="0.48" />
+          <rect x="15" y="25" width="18" height="3" rx="1.5" fill="${accent}" opacity="0.92" />
+        </svg>
+      `;
+    }
+
     function getThemePalette(theme) {
       const safeTheme = sanitizeTheme(theme);
       const preset = themePresets[safeTheme.preset] || themePresets[defaultTheme.preset];
@@ -942,11 +961,7 @@
         button.className = `appearance-preset ${state.theme.preset === key ? "active" : ""}`;
         button.innerHTML = `
           <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${state.theme.accent};">
-            <div class="theme-preview-card" style="background:${palette.surface}; border-color:${palette.border};">
-              <div class="theme-preview-avatar" style="background:${state.theme.accent};"></div>
-              <div class="theme-preview-line" style="background:${state.theme.accent};"></div>
-              <div class="theme-preview-link" style="background:${state.theme.accent};"></div>
-            </div>
+            ${renderThemePreviewSwatch(palette, state.theme.accent)}
           </span>
           <span>${preset.label}</span>
         `;
