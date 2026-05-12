@@ -249,8 +249,12 @@
                 button.type = "button";
                 button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
                 button.innerHTML = `
-                    <span class="appearance-swatch" style="background:${palette.bg}; border-color:${palette.border};">
-                        <span style="background:${palette.surface};"></span>
+                    <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
+                        <span class="theme-preview-card">
+                            <span class="theme-preview-avatar"></span>
+                            <span class="theme-preview-line"></span>
+                            <span class="theme-preview-link"></span>
+                        </span>
                     </span>
                     <span>${preset.label}</span>
                 `;

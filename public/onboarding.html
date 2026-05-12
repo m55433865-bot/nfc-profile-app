@@ -294,17 +294,62 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       display: inline-flex;
-      flex: 0 0 34px;
-      height: 34px;
+      flex: 0 0 48px;
+      height: 36px;
       justify-content: center;
-      width: 34px;
+      overflow: hidden;
+      width: 48px;
     }
 
-    .appearance-swatch span {
-      border-radius: 7px;
+    .theme-preview-swatch {
+      background:
+        radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--theme-preview-accent) 18%, transparent), transparent 45%),
+        var(--theme-preview-bg);
+      border-color: var(--theme-preview-border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .theme-preview-card {
+      background: var(--theme-preview-surface);
+      border: 1px solid color-mix(in srgb, var(--theme-preview-border) 70%, transparent);
+      border-radius: 8px;
+      box-shadow: 0 7px 16px rgba(0, 0, 0, 0.2);
+      display: grid;
+      gap: 3px;
+      height: 24px;
+      padding: 4px;
+      width: 32px;
+    }
+
+    .theme-preview-avatar,
+    .theme-preview-line,
+    .theme-preview-link {
       display: block;
-      height: 18px;
+    }
+
+    .theme-preview-avatar {
+      background: var(--theme-preview-accent);
+      border-radius: 50%;
+      height: 6px;
+      justify-self: center;
+      opacity: 0.95;
+      width: 6px;
+    }
+
+    .theme-preview-line {
+      background: color-mix(in srgb, var(--theme-preview-accent) 42%, var(--theme-preview-surface));
+      border-radius: 999px;
+      height: 3px;
+      justify-self: center;
       width: 18px;
+    }
+
+    .theme-preview-link {
+      background: var(--theme-preview-accent);
+      border-radius: 999px;
+      height: 4px;
+      opacity: 0.9;
+      width: 100%;
     }
 
     .accent-swatch {
@@ -893,8 +938,12 @@
         button.type = "button";
         button.className = `appearance-preset ${state.theme.preset === key ? "active" : ""}`;
         button.innerHTML = `
-          <span class="appearance-swatch" style="background:${palette.bg}; border-color:${palette.border};">
-            <span style="background:${palette.surface};"></span>
+          <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${state.theme.accent};">
+            <span class="theme-preview-card">
+              <span class="theme-preview-avatar"></span>
+              <span class="theme-preview-line"></span>
+              <span class="theme-preview-link"></span>
+            </span>
           </span>
           <span>${preset.label}</span>
         `;
