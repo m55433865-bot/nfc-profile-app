@@ -639,18 +639,34 @@ apiRouter.post('/admin/users', async (req, res) => {
   if (!requireServiceRole(res)) return;
 
   try {
-    const username = (req.body.username || "").trim().toLowerCase();
+    const email = (req.body.email || "").trim().toLowerCase();
     const password = (req.body.password || "").trim();
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    if (username === ADMIN_USERNAME || await getUser(username, supabaseAdmin)) {
-      return res.status(409).json({ error: "Username already exists" });
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
     }
 
-    await createUser(username, password, supabaseAdmin);
+    if (password.length < 3) {
+      return res.status(400).json({ error: "Password must be at least 3 characters" });
+    }
+
+    // Check if email already exists
+    const existingUser = await getUserByEmail(email, supabaseAdmin);
+    if (existingUser) {
+      return res.status(409).json({ error: "Email already exists" });
+    }
+
+    // Generate a temporary username from email (user will set display name + profile slug in onboarding)
+    const emailBase = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+    const suffix = Math.random().toString(36).substring(2, 8);
+    const tempUsername = `${emailBase}${suffix}`.slice(0, 32);
+
+    // Create user with temporary username and email
+    await createUser(tempUsername, password, supabaseAdmin, email);
     res.json({ success: true });
   } catch (error) {
     sendSupabaseError(res, error);

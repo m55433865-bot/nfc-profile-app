@@ -54,8 +54,8 @@
       <div id="modalTitle" class="modal-title">Add user</div>
 
       <div class="link-edit-fields">
-        <input id="usernameInput" class="theme-input" placeholder="Username">
-        <input id="passwordInput" class="theme-input" placeholder="Password" type="password">
+        <input id="emailInput" class="theme-input" placeholder="User email">
+        <input id="passwordInput" class="theme-input" placeholder="Temporary password" type="password">
 
         <div class="form-actions">
           <button type="button" class="ui-btn secondary" onclick="closeModal()">Cancel</button>
@@ -82,7 +82,7 @@
     const adminMessage = document.getElementById("adminMessage");
     const adminModal = document.getElementById("adminModal");
     const modalTitle = document.getElementById("modalTitle");
-    const usernameInput = document.getElementById("usernameInput");
+    const emailInput = document.getElementById("emailInput");
     const passwordInput = document.getElementById("passwordInput");
 
     let selectedUsername = null;
@@ -203,7 +203,7 @@
 
     function closeModal() {
       adminModal.style.display = "none";
-      usernameInput.value = "";
+      emailInput.value = "";
       passwordInput.value = "";
     }
 
@@ -217,23 +217,30 @@
     }
 
     function addUser() {
-      const username = usernameInput.value.trim().toLowerCase();
+      const email = emailInput.value.trim().toLowerCase();
       const password = passwordInput.value.trim();
 
-      if (!username) {
-        showMessage("Username is required");
+      if (!email) {
+        showMessage("User email is required");
         return;
       }
 
       if (!password) {
-        showMessage("Password is required");
+        showMessage("Temporary password is required");
+        return;
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showMessage("Please enter a valid email address");
         return;
       }
 
       fetch(apiPath("/admin/users"), {
         method: "POST",
         headers: adminHeaders(),
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ email, password })
       })
         .then(res => res.json())
         .then(data => {
