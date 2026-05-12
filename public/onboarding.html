@@ -155,6 +155,74 @@
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 86%);
     }
 
+    .phone-input-group {
+      display: block;
+      width: 100%;
+    }
+
+    .phone-input-group.phone-active {
+      align-items: stretch;
+      background: rgba(4, 7, 14, 0.58);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      display: flex;
+      min-height: 48px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .phone-input-group.phone-active:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 86%);
+    }
+
+    .phone-country-field {
+      display: none;
+      flex: 0 0 174px;
+      min-width: 0;
+    }
+
+    .phone-country-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background:
+        linear-gradient(45deg, transparent 50%, currentColor 50%) calc(100% - 18px) 20px / 6px 6px no-repeat,
+        linear-gradient(135deg, currentColor 50%, transparent 50%) calc(100% - 12px) 20px / 6px 6px no-repeat,
+        rgba(255, 255, 255, 0.055);
+      border: 0;
+      border-radius: 0;
+      border-right: 1px solid var(--border);
+      box-shadow: none;
+      color: var(--text);
+      color-scheme: dark;
+      font-size: 14px;
+      height: 48px;
+      min-height: 48px;
+      outline: none;
+      padding: 0 34px 0 12px;
+      width: 100%;
+    }
+
+    .phone-country-select option {
+      background: #1f1f1f;
+      color: #ffffff;
+    }
+
+    .phone-input-group.phone-active .phone-number-input {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .phone-input-group.phone-active .phone-number-input:focus {
+      border: 0;
+      box-shadow: none;
+    }
+
     .theme-grid,
     .contact-grid {
       display: grid;
@@ -439,6 +507,19 @@
       .setup-actions.contact-actions #nextBtn {
         grid-column: span 2;
       }
+
+      .phone-input-group.phone-active {
+        flex-direction: column;
+      }
+
+      .phone-country-field {
+        flex-basis: auto;
+      }
+
+      .phone-country-select {
+        border-bottom: 1px solid var(--border);
+        border-right: 0;
+      }
     }
   </style>
 </head>
@@ -502,9 +583,13 @@
           preview.</p>
         <div id="contactOptions" class="contact-grid"></div>
         <div class="field-grid">
-          <label>Contact value
-            <input id="contactValueInput" placeholder="Phone number, WhatsApp number, or email">
-          </label>
+          <label for="contactValueInput">Contact value</label>
+          <div id="phoneInputGroup" class="phone-input-group">
+            <div id="phoneCountryField" class="phone-country-field">
+              <select id="phoneCountryCode" class="phone-country-select" aria-label="Country code"></select>
+            </div>
+            <input id="contactValueInput" class="phone-number-input" placeholder="Phone number, WhatsApp number, or email">
+          </div>
           <label>Display label
             <input id="contactLabelInput" placeholder="Display label, e.g. My Number">
           </label>
@@ -514,7 +599,7 @@
 
       <div class="setup-actions">
         <button id="backBtn" class="setup-btn secondary" type="button">Back</button>
-        <button id="addStarterBlockBtn" class="setup-btn ghost" type="button">Add another label</button>
+        <button id="addStarterBlockBtn" class="setup-btn ghost" type="button">Add another block</button>
         <button id="nextBtn" class="setup-btn primary" type="button">Continue</button>
       </div>
       <div id="setupError" class="setup-error"></div>
@@ -553,6 +638,28 @@
       { type: "email", label: "Email", placeholder: "Email address" },
       { type: "instagram", label: "Instagram", placeholder: "Instagram username or URL" }
     ];
+
+    const phoneCountryOptions = [
+      { code: "+965", label: "Kuwait" },
+      { code: "+1", label: "US / Canada" },
+      { code: "+44", label: "United Kingdom" },
+      { code: "+971", label: "UAE" },
+      { code: "+966", label: "Saudi Arabia" },
+      { code: "+974", label: "Qatar" },
+      { code: "+973", label: "Bahrain" },
+      { code: "+968", label: "Oman" },
+      { code: "+20", label: "Egypt" },
+      { code: "+962", label: "Jordan" },
+      { code: "+961", label: "Lebanon" },
+      { code: "+91", label: "India" },
+      { code: "+92", label: "Pakistan" },
+      { code: "+63", label: "Philippines" },
+      { code: "+90", label: "Turkey" },
+      { code: "+49", label: "Germany" },
+      { code: "+33", label: "France" }
+    ];
+
+    let selectedPhoneCountryCode = "+1";
 
     const state = {
       step: 0,
@@ -657,11 +764,101 @@
           state.contactType = item.type;
           document.getElementById("contactValueInput").placeholder = item.placeholder;
           document.getElementById("contactLabelInput").placeholder = `Display label, e.g. ${item.label}`;
+          updatePhoneInputMode();
           renderContactOptions();
           updatePreview();
         };
         el.appendChild(button);
       });
+    }
+
+    function getDefaultPhoneCountryCode() {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      const locale = navigator.language || "";
+      const timeZoneMap = [
+        [/Kuwait/i, "+965"],
+        [/Riyadh/i, "+966"],
+        [/Dubai/i, "+971"],
+        [/Qatar/i, "+974"],
+        [/Bahrain/i, "+973"],
+        [/Muscat/i, "+968"],
+        [/Cairo/i, "+20"],
+        [/Amman/i, "+962"],
+        [/Beirut/i, "+961"],
+        [/New_York|Chicago|Denver|Los_Angeles|Toronto|Vancouver/i, "+1"],
+        [/London/i, "+44"],
+        [/Kolkata/i, "+91"],
+        [/Karachi/i, "+92"],
+        [/Manila/i, "+63"],
+        [/Istanbul/i, "+90"],
+        [/Berlin/i, "+49"],
+        [/Paris/i, "+33"]
+      ];
+      const localeMap = {
+        KW: "+965",
+        US: "+1",
+        CA: "+1",
+        GB: "+44",
+        AE: "+971",
+        SA: "+966",
+        QA: "+974",
+        BH: "+973",
+        OM: "+968",
+        EG: "+20",
+        JO: "+962",
+        LB: "+961",
+        IN: "+91",
+        PK: "+92",
+        PH: "+63",
+        TR: "+90",
+        DE: "+49",
+        FR: "+33"
+      };
+
+      const zoneMatch = timeZoneMap.find(([pattern]) => pattern.test(timeZone));
+      if (zoneMatch) return zoneMatch[1];
+
+      const region = locale.split("-")[1];
+      return localeMap[region] || "+1";
+    }
+
+    function isPhoneContactType(type) {
+      return ["phone", "whatsapp"].includes(type);
+    }
+
+    function setupPhoneCountrySelect() {
+      const select = document.getElementById("phoneCountryCode");
+      if (!select) return;
+
+      select.innerHTML = phoneCountryOptions
+        .map(country => `<option value="${country.code}">${country.code} ${country.label}</option>`)
+        .join("");
+
+      selectedPhoneCountryCode = phoneCountryOptions.some(country => country.code === selectedPhoneCountryCode)
+        ? selectedPhoneCountryCode
+        : getDefaultPhoneCountryCode();
+      select.value = selectedPhoneCountryCode;
+    }
+
+    function getSelectedPhoneCountryCode() {
+      const select = document.getElementById("phoneCountryCode");
+      const code = select ? select.value : selectedPhoneCountryCode;
+      return /^\+\d{1,4}$/.test(code) ? code : getDefaultPhoneCountryCode();
+    }
+
+    function updatePhoneCountryCode(value) {
+      selectedPhoneCountryCode = value;
+      updatePreview();
+    }
+
+    function updatePhoneInputMode() {
+      const group = document.getElementById("phoneInputGroup");
+      const countryField = document.getElementById("phoneCountryField");
+      const isPhoneType = isPhoneContactType(state.contactType);
+      if (!group || !countryField) return;
+
+      group.classList.toggle("phone-active", isPhoneType);
+      countryField.style.display = isPhoneType ? "flex" : "none";
     }
 
     function renderStep() {
@@ -755,22 +952,87 @@
       return icons[type] || icons.phone;
     }
 
+    function isLikelyPhone(value) {
+      const digits = (value || "").replace(/\D/g, "");
+      return digits.length >= 7 && digits.length <= 15;
+    }
+
+    function normalizePhone(value, withPlus = true, countryCode = getSelectedPhoneCountryCode()) {
+      const rawValue = (value || "").trim();
+      let digits = rawValue.replace(/\D/g, "");
+      if (!digits) return "";
+
+      const selectedCode = (countryCode || "").replace(/\D/g, "");
+      const startsWithInternationalPrefix = rawValue.startsWith("+") || rawValue.startsWith("00");
+
+      if (rawValue.startsWith("00")) {
+        digits = digits.replace(/^00/, "");
+      } else if (!startsWithInternationalPrefix && selectedCode && !digits.startsWith(selectedCode)) {
+        digits = `${selectedCode}${digits}`;
+      }
+
+      return withPlus ? `+${digits}` : digits;
+    }
+
+    function cleanUsername(value) {
+      return (value || "")
+        .trim()
+        .replace(/^@/, "")
+        .replace(/^\/+/, "")
+        .replace(/\/+$/, "");
+    }
+
+    function isFullUrlLike(value) {
+      const cleanValue = (value || "").trim();
+      return /^[a-z][a-z0-9+.-]*:/i.test(cleanValue) || cleanValue.includes(".");
+    }
+
+    function normalizeUrl(value) {
+      const cleanValue = (value || "").trim();
+      if (!cleanValue) return "";
+      if (/^[a-z][a-z0-9+.-]*:/i.test(cleanValue)) return cleanValue;
+      return `https://${cleanValue.replace(/^\/+/, "")}`;
+    }
+
+    function buildSocialUrl(type, value, baseUrl, usernamePrefix = "") {
+      const cleanValue = (value || "").trim();
+      if (!cleanValue) return "";
+
+      if (isFullUrlLike(cleanValue)) {
+        return normalizeUrl(cleanValue);
+      }
+
+      const username = cleanUsername(cleanValue);
+      if (!username) return "";
+
+      return `${baseUrl}${usernamePrefix}${encodeURIComponent(username)}`;
+    }
+
+    function buildFinalUrl(type, value, countryCode = getSelectedPhoneCountryCode()) {
+      const cleanValue = (value || "").trim();
+      if (!cleanValue) return "";
+
+      switch (type) {
+        case "phone":
+          return isLikelyPhone(cleanValue) ? `tel:${normalizePhone(cleanValue, true, countryCode)}` : normalizeUrl(cleanValue);
+        case "whatsapp":
+          return isLikelyPhone(cleanValue) ? `https://wa.me/${normalizePhone(cleanValue, false, countryCode)}` : normalizeUrl(cleanValue);
+        case "email":
+          return cleanValue.startsWith("mailto:") ? cleanValue : `mailto:${cleanValue}`;
+        case "instagram":
+          return buildSocialUrl(type, cleanValue, "https://instagram.com/");
+        default:
+          return normalizeUrl(cleanValue);
+      }
+    }
+
     function buildContactLink(type = state.contactType, rawValue = state.contactValue, rawLabel = state.contactLabel) {
       const value = String(rawValue || "").trim();
       if (!value) return null;
       const config = contactTypes.find(item => item.type === type) || contactTypes[0];
       const label = String(rawLabel || "").trim() || config.label;
-      let url = value;
-      if (type === "email") {
-        url = value.startsWith("mailto:") ? value : `mailto:${value}`;
-      } else if (type === "instagram") {
-        const handle = value.replace(/^@/, "");
-        url = /^https?:\/\//i.test(value) ? value : `https://instagram.com/${handle.replace(/^instagram\.com\//i, "")}`;
-      } else {
-        const digits = value.replace(/\D/g, "");
-        if (!digits) return null;
-        url = type === "whatsapp" ? `https://wa.me/${digits}` : `tel:+${digits}`;
-      }
+      const url = buildFinalUrl(type, value, getSelectedPhoneCountryCode());
+      if (!url) return null;
       return {
         name: label,
         label,
@@ -869,11 +1131,15 @@
     };
 
     document.getElementById("addStarterBlockBtn").onclick = addStarterBlock;
+    document.getElementById("phoneCountryCode").addEventListener("change", event => updatePhoneCountryCode(event.target.value));
 
     ["displayNameInput", "titleInput", "contactValueInput", "contactLabelInput"].forEach(id => {
       document.getElementById(id).addEventListener("input", updatePreview);
     });
 
+    selectedPhoneCountryCode = getDefaultPhoneCountryCode();
+    setupPhoneCountrySelect();
+    updatePhoneInputMode();
     document.getElementById("contactValueInput").placeholder = contactTypes[0].placeholder;
     document.getElementById("contactLabelInput").placeholder = `Display label, e.g. ${contactTypes[0].label}`;
     loadUser();
