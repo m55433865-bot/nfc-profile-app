@@ -243,47 +243,49 @@
     </section>
 
     <section class="login-card">
-      <div class="auth-toggle" role="tablist" aria-label="Authentication mode">
-        <button id="loginModeBtn" class="active" type="button" onclick="setAuthMode('login')">Login</button>
-        <button id="signupModeBtn" type="button" onclick="setAuthMode('signup')">Create account</button>
-      </div>
-
-      <div id="emailField" class="field hidden">
-        <label for="email">Email</label>
-        <input id="email" name="email" placeholder="Email address" type="email" autocomplete="email">
-      </div>
-
-      <div class="field">
-        <label for="username">Username</label>
-        <input id="username" name="username" type="text" placeholder="Username" autocomplete="username">
-      </div>
-
-      <div class="field">
-        <label for="password">Password</label>
-        <input id="password" name="new-password" placeholder="Password" type="password" autocomplete="new-password">
-      </div>
-
-      <div id="confirmPasswordField" class="field hidden">
-        <label for="confirmPassword">Confirm password</label>
-        <input id="confirmPassword" name="confirm-password" placeholder="Confirm password" type="password"
-          autocomplete="new-password">
-      </div>
-
-      <div id="error" class="error"></div>
-
-      <button id="primaryAuthBtn" type="button" onclick="submitAuth()">Login</button>
-
-      <div id="googleAuth" class="google-auth">
-        <div class="auth-divider">or</div>
-        <div class="google-button-shell">
-          <div id="googleButton"></div>
+      <form autocomplete="off">
+        <div class="auth-toggle" role="tablist" aria-label="Authentication mode">
+          <button id="loginModeBtn" class="active" type="button" onclick="setAuthMode('login')">Login</button>
+          <button id="signupModeBtn" type="button" onclick="setAuthMode('signup')">Create account</button>
         </div>
-        <p id="googleNote" class="google-note">Use Google to sign up or log in. New users go to profile setup.</p>
-      </div>
 
-      <p id="authSwitchCopy" class="auth-switch-copy">
-        New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button>
-      </p>
+        <div id="emailField" class="field hidden">
+          <label for="email">Email</label>
+          <input id="email" name="email" placeholder="Email address" type="email" autocomplete="email">
+        </div>
+
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="Username" autocomplete="username">
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="new-password" placeholder="Password" type="password" autocomplete="new-password">
+        </div>
+
+        <div id="confirmPasswordField" class="field hidden">
+          <label for="confirmPassword">Confirm password</label>
+          <input id="confirmPassword" name="confirm-password" placeholder="Confirm password" type="password"
+            autocomplete="new-password">
+        </div>
+
+        <div id="error" class="error"></div>
+
+        <button id="primaryAuthBtn" type="button" onclick="submitAuth()">Login</button>
+
+        <div id="googleAuth" class="google-auth">
+          <div class="auth-divider">or</div>
+          <div class="google-button-shell">
+            <div id="googleButton"></div>
+          </div>
+          <p id="googleNote" class="google-note">Use Google to sign up or log in. New users go to profile setup.</p>
+        </div>
+
+        <p id="authSwitchCopy" class="auth-switch-copy">
+          New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button>
+        </p>
+      </form>
     </section>
   </main>
 
@@ -378,6 +380,7 @@
       document.getElementById("confirmPasswordField").classList.toggle("hidden", !isSignup);
       document.getElementById("primaryAuthBtn").innerText = isSignup ? "Create account" : "Login";
       document.getElementById("password").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
+      document.getElementById("username").setAttribute("autocomplete", isSignup ? "off" : "username");
       document.getElementById("googleNote").innerText = isSignup
         ? "Use Google to sign up instantly, no extra form needed."
         : "Use Google to sign up or log in. New users go to profile setup.";
