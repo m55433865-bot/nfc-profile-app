@@ -141,6 +141,18 @@ async function getUser(username, client = supabaseServer) {
   return normalizeUser(data);
 }
 
+async function getUserByEmail(email, client = supabaseServer) {
+  const cleanEmail = email.toLowerCase();
+  const { data, error } = await client
+    .from('users')
+    .select('*')
+    .eq('email', cleanEmail)
+    .maybeSingle();
+
+  if (error) throw error;
+  return normalizeUser(data);
+}
+
 async function listUsers(client = supabaseServer) {
   const { data, error } = await client
     .from('users')
@@ -456,62 +468,110 @@ function sendSupabaseError(res, error) {
 
 const apiRouter = express.Router();
 
-// LOGIN
+// LOGIN - Email based
 apiRouter.post('/login', async (req, res) => {
   try {
-    const username = (req.body.username || "").trim().toLowerCase();
+    const email = (req.body.email || "").trim().toLowerCase();
     const password = (req.body.password || "").trim();
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      return res.json({ success: true, isAdmin: true, username });
-    }
-
-    const user = await getUser(username);
+    const user = await getUserByEmail(email);
 
     if (!user || user.password !== password) {
-      return res.status(403).json({ error: "Wrong username or password" });
+      return res.status(403).json({ error: "Wrong email or password" });
     }
 
-    res.json({ success: true, isAdmin: false, username });
+    res.json({ success: true, isAdmin: false, email, username: user.username });
   } catch (error) {
     sendSupabaseError(res, error);
   }
 });
 
+// Get current user (email-based auth)
+apiRouter.post('/auth/user', async (req, res) => {
+  try {
+    // This endpoint expects the email from the frontend
+    // In a production app, you'd use session/JWT tokens instead
+    const email = (req.body.email || "").trim().toLowerCase();
+    const password = (req.body.password || "").trim();
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await getUserByEmail(email);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (password && user.password !== password) {
+      return res.status(403).json({ error: "Invalid credentials" });
+    }
+
+    res.json({ 
+      success: true, 
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName,
+      bio: user.bio,
+      avatar: user.avatar,
+      links: user.links,
+      theme: user.theme
+    });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+// GET current user endpoint (called from profile routing)
+apiRouter.get('/auth/user', async (req, res) => {
+  try {
+    // This is a public endpoint that just returns success
+    // The frontend determines routing based on profile existence
+    res.json({ success: true });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+// SIGNUP - Email based, generates temporary username
 apiRouter.post('/signup', async (req, res) => {
   if (!requireServiceRole(res)) return;
 
   try {
     const email = (req.body.email || "").trim().toLowerCase();
-    const username = (req.body.username || "").trim().toLowerCase();
     const password = (req.body.password || "").trim();
 
-    if (!email || !username || !password) {
-      return res.status(400).json({ error: "Email, username, and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     if (!isValidEmail(email)) {
       return res.status(400).json({ error: "Enter a valid email address" });
     }
 
-    if (!/^[a-z0-9_]{3,32}$/.test(username)) {
-      return res.status(400).json({ error: "Username must be 3-32 letters, numbers, or underscores" });
-    }
-
     if (password.length < 3) {
       return res.status(400).json({ error: "Password must be at least 3 characters" });
     }
 
-    if (username === ADMIN_USERNAME || await getUser(username, supabaseAdmin)) {
-      return res.status(409).json({ error: "Username already exists" });
+    // Check if email already exists
+    const existingUser = await getUserByEmail(email, supabaseAdmin);
+    if (existingUser) {
+      return res.status(409).json({ error: "Email already exists" });
     }
 
-    await createUser(username, password, supabaseAdmin, email);
-    res.json({ success: true, username });
+    // Generate a temporary username from email (user will set display name + profile slug in onboarding)
+    const emailBase = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+    const suffix = Math.random().toString(36).substring(2, 8);
+    const tempUsername = `${emailBase}${suffix}`.slice(0, 32);
+
+    // Create user with temporary username and email
+    const user = await createUser(tempUsername, password, supabaseAdmin, email);
+    res.json({ success: true, username: user.username, email: user.email });
   } catch (error) {
     sendSupabaseError(res, error);
   }
@@ -535,6 +595,7 @@ apiRouter.post('/auth/google', async (req, res) => {
       provider: "google",
       created,
       username: user.username,
+      email: user.email || profile.email,
       password,
       user
     });

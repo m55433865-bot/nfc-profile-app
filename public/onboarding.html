@@ -534,8 +534,9 @@
     const BASE_PATH = "/nfc";
     const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
     const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
-    const username = (localStorage.getItem("username") || "").trim().toLowerCase();
+    const email = (localStorage.getItem("email") || "").trim().toLowerCase();
     const password = localStorage.getItem("password") || "";
+    let username = "";
 
     const themes = {
       midnight: { label: "Midnight", bg: "#0f0f0f", surface: "#202020", text: "#ffffff", muted: "#aaa", border: "#333", accent: "#00c896" },
@@ -565,7 +566,7 @@
       starterLinks: []
     };
 
-    if (!username || !password) {
+    if (!email || !password) {
       window.location.replace(appPath("/login"));
     }
 
@@ -576,10 +577,21 @@
     }
 
     function loadUser() {
-      fetch(apiPath(`/${username}`))
+      // First, get the user by email to retrieve their username
+      fetch(apiPath("/auth/user"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      })
         .then(res => res.json())
         .then(user => {
           if (user.error) {
+            window.location.replace(appPath("/login"));
+            return;
+          }
+
+          username = user.username;
+          if (!username) {
             window.location.replace(appPath("/login"));
             return;
           }

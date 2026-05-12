@@ -244,26 +244,19 @@
 
     <section class="login-card">
       <form autocomplete="off">
-        <input type="text" name="fake-username" autocomplete="username" aria-hidden="true" tabindex="-1"
-          style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;">
         <div class="auth-toggle" role="tablist" aria-label="Authentication mode">
           <button id="loginModeBtn" class="active" type="button" onclick="setAuthMode('login')">Login</button>
           <button id="signupModeBtn" type="button" onclick="setAuthMode('signup')">Create account</button>
         </div>
 
-        <div id="emailField" class="field hidden">
-          <label for="signupEmail">Email</label>
-          <input id="signupEmail" name="signup_email" placeholder="Email address" type="email" autocomplete="email">
-        </div>
-
         <div class="field">
-          <label for="signupUsername">Username</label>
-          <input id="signupUsername" name="signup_username" type="text" placeholder="Username" autocomplete="username">
+          <label for="email">Email</label>
+          <input id="email" name="email" placeholder="Email address" type="email" autocomplete="email">
         </div>
 
         <div class="field">
           <label for="password">Password</label>
-          <input id="password" name="new-password" placeholder="Password" type="password" autocomplete="new-password">
+          <input id="password" name="password" placeholder="Password" type="password" autocomplete="current-password">
         </div>
 
         <div id="confirmPasswordField" class="field hidden">
@@ -295,37 +288,17 @@
     const BASE_PATH = "/nfc";
     const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
     const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
-    const storedUsername = localStorage.getItem("username");
+    const storedEmail = localStorage.getItem("email");
     const storedPassword = localStorage.getItem("password");
     let googleLoginInitialized = false;
     let authMode = "login";
 
     document.addEventListener("DOMContentLoaded", () => {
       setAuthMode("login");
-
-      const usernameInput = document.getElementById('signupUsername');
-      if (usernameInput) {
-        usernameInput.addEventListener('input', () => {
-          const error = document.getElementById('error');
-          if (authMode === 'signup' && usernameInput.value.includes('@')) {
-            usernameInput.value = "";
-            error.innerText = "Please choose a username, not an email.";
-          }
-        });
-      }
-
-      setTimeout(() => {
-        const usernameInput = document.getElementById('signupUsername');
-        const error = document.getElementById('error');
-        if (usernameInput && usernameInput.value.includes('@')) {
-          usernameInput.value = "";
-          error.innerText = "Please choose a username, not an email.";
-        }
-      }, 200);
     });
 
-    if (storedUsername && storedPassword) {
-      routeAfterLogin(storedUsername, storedPassword);
+    if (storedEmail && storedPassword) {
+      routeAfterLogin(storedEmail, storedPassword);
     }
 
     function needsOnboarding(user) {
@@ -334,39 +307,37 @@
       return displayName === userName && !(user.bio || "").trim() && (!Array.isArray(user.links) || user.links.length === 0);
     }
 
-    function routeAfterLogin(username, password) {
-      const cleanUsername = (username || "").trim().toLowerCase();
+    function routeAfterLogin(email, password) {
+      const cleanEmail = (email || "").trim().toLowerCase();
 
-      if (cleanUsername === "66546788") {
-        window.location.replace(appPath("/admin"));
-        return;
-      }
-
-      fetch(apiPath(`/${cleanUsername}`))
+      fetch(apiPath("/auth/user"))
         .then(res => res.json())
         .then(user => {
-          const completeKey = `onboardingComplete:${cleanUsername}`;
-          if (user && !user.error && needsOnboarding(user) && localStorage.getItem(completeKey) !== "true") {
+          if (user && user.username) {
+            const completeKey = `onboardingComplete:${user.username}`;
+            if (user && !user.error && needsOnboarding(user) && localStorage.getItem(completeKey) !== "true") {
+              window.location.replace(appPath("/onboarding"));
+              return;
+            }
+            window.location.replace(appPath(`/profile/${user.username}`));
+          } else {
             window.location.replace(appPath("/onboarding"));
-            return;
           }
-
-          window.location.replace(appPath(`/profile/${cleanUsername}`));
         })
         .catch(() => {
-          window.location.replace(appPath(`/profile/${cleanUsername}`));
+          window.location.replace(appPath("/onboarding"));
         });
     }
 
     function login() {
-      const username = document.getElementById('signupUsername').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
       const password = document.getElementById('password').value.trim();
       const error = document.getElementById('error');
 
       error.innerText = "";
 
-      if (!username || !password) {
-        error.innerText = "Enter your username and password.";
+      if (!email || !password) {
+        error.innerText = "Enter your email and password.";
         return;
       }
 
@@ -375,7 +346,7 @@
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ email, password })
       })
         .then(res => res.json())
         .then(data => {
@@ -384,10 +355,10 @@
             return;
           }
 
-          localStorage.setItem('username', data.username || username);
+          localStorage.setItem('email', email);
           localStorage.setItem('password', password);
 
-          routeAfterLogin(data.username || username, password);
+          routeAfterLogin(email, password);
         })
         .catch(() => {
           error.innerText = "Login failed. Try again.";
@@ -402,11 +373,9 @@
       error.innerText = "";
       document.getElementById("loginModeBtn").classList.toggle("active", !isSignup);
       document.getElementById("signupModeBtn").classList.toggle("active", isSignup);
-      document.getElementById("emailField").classList.toggle("hidden", !isSignup);
       document.getElementById("confirmPasswordField").classList.toggle("hidden", !isSignup);
       document.getElementById("primaryAuthBtn").innerText = isSignup ? "Create account" : "Login";
       document.getElementById("password").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
-      document.getElementById("signupUsername").setAttribute("autocomplete", "username");
       document.getElementById("googleNote").innerText = isSignup
         ? "Use Google to sign up instantly, no extra form needed."
         : "Use Google to sign up or log in. New users go to profile setup.";
@@ -429,22 +398,15 @@
     }
 
     function signup() {
-      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
-      const username = document.getElementById('signupUsername').value.trim().toLowerCase();
+      const email = document.getElementById('email').value.trim().toLowerCase();
       const password = document.getElementById('password').value.trim();
       const confirmPassword = document.getElementById('confirmPassword').value.trim();
       const error = document.getElementById('error');
 
       error.innerText = "";
 
-      if (!email || !username || !password || !confirmPassword) {
-        error.innerText = "Enter your email, username, and password.";
-        return;
-      }
-
-      if (username.includes('@')) {
-        document.getElementById('signupUsername').value = "";
-        error.innerText = "Please choose a username, not an email.";
+      if (!email || !password || !confirmPassword) {
+        error.innerText = "Enter your email and password.";
         return;
       }
 
@@ -463,13 +425,13 @@
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ email, username, password })
+        body: JSON.stringify({ email, password })
       })
         .then(readJsonResponse)
         .then(data => {
-          localStorage.setItem('username', data.username || username);
+          localStorage.setItem('email', email);
           localStorage.setItem('password', password);
-          localStorage.removeItem(`onboardingComplete:${data.username || username}`);
+          localStorage.removeItem(`onboardingComplete:${data.username}`);
           window.location.replace(appPath("/onboarding"));
         })
         .catch((err) => {
@@ -507,12 +469,12 @@
       })
         .then(readJsonResponse)
         .then(data => {
-          localStorage.setItem("username", data.username);
+          localStorage.setItem("email", data.email);
           localStorage.setItem("password", data.password);
           if (data.created) {
             localStorage.removeItem(`onboardingComplete:${data.username}`);
           }
-          routeAfterLogin(data.username, data.password);
+          routeAfterLogin(data.email, data.password);
         })
         .catch((err) => {
           error.innerText = err.message || "Google login failed. Try again.";
