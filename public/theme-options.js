@@ -21,8 +21,8 @@
       dark: { bg: "#09090b", card: "#18181b", surface: "#202024", surfaceHover: "#2a2a30", text: "#fafafa", muted: "#a1a1aa", border: "#303036", input: "#111114" },
       light: { bg: "#f7f7f8", card: "#ffffff", surface: "#f1f1f3", surfaceHover: "#e7e7ea", text: "#18181b", muted: "#71717a", border: "#d9d9df", input: "#ffffff" }
     },
-    "discord": {
-      label: "Discord",
+    "blurple": {
+      label: "Blurple",
       dark: { bg: "#101116", card: "#1e1f2b", surface: "#292b3a", surfaceHover: "#34374a", text: "#f5f6ff", muted: "#b8bdd6", border: "#3b3f56", input: "#171924" },
       light: { bg: "#f5f6ff", card: "#ffffff", surface: "#eef0ff", surfaceHover: "#e4e7ff", text: "#202237", muted: "#686d8d", border: "#d7daf4", input: "#ffffff" }
     },
