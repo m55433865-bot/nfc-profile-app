@@ -23,11 +23,23 @@
   --icon-contrast-light-border: rgba(15, 23, 42, 0.18);
 }
 
+html {
+  min-height: 100%;
+  background: var(--bg-color);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: var(--bg-color);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: var(--text-color);
+  min-height: 100vh;
   text-align: center;
   transition: background 0.2s ease, color 0.2s ease;
 }
