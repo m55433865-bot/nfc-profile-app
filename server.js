@@ -287,15 +287,20 @@ async function createUser(username, password, client = supabaseServer, email = "
   const cleanEmail = String(email || "").trim().toLowerCase();
   const payload = buildCreateUserPayload(cleanUsername, cleanPassword, cleanEmail);
 
-  let { error } = await client
+  let { data, error } = await client
     .from('users')
-    .insert(payload);
+    .insert(payload)
+    .select('*')
+    .single();
 
   if (error && cleanEmail && isMissingEmailColumnError(error)) {
     console.warn("users.email column is missing; creating user without storing email. Run the Supabase email migration.");
     const retry = await client
       .from('users')
-      .insert(withoutEmail(payload));
+      .insert(withoutEmail(payload))
+      .select('*')
+      .single();
+    data = retry.data;
     error = retry.error;
   }
 
@@ -306,6 +311,8 @@ async function createUser(username, password, client = supabaseServer, email = "
     };
     throw error;
   }
+
+  return normalizeUser(data);
 }
 
 async function createGoogleUser(username, password, profile, client = supabaseServer) {

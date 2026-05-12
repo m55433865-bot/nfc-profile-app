@@ -126,37 +126,6 @@
         });
     }
 
-    function legacyRenderUsers(users) {
-      usersList.innerHTML = "";
-
-      users.forEach(user => {
-        const row = document.createElement("div");
-        row.className = "link";
-
-        const name = document.createElement("div");
-        name.innerHTML = `
-          <span class="admin-row-name">${user.username}</span>
-          ${user.isAdmin ? `<span class="admin-row-meta">admin</span>` : ""}
-        `;
-
-        row.appendChild(name);
-
-        if (!user.isAdmin) {
-          const menuBtn = document.createElement("span");
-          menuBtn.className = "menu-btn edit-icon edit-menu-btn";
-          menuBtn.innerText = "⋮";
-          menuBtn.onclick = (event) => {
-            event.stopPropagation();
-            showUserMenu(user.username, event);
-          };
-
-          row.appendChild(menuBtn);
-        }
-
-        usersList.appendChild(row);
-      });
-    }
-
     function renderUsers(users) {
       usersList.innerHTML = "";
       const query = adminSearchInput.value.trim().toLowerCase();
@@ -275,7 +244,7 @@
       const phoneLink = links.find(link => isLinkType(link, "phone")) || links.find(link => isLinkType(link, "whatsapp"));
       if (!phoneLink) return "";
 
-      const source = phoneLink.value || phoneLink.finalUrl || phoneLink.url || "";
+      const source = phoneLink.finalUrl || phoneLink.url || phoneLink.value || "";
       const decoded = safeDecode(source).trim();
       const digits = decoded.replace(/\D/g, "");
       if (!digits) return "";

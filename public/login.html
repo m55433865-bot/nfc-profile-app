@@ -449,7 +449,9 @@
         .then(data => {
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
-          localStorage.removeItem(`onboardingComplete:${data.username}`);
+          if (data.username) {
+            localStorage.removeItem(`onboardingComplete:${data.username}`);
+          }
           window.location.replace(appPath("/onboarding"));
         })
         .catch((err) => {
@@ -489,7 +491,7 @@
         .then(data => {
           localStorage.setItem("email", data.email);
           localStorage.setItem("password", data.password);
-          if (data.created) {
+          if (data.created && data.username) {
             localStorage.removeItem(`onboardingComplete:${data.username}`);
           }
           routeAfterLogin(data.email, data.password);
