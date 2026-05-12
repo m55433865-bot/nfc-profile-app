@@ -67,14 +67,15 @@
 
   <script>
     const ADMIN_USERNAME = "66546788";
-    const ADMIN_PASSWORD = "123";
+    const ADMIN_EMAIL = "66546788@yourteck.com";
+    const ADMIN_PASSWORD = "yourteck@66546788";
     const BASE_PATH = "/nfc";
     const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
     const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
 
-    const storedUsername = localStorage.getItem("username");
+    const storedEmail = localStorage.getItem("email");
     const storedPassword = localStorage.getItem("password");
-    const isAdmin = storedUsername === ADMIN_USERNAME && storedPassword === ADMIN_PASSWORD;
+    const isAdmin = storedEmail === ADMIN_EMAIL && storedPassword === ADMIN_PASSWORD;
 
     const usersList = document.getElementById("usersList");
     const userMenu = document.getElementById("userMenu");
@@ -90,8 +91,8 @@
     function adminHeaders() {
       return {
         "Content-Type": "application/json",
-        "x-admin-username": storedUsername,
-        "x-admin-password": storedPassword
+        "x-admin-username": ADMIN_USERNAME,
+        "x-admin-password": ADMIN_PASSWORD
       };
     }
 
@@ -299,7 +300,7 @@
     }
 
     function logoutAdmin() {
-      localStorage.removeItem("username");
+      localStorage.removeItem("email");
       localStorage.removeItem("password");
       window.location.href = appPath("/login");
     }
@@ -307,6 +308,8 @@
     document.addEventListener("click", closeUserMenu);
 
     if (!isAdmin) {
+      localStorage.removeItem("email");
+      localStorage.removeItem("password");
       window.location.href = appPath("/login");
     } else {
       loadUsers();
