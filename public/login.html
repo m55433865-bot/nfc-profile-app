@@ -100,6 +100,51 @@
       display: none;
     }
 
+    .verification-panel.hidden {
+      display: none;
+    }
+
+    .verification-panel {
+      background: rgba(0, 200, 150, 0.08);
+      border: 1px solid rgba(0, 200, 150, 0.18);
+      border-radius: 13px;
+      margin: 0 0 12px;
+      padding: 13px;
+    }
+
+    .verification-copy {
+      color: #b9c7c3;
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 0 0 12px;
+    }
+
+    .verification-actions {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .resend-button,
+    .back-button {
+      background: transparent;
+      border: 1px solid #333;
+      color: #d7fff4;
+      font-size: 13px;
+      padding: 9px 10px;
+      width: auto;
+    }
+
+    .resend-button:disabled {
+      color: #777;
+      cursor: not-allowed;
+      filter: none;
+      opacity: 0.75;
+      transform: none;
+    }
+
     label {
       color: #cfcfcf;
       display: block;
@@ -183,6 +228,10 @@
 
     .google-auth.active {
       display: block;
+    }
+
+    .google-auth.hidden {
+      display: none;
     }
 
     .google-button-shell {
@@ -271,6 +320,19 @@
             autocomplete="new-password">
         </div>
 
+        <div id="verificationPanel" class="verification-panel hidden">
+          <p id="verificationCopy" class="verification-copy">Enter the 6-digit code sent to your email.</p>
+          <div class="field">
+            <label for="verificationCode">Verification code</label>
+            <input id="verificationCode" name="verification-code" placeholder="6-digit code" type="text"
+              inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+          </div>
+          <div class="verification-actions">
+            <button id="backToSignupBtn" class="back-button" type="button" onclick="setAuthMode('signup')">Back</button>
+            <button id="resendCodeBtn" class="resend-button" type="button" onclick="resendVerificationCode()">Resend code</button>
+          </div>
+        </div>
+
         <div id="error" class="error"></div>
 
         <button id="primaryAuthBtn" type="button" onclick="submitAuth()">Login</button>
@@ -298,6 +360,8 @@
     const storedPassword = localStorage.getItem("password");
     let googleLoginInitialized = false;
     let authMode = "login";
+    let pendingSignup = null;
+    let resendTimer = null;
 
     document.addEventListener("DOMContentLoaded", () => {
       setAuthMode("login");
@@ -385,25 +449,42 @@
     }
 
     function setAuthMode(mode) {
-      authMode = mode === "signup" ? "signup" : "login";
+      authMode = mode === "verify" ? "verify" : mode === "signup" ? "signup" : "login";
       const isSignup = authMode === "signup";
+      const isVerify = authMode === "verify";
       const error = document.getElementById('error');
 
       error.innerText = "";
-      document.getElementById("loginModeBtn").classList.toggle("active", !isSignup);
-      document.getElementById("signupModeBtn").classList.toggle("active", isSignup);
+      document.getElementById("loginModeBtn").classList.toggle("active", authMode === "login");
+      document.getElementById("signupModeBtn").classList.toggle("active", isSignup || isVerify);
       document.getElementById("confirmPasswordField").classList.toggle("hidden", !isSignup);
-      document.getElementById("primaryAuthBtn").innerText = isSignup ? "Create account" : "Login";
-      document.getElementById("password").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
+      document.getElementById("verificationPanel").classList.toggle("hidden", !isVerify);
+      document.getElementById("googleAuth").classList.toggle("hidden", isVerify);
+      document.getElementById("email").disabled = isVerify;
+      document.getElementById("password").disabled = isVerify;
+      document.getElementById("primaryAuthBtn").innerText = isVerify ? "Verify email" : isSignup ? "Create account" : "Login";
+      document.getElementById("password").setAttribute("autocomplete", isSignup || isVerify ? "new-password" : "current-password");
       document.getElementById("googleNote").innerText = isSignup
         ? "Use Google to sign up instantly, no extra form needed."
         : "Use Google to sign up or log in. New users go to profile setup.";
       document.getElementById("authSwitchCopy").innerHTML = isSignup
         ? `Already have an account? <button type="button" onclick="setAuthMode('login')">Log in</button>`
+        : isVerify
+          ? `Need a different email? <button type="button" onclick="setAuthMode('signup')">Edit signup details</button>`
         : `New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button>`;
+
+      if (!isVerify) {
+        document.getElementById("email").disabled = false;
+        document.getElementById("password").disabled = false;
+      }
     }
 
     function submitAuth() {
+      if (authMode === "verify") {
+        verifySignupCode();
+        return;
+      }
+
       if (authMode === "signup") {
         signup();
         return;
@@ -448,18 +529,117 @@
       })
         .then(readJsonResponse)
         .then(data => {
+          pendingSignup = { email, password };
+          showVerificationStep(data);
+        })
+        .catch((err) => {
+          error.innerText = err.message || "Account could not be created.";
+        });
+    }
+
+    function showVerificationStep(data = {}) {
+      const email = pendingSignup?.email || document.getElementById('email').value.trim().toLowerCase();
+      document.getElementById("verificationCopy").innerText = `We sent a 6-digit code to ${email}. It expires in 10 minutes.`;
+      document.getElementById("verificationCode").value = "";
+      setAuthMode("verify");
+      setResendCooldown(Number(data.cooldownSeconds || 60));
+      setTimeout(() => document.getElementById("verificationCode").focus(), 50);
+    }
+
+    function setResendCooldown(seconds) {
+      const button = document.getElementById("resendCodeBtn");
+      let remaining = Math.max(0, Number(seconds || 0));
+
+      if (resendTimer) {
+        clearInterval(resendTimer);
+      }
+
+      const update = () => {
+        if (remaining > 0) {
+          button.disabled = true;
+          button.innerText = `Resend in ${remaining}s`;
+          remaining -= 1;
+          return;
+        }
+
+        button.disabled = false;
+        button.innerText = "Resend code";
+        clearInterval(resendTimer);
+        resendTimer = null;
+      };
+
+      update();
+      resendTimer = setInterval(update, 1000);
+    }
+
+    function resendVerificationCode() {
+      const error = document.getElementById('error');
+      const email = pendingSignup?.email;
+      const password = pendingSignup?.password;
+
+      error.innerText = "";
+
+      if (!email || !password) {
+        setAuthMode("signup");
+        error.innerText = "Enter your signup details again.";
+        return;
+      }
+
+      fetch(apiPath("/signup"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      })
+        .then(readJsonResponse)
+        .then(showVerificationStep)
+        .catch((err) => {
+          error.innerText = err.message || "Code could not be resent.";
+          if (err.cooldownSeconds) {
+            setResendCooldown(err.cooldownSeconds);
+          }
+        });
+    }
+
+    function verifySignupCode() {
+      const error = document.getElementById('error');
+      const code = document.getElementById("verificationCode").value.trim();
+      const email = pendingSignup?.email;
+      const password = pendingSignup?.password;
+
+      error.innerText = "";
+
+      if (!email || !password) {
+        setAuthMode("signup");
+        error.innerText = "Enter your signup details again.";
+        return;
+      }
+
+      if (!/^\d{6}$/.test(code)) {
+        error.innerText = "Enter the 6-digit code.";
+        return;
+      }
+
+      fetch(apiPath("/signup/verify"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password, code })
+      })
+        .then(readJsonResponse)
+        .then(data => {
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
           if (data.username) {
             localStorage.setItem('username', data.username);
-          }
-          if (data.username) {
             localStorage.removeItem(`onboardingComplete:${data.username}`);
           }
           window.location.replace(appPath("/onboarding"));
         })
         .catch((err) => {
-          error.innerText = err.message || "Account could not be created.";
+          error.innerText = err.message || "Verification failed.";
         });
     }
 
@@ -474,7 +654,9 @@
       }
 
       if (!response.ok) {
-        throw new Error(data.error || "Request failed");
+        const error = new Error(data.error || "Request failed");
+        Object.assign(error, data);
+        throw error;
       }
 
       return data;

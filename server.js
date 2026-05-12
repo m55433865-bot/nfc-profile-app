@@ -18,6 +18,11 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIs
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_AUTH_SECRET = process.env.GOOGLE_AUTH_SECRET || "";
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+const EMAIL_FROM = process.env.EMAIL_FROM || "";
+const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000;
+const VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000;
+const VERIFICATION_MAX_ATTEMPTS = 6;
 const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -28,6 +33,7 @@ const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   })
   : null;
 const supabaseServer = supabaseAdmin || supabaseAnon;
+const pendingEmailSignups = new Map();
 
 app.use(express.json({ limit: '10mb' }));
 app.use(BASE_PATH, express.static(publicDir));
@@ -330,6 +336,84 @@ async function createUser(username, password, client = supabaseServer, email = "
   return normalizeUser(data);
 }
 
+function createTempUsername(email) {
+  const emailBase = String(email || "")
+    .split('@')[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '') || 'user';
+  const suffix = Math.random().toString(36).substring(2, 8);
+  return `${emailBase}${suffix}`.slice(0, 32);
+}
+
+function getVerificationSecret() {
+  return GOOGLE_AUTH_SECRET || SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
+}
+
+function hashVerificationCode(email, code) {
+  return crypto
+    .createHmac("sha256", getVerificationSecret())
+    .update(`${String(email || "").trim().toLowerCase()}:${String(code || "").trim()}`)
+    .digest("hex");
+}
+
+function generateVerificationCode() {
+  return String(crypto.randomInt(0, 1000000)).padStart(6, "0");
+}
+
+function cleanupExpiredVerificationCodes() {
+  const now = Date.now();
+  for (const [email, record] of pendingEmailSignups.entries()) {
+    if (!record || record.expiresAt <= now) {
+      pendingEmailSignups.delete(email);
+    }
+  }
+}
+
+function getVerificationCooldown(record) {
+  if (!record || !record.lastSentAt) return 0;
+  const remaining = VERIFICATION_RESEND_COOLDOWN_MS - (Date.now() - record.lastSentAt);
+  return Math.max(0, Math.ceil(remaining / 1000));
+}
+
+async function sendVerificationEmail(email, code) {
+  if (!RESEND_API_KEY || !EMAIL_FROM) {
+    const error = new Error("Email verification is not configured");
+    error.status = 500;
+    throw error;
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: [email],
+      subject: "Your YourTeck verification code",
+      html: `
+        <div style="font-family:Arial,sans-serif;background:#0f0f0f;color:#ffffff;padding:28px;">
+          <div style="max-width:440px;margin:0 auto;background:#1f1f1f;border:1px solid #333;border-radius:16px;padding:24px;">
+            <h1 style="font-size:22px;margin:0 0 10px;">Verify your email</h1>
+            <p style="color:#bdbdbd;margin:0 0 18px;">Use this code to finish creating your YourTeck NFC profile.</p>
+            <div style="font-size:34px;letter-spacing:8px;font-weight:700;color:#00c896;background:#141414;border:1px solid #333;border-radius:12px;padding:16px;text-align:center;">${code}</div>
+            <p style="color:#888;font-size:13px;margin:18px 0 0;">This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>
+          </div>
+        </div>
+      `,
+      text: `Your YourTeck verification code is ${code}. It expires in 10 minutes.`
+    })
+  });
+
+  if (!response.ok) {
+    const details = await response.text().catch(() => "");
+    const error = new Error(details || "Verification email could not be sent");
+    error.status = 502;
+    throw error;
+  }
+}
+
 async function createGoogleUser(username, password, profile, client = supabaseServer) {
   const cleanUsername = username.trim().toLowerCase();
   const payload = {
@@ -566,11 +650,13 @@ apiRouter.get('/auth/user', async (req, res) => {
   }
 });
 
-// SIGNUP - Email based, generates temporary username
+// SIGNUP - Email based, sends verification code before creating account
 apiRouter.post('/signup', async (req, res) => {
   if (!requireServiceRole(res)) return;
 
   try {
+    cleanupExpiredVerificationCodes();
+
     const email = (req.body.email || "").trim().toLowerCase();
     const password = (req.body.password || "").trim();
 
@@ -592,13 +678,98 @@ apiRouter.post('/signup', async (req, res) => {
       return res.status(409).json({ error: "Email already exists" });
     }
 
-    // Generate a temporary username from email (user will set display name + profile slug in onboarding)
-    const emailBase = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
-    const suffix = Math.random().toString(36).substring(2, 8);
-    const tempUsername = `${emailBase}${suffix}`.slice(0, 32);
+    const existingPending = pendingEmailSignups.get(email);
+    const cooldownSeconds = getVerificationCooldown(existingPending);
+    if (cooldownSeconds > 0) {
+      return res.status(429).json({
+        error: `Please wait ${cooldownSeconds}s before requesting another code`,
+        cooldownSeconds
+      });
+    }
 
-    // Create user with temporary username and email
+    const code = generateVerificationCode();
+    await sendVerificationEmail(email, code);
+
+    pendingEmailSignups.set(email, {
+      codeHash: hashVerificationCode(email, code),
+      expiresAt: Date.now() + VERIFICATION_CODE_TTL_MS,
+      lastSentAt: Date.now(),
+      attempts: 0
+    });
+
+    res.json({
+      success: true,
+      verificationRequired: true,
+      email,
+      expiresInSeconds: Math.floor(VERIFICATION_CODE_TTL_MS / 1000),
+      cooldownSeconds: Math.floor(VERIFICATION_RESEND_COOLDOWN_MS / 1000)
+    });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.post('/signup/verify', async (req, res) => {
+  if (!requireServiceRole(res)) return;
+
+  try {
+    cleanupExpiredVerificationCodes();
+
+    const email = (req.body.email || "").trim().toLowerCase();
+    const password = (req.body.password || "").trim();
+    const code = String(req.body.code || "").trim();
+
+    if (!email || !password || !code) {
+      return res.status(400).json({ error: "Email, password, and verification code are required" });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
+    }
+
+    if (password.length < 3) {
+      return res.status(400).json({ error: "Password must be at least 3 characters" });
+    }
+
+    if (!/^\d{6}$/.test(code)) {
+      return res.status(400).json({ error: "Enter the 6-digit verification code" });
+    }
+
+    const record = pendingEmailSignups.get(email);
+    if (!record) {
+      return res.status(400).json({ error: "Verification code expired. Please request a new code." });
+    }
+
+    if (record.expiresAt <= Date.now()) {
+      pendingEmailSignups.delete(email);
+      return res.status(400).json({ error: "Verification code expired. Please request a new code." });
+    }
+
+    if (record.attempts >= VERIFICATION_MAX_ATTEMPTS) {
+      pendingEmailSignups.delete(email);
+      return res.status(429).json({ error: "Too many incorrect attempts. Please request a new code." });
+    }
+
+    const expectedHash = record.codeHash;
+    const receivedHash = hashVerificationCode(email, code);
+    const isCorrect = crypto.timingSafeEqual(Buffer.from(expectedHash), Buffer.from(receivedHash));
+
+    if (!isCorrect) {
+      record.attempts += 1;
+      pendingEmailSignups.set(email, record);
+      return res.status(400).json({ error: "Incorrect verification code" });
+    }
+
+    const existingUser = await getUserByEmail(email, supabaseAdmin);
+    if (existingUser) {
+      pendingEmailSignups.delete(email);
+      return res.status(409).json({ error: "Email already exists" });
+    }
+
+    const tempUsername = createTempUsername(email);
     const user = await createUser(tempUsername, password, supabaseAdmin, email);
+    pendingEmailSignups.delete(email);
+
     res.json({ success: true, username: user.username, email: user.email });
   } catch (error) {
     sendSupabaseError(res, error);
@@ -691,13 +862,8 @@ apiRouter.post('/admin/users', async (req, res) => {
       return res.status(409).json({ error: "Email already exists" });
     }
 
-    // Generate a temporary username from email (user will set display name + profile slug in onboarding)
-    const emailBase = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
-    const suffix = Math.random().toString(36).substring(2, 8);
-    const tempUsername = `${emailBase}${suffix}`.slice(0, 32);
-
     // Create user with temporary username and email
-    await createUser(tempUsername, password, supabaseAdmin, email);
+    await createUser(createTempUsername(email), password, supabaseAdmin, email);
     res.json({ success: true });
   } catch (error) {
     sendSupabaseError(res, error);
