@@ -663,7 +663,7 @@ input,
   align-items: center;
   justify-content: center;
   padding: 18px;
-  background: color-mix(in srgb, var(--bg-color), transparent 28%);
+  background: rgba(0, 0, 0, 0.62);
   z-index: 2200;
 }
 

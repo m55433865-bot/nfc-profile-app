@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="/nfc/apple-touch-icon.png">
     <link rel="manifest" href="/nfc/site.webmanifest">
     <meta name="theme-color" content="#00c896">
-    <script src="/nfc/theme-options.js?v=themes-premium-2"></script>
+    <script src="/nfc/theme-options.js?v=themes-gradient-1"></script>
     <script>
         window.__INITIAL_PROFILE_THEME__ = null;
         (function () {
@@ -197,10 +197,21 @@
             return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
         }
 
-        function renderThemePreviewSwatch(palette, accent) {
+        function renderThemePreviewSwatch(palette, accent, key = "theme") {
+            const stops = Array.isArray(palette.preview) && palette.preview.length
+                ? palette.preview
+                : [palette.bg, palette.bg, accent];
+            const gradientId = `themePreviewBg-${String(key).replace(/[^a-z0-9_-]/gi, "")}`;
             return `
                 <svg class="theme-preview-svg" viewBox="0 0 48 36" aria-hidden="true" focusable="false">
-                    <rect x="0.5" y="0.5" width="47" height="35" rx="11" fill="${palette.bg}" stroke="${palette.border}" />
+                    <defs>
+                        <linearGradient id="${gradientId}" x1="0" y1="0" x2="48" y2="36" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="${stops[0]}" />
+                            <stop offset="52%" stop-color="${stops[1] || stops[0]}" />
+                            <stop offset="100%" stop-color="${stops[2] || stops[1] || stops[0]}" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0.5" y="0.5" width="47" height="35" rx="11" fill="url(#${gradientId})" stroke="${palette.border}" />
                     <circle cx="11" cy="9" r="9" fill="${accent}" opacity="0.14" />
                     <rect x="10" y="7" width="28" height="22" rx="7" fill="${palette.surface}" stroke="${palette.border}" />
                     <circle cx="24" cy="14" r="3.3" fill="${accent}" />
@@ -263,7 +274,7 @@
                 button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
                 button.innerHTML = `
                     <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
-                        ${renderThemePreviewSwatch(palette, draftTheme.accent)}
+                        ${renderThemePreviewSwatch(palette, draftTheme.accent, key)}
                     </span>
                     <span>${preset.label}</span>
                 `;
