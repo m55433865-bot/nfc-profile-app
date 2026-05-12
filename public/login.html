@@ -227,8 +227,7 @@
       <div class="brand-mark brand-mark-login" aria-label="NFC Profile">
         <svg viewBox="0 0 64 64" aria-hidden="true">
           <defs>
-            <linearGradient id="brandNGradientLogin" x1="16" y1="48" x2="48" y2="16"
-              gradientUnits="userSpaceOnUse">
+            <linearGradient id="brandNGradientLogin" x1="16" y1="48" x2="48" y2="16" gradientUnits="userSpaceOnUse">
               <stop offset="0" stop-color="#00c896" />
               <stop offset="1" stop-color="#30f4ff" />
             </linearGradient>
@@ -251,22 +250,23 @@
 
       <div id="emailField" class="field hidden">
         <label for="email">Email</label>
-        <input id="email" placeholder="Enter email" type="email" autocomplete="email">
+        <input id="email" name="email" placeholder="Email address" type="email" autocomplete="email">
       </div>
 
       <div class="field">
         <label for="username">Username</label>
-        <input id="username" placeholder="Enter username" autocomplete="username">
+        <input id="username" name="username" type="text" placeholder="Username" autocomplete="username">
       </div>
 
       <div class="field">
         <label for="password">Password</label>
-        <input id="password" placeholder="Enter password" type="password" autocomplete="current-password">
+        <input id="password" name="new-password" placeholder="Password" type="password" autocomplete="new-password">
       </div>
 
       <div id="confirmPasswordField" class="field hidden">
         <label for="confirmPassword">Confirm password</label>
-        <input id="confirmPassword" placeholder="Confirm password" type="password" autocomplete="new-password">
+        <input id="confirmPassword" name="confirm-password" placeholder="Confirm password" type="password"
+          autocomplete="new-password">
       </div>
 
       <div id="error" class="error"></div>
@@ -410,6 +410,11 @@
 
       if (!email || !username || !password || !confirmPassword) {
         error.innerText = "Enter your email, username, and password.";
+        return;
+      }
+
+      if (username.includes('@')) {
+        error.innerText = "Username should not be an email address.";
         return;
       }
 
