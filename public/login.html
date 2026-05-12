@@ -332,6 +332,7 @@
         .then(res => res.json())
         .then(user => {
           if (user && user.username) {
+            localStorage.setItem("username", user.username);
             const completeKey = `onboardingComplete:${user.username}`;
             if (user && !user.error && needsOnboarding(user) && localStorage.getItem(completeKey) !== "true") {
               window.location.replace(appPath("/onboarding"));
@@ -450,6 +451,9 @@
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
           if (data.username) {
+            localStorage.setItem('username', data.username);
+          }
+          if (data.username) {
             localStorage.removeItem(`onboardingComplete:${data.username}`);
           }
           window.location.replace(appPath("/onboarding"));
@@ -491,6 +495,9 @@
         .then(data => {
           localStorage.setItem("email", data.email);
           localStorage.setItem("password", data.password);
+          if (data.username) {
+            localStorage.setItem("username", data.username);
+          }
           if (data.created && data.username) {
             localStorage.removeItem(`onboardingComplete:${data.username}`);
           }

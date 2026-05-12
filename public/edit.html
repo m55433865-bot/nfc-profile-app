@@ -168,8 +168,10 @@
     <script>
         let draggedIndex = null;
         const storedUsername = localStorage.getItem('username');
+        const storedEmail = localStorage.getItem('email');
         let storedPassword = localStorage.getItem('password');
         const normalizedStoredUsername = (storedUsername || "").trim().toLowerCase();
+        const normalizedStoredEmail = (storedEmail || "").trim().toLowerCase();
         const BASE_PATH = "/nfc";
         const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
         const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
@@ -190,9 +192,10 @@
             window.location.href = appPath("/login");
         }
 
-        isOwner = !!normalizedStoredUsername && normalizedStoredUsername === username;
-
         let currentUser = null;
+        let loggedInUser = null;
+        let loggedInUserPromise = null;
+        let ownerTabInitialized = false;
 
         const nameEl = document.getElementById('name');
         const bioEl = document.getElementById('bio');
@@ -393,7 +396,15 @@
         function switchTab(tab) {
             currentTab = tab;
             editingLinkIndex = null;
+            setActiveTabUi(tab);
 
+            loadUser(); // critical
+            if (tab === "edit" && isOwner) {
+                showEditModeHint();
+            }
+        }
+
+        function setActiveTabUi(tab) {
             document.getElementById("tabView").classList.remove("active");
             document.getElementById("tabEdit").classList.remove("active");
             document.getElementById("tabSettings").classList.remove("active");
@@ -405,19 +416,71 @@
             } else {
                 document.getElementById("tabSettings").classList.add("active");
             }
+        }
 
-            loadUser(); // critical
-            if (tab === "edit" && isOwner) {
-                showEditModeHint();
+        function getLoggedInUser() {
+            if (!normalizedStoredEmail || !storedPassword) {
+                return Promise.resolve(null);
             }
+
+            if (!loggedInUserPromise) {
+                loggedInUserPromise = fetch(apiPath("/auth/user"), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: normalizedStoredEmail,
+                        password: storedPassword
+                    })
+                })
+                    .then(res => res.ok ? res.json() : null)
+                    .then(user => user && !user.error ? user : null)
+                    .catch(() => null);
+            }
+
+            return loggedInUserPromise;
+        }
+
+        function sameValue(a, b) {
+            return String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
+        }
+
+        function updateOwnerTabs() {
+            document.getElementById("tabEdit").style.display = isOwner ? "" : "none";
+            document.getElementById("tabSettings").style.display = isOwner ? "" : "none";
+        }
+
+        async function resolveOwnerForProfile(profileUser) {
+            loggedInUser = await getLoggedInUser();
+
+            const sameId = profileUser && loggedInUser && profileUser.id && loggedInUser.id && String(profileUser.id) === String(loggedInUser.id);
+            const sameEmail = profileUser && loggedInUser && profileUser.email && loggedInUser.email && sameValue(profileUser.email, loggedInUser.email);
+            const legacySameUsername = !!normalizedStoredUsername && sameValue(normalizedStoredUsername, profileUser && profileUser.username);
+
+            isOwner = Boolean(sameId || sameEmail || legacySameUsername);
+
+            if (!isOwner && currentTab !== "view") {
+                currentTab = "view";
+            }
+
+            if (isOwner && !ownerTabInitialized && currentTab === "view") {
+                currentTab = "edit";
+            }
+
+            ownerTabInitialized = true;
+            updateOwnerTabs();
+            setActiveTabUi(currentTab);
         }
 
         function loadUser(preloadedUser = null) {
-            const renderLoadedUser = (user) => {
+            const renderLoadedUser = async (user) => {
                 if (user.error) {
                     console.error(user.error);
                     return;
                 }
+
+                await resolveOwnerForProfile(user);
 
                 if (!Array.isArray(user.links)) {
                     user.links = [];
@@ -1029,6 +1092,7 @@
 
         function confirmLogout() {
             localStorage.removeItem('username');
+            localStorage.removeItem('email');
             localStorage.removeItem('password');
             window.location.href = appPath("/login");
         }
@@ -1132,13 +1196,7 @@
                 });
         }
 
-        window.addEventListener("DOMContentLoaded", () => {
-            if (!isOwner) {
-                document.getElementById("tabEdit").style.display = "none";
-                document.getElementById("tabSettings").style.display = "none";
-            }
-
-        });
+        window.addEventListener("DOMContentLoaded", updateOwnerTabs);
 
         loadUser();
 
@@ -2369,8 +2427,6 @@
         function getIcon(url) {
             return createLinkIcon(url);
         }
-        switchTab(isOwner ? "edit" : "view");
-
         function editName() {
             startInlineEdit("name");
         }

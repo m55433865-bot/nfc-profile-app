@@ -709,6 +709,7 @@
             window.location.replace(appPath("/login"));
             return;
           }
+          localStorage.setItem("username", username);
 
           if (!needsOnboarding(user) || localStorage.getItem(`onboardingComplete:${username}`) === "true") {
             window.location.replace(appPath(`/profile/${username}`));
