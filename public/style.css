@@ -773,7 +773,7 @@ input,
 
 .theme-preview-card {
   background: var(--theme-preview-surface);
-  border: 1px solid color-mix(in srgb, var(--theme-preview-border) 70%, transparent);
+  border: 1px solid var(--theme-preview-border);
   border-radius: 8px;
   box-shadow: 0 7px 16px rgba(0, 0, 0, 0.2);
   display: grid;
@@ -799,10 +799,11 @@ input,
 }
 
 .theme-preview-line {
-  background: color-mix(in srgb, var(--theme-preview-accent) 42%, var(--theme-preview-surface));
+  background: var(--theme-preview-accent);
   border-radius: 999px;
   height: 3px;
   justify-self: center;
+  opacity: 0.48;
   width: 18px;
 }
 
