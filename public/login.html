@@ -244,6 +244,8 @@
 
     <section class="login-card">
       <form autocomplete="off">
+        <input type="text" name="fake-username" autocomplete="username" aria-hidden="true" tabindex="-1"
+          style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;">
         <div class="auth-toggle" role="tablist" aria-label="Authentication mode">
           <button id="loginModeBtn" class="active" type="button" onclick="setAuthMode('login')">Login</button>
           <button id="signupModeBtn" type="button" onclick="setAuthMode('signup')">Create account</button>
@@ -256,7 +258,7 @@
 
         <div class="field">
           <label for="username">Username</label>
-          <input id="username" name="username" type="text" placeholder="Username" autocomplete="username">
+          <input id="username" name="username" type="text" placeholder="Username" autocomplete="off">
         </div>
 
         <div class="field">
@@ -297,6 +299,10 @@
     const storedPassword = localStorage.getItem("password");
     let googleLoginInitialized = false;
     let authMode = "login";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setAuthMode("login");
+    });
 
     if (storedUsername && storedPassword) {
       routeAfterLogin(storedUsername, storedPassword);
