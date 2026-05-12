@@ -617,12 +617,20 @@ apiRouter.get('/admin/users', async (req, res) => {
   try {
     const users = await listUsers(supabaseAdmin);
     const list = [
-      { username: ADMIN_USERNAME, displayName: "Admin", isAdmin: true },
+      {
+        username: ADMIN_USERNAME,
+        email: ADMIN_EMAIL,
+        displayName: "Admin",
+        links: [],
+        isAdmin: true
+      },
       ...users
         .filter((user) => user.username !== ADMIN_USERNAME)
         .map((user) => ({
           username: user.username,
+          email: user.email || "",
           displayName: user.displayName || user.username,
+          links: sanitizeLinks(user.links),
           isAdmin: false
         }))
     ];

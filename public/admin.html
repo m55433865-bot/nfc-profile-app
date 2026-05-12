@@ -25,6 +25,7 @@
       </div>
 
       <div id="adminMessage" class="admin-message"></div>
+      <input id="adminSearchInput" class="theme-input admin-search" placeholder="Search users by email, username, or phone">
       <div id="usersList" class="admin-list"></div>
     </div>
   </div>
@@ -90,9 +91,12 @@
     const modalTitle = document.getElementById("modalTitle");
     const emailInput = document.getElementById("emailInput");
     const passwordInput = document.getElementById("passwordInput");
+    const adminSearchInput = document.getElementById("adminSearchInput");
 
     let selectedUsername = null;
     let modalMode = "add";
+    let allUsers = [];
+    let expandedUsername = null;
 
     function adminHeaders() {
       return {
@@ -117,11 +121,12 @@
             return;
           }
 
-          renderUsers(data.users || []);
+          allUsers = data.users || [];
+          renderUsers(allUsers);
         });
     }
 
-    function renderUsers(users) {
+    function legacyRenderUsers(users) {
       usersList.innerHTML = "";
 
       users.forEach(user => {
@@ -150,6 +155,158 @@
 
         usersList.appendChild(row);
       });
+    }
+
+    function renderUsers(users) {
+      usersList.innerHTML = "";
+      const query = adminSearchInput.value.trim().toLowerCase();
+      const filteredUsers = query
+        ? users.filter(user => {
+          const phone = getUserPhone(user).toLowerCase();
+          return [
+            user.email,
+            user.username,
+            user.displayName,
+            phone
+          ].some(value => String(value || "").toLowerCase().includes(query));
+        })
+        : users;
+
+      if (!filteredUsers.length) {
+        usersList.innerHTML = `<div class="admin-empty">No users found.</div>`;
+        return;
+      }
+
+      filteredUsers.forEach(user => {
+        const item = document.createElement("div");
+        item.className = `admin-user-card ${expandedUsername === user.username ? "expanded" : ""}`;
+
+        const row = document.createElement("div");
+        row.role = "button";
+        row.tabIndex = 0;
+        row.className = "admin-user-row";
+        row.onclick = () => toggleUserDetails(user.username);
+        row.onkeydown = (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleUserDetails(user.username);
+          }
+        };
+
+        const name = document.createElement("div");
+        name.className = "admin-user-summary";
+        name.innerHTML = `
+          <span class="admin-row-name">${escapeHtml(user.displayName || user.username)}</span>
+          <span class="admin-row-subtitle">${escapeHtml(user.email || user.username)}</span>
+          ${user.isAdmin ? `<span class="admin-row-meta">admin</span>` : ""}
+        `;
+
+        row.appendChild(name);
+
+        const actions = document.createElement("span");
+        actions.className = "admin-row-actions";
+        const chevron = document.createElement("span");
+        chevron.className = "admin-chevron";
+        chevron.innerHTML = "⌄";
+        actions.appendChild(chevron);
+
+        if (!user.isAdmin) {
+          const menuBtn = document.createElement("button");
+          menuBtn.type = "button";
+          menuBtn.className = "menu-btn edit-icon edit-menu-btn";
+          menuBtn.innerText = "⋮";
+          menuBtn.onclick = (event) => {
+            event.stopPropagation();
+            showUserMenu(user.username, event);
+          };
+
+          actions.appendChild(menuBtn);
+        }
+
+        row.appendChild(actions);
+
+        const details = document.createElement("div");
+        details.className = "admin-user-details";
+        details.innerHTML = renderUserDetails(user);
+
+        item.appendChild(row);
+        item.appendChild(details);
+        usersList.appendChild(item);
+      });
+    }
+
+    function toggleUserDetails(username) {
+      closeUserMenu();
+      expandedUsername = expandedUsername === username ? null : username;
+      renderUsers(allUsers);
+    }
+
+    function renderUserDetails(user) {
+      const email = user.email || "Not added";
+      const phone = getUserPhone(user) || "Not added";
+      const profilePath = appPath(`/profile/${encodeURIComponent(user.username)}`);
+      const profileUrl = `${window.location.origin}${profilePath}`;
+
+      return `
+        <div class="admin-detail-grid">
+          <div class="admin-detail-item">
+            <span>Email</span>
+            <strong>${escapeHtml(email)}</strong>
+          </div>
+          <div class="admin-detail-item">
+            <span>Profile slug</span>
+            <strong>${escapeHtml(user.username)}</strong>
+          </div>
+          <div class="admin-detail-item">
+            <span>Phone</span>
+            <strong>${escapeHtml(phone)}</strong>
+          </div>
+          <div class="admin-detail-item">
+            <span>Public profile</span>
+            <a href="${profilePath}" target="_blank" rel="noopener">View Profile</a>
+          </div>
+        </div>
+        <div class="admin-profile-url">${escapeHtml(profileUrl)}</div>
+      `;
+    }
+
+    function getUserPhone(user) {
+      const links = Array.isArray(user.links) ? user.links : [];
+      const phoneLink = links.find(link => isLinkType(link, "phone")) || links.find(link => isLinkType(link, "whatsapp"));
+      if (!phoneLink) return "";
+
+      const source = phoneLink.value || phoneLink.finalUrl || phoneLink.url || "";
+      const decoded = safeDecode(source).trim();
+      const digits = decoded.replace(/\D/g, "");
+      if (!digits) return "";
+
+      return `+${digits}`;
+    }
+
+    function isLinkType(link, type) {
+      const rawType = String(link?.type || "").toLowerCase();
+      const rawName = String(link?.name || link?.label || "").toLowerCase();
+      const rawUrl = String(link?.finalUrl || link?.url || link?.value || "").toLowerCase();
+      if (type === "phone") return rawType === "phone" || rawUrl.startsWith("tel:");
+      if (type === "whatsapp") return rawType === "whatsapp" || rawUrl.includes("wa.me") || rawUrl.includes("whatsapp.com");
+      return rawType === type || rawName.includes(type);
+    }
+
+    function safeDecode(value) {
+      try {
+        return decodeURIComponent(String(value || ""));
+      } catch (error) {
+        return String(value || "");
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     function showUserMenu(username, event) {
@@ -200,8 +357,8 @@
 
       modalMode = "password";
       modalTitle.innerText = `Change password`;
-      usernameInput.style.display = "none";
-      usernameInput.value = selectedUsername;
+      emailInput.style.display = "none";
+      emailInput.value = "";
       passwordInput.value = "";
       adminModal.style.display = "flex";
       closeUserMenu();
@@ -209,6 +366,7 @@
 
     function closeModal() {
       adminModal.style.display = "none";
+      emailInput.style.display = "block";
       emailInput.value = "";
       passwordInput.value = "";
     }
@@ -318,6 +476,7 @@
       window.location.href = appPath("/login");
     }
 
+    adminSearchInput.addEventListener("input", () => renderUsers(allUsers));
     document.addEventListener("click", closeUserMenu);
 
     if (!isAdmin) {
