@@ -277,6 +277,28 @@
     .appearance-preset-grid {
       display: grid;
       gap: 8px;
+    }
+
+    .appearance-preset-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .appearance-preset-group+.appearance-preset-group {
+      margin-top: 14px;
+    }
+
+    .appearance-group-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .appearance-preset-grid-inner {
+      display: grid;
+      gap: 8px;
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -643,7 +665,7 @@
         border-radius: 18px;
       }
 
-      .appearance-preset-grid,
+      .appearance-preset-grid-inner,
       .contact-grid {
         grid-template-columns: 1fr;
       }
@@ -930,6 +952,19 @@
       `;
     }
 
+    function getThemePresetGroups() {
+      return [
+        {
+          label: "Classic Colors",
+          presets: Object.entries(themePresets).filter(([, preset]) => (preset.category || "classic") !== "gradient")
+        },
+        {
+          label: "Gradient Themes",
+          presets: Object.entries(themePresets).filter(([, preset]) => preset.category === "gradient")
+        }
+      ].filter(group => group.presets.length);
+    }
+
     function getThemePalette(theme) {
       const safeTheme = sanitizeTheme(theme);
       const preset = themePresets[safeTheme.preset] || themePresets[defaultTheme.preset];
@@ -965,23 +1000,32 @@
       });
 
       presetEl.innerHTML = "";
-      Object.entries(themePresets).forEach(([key, preset]) => {
-        const palette = preset[getResolvedThemeMode(state.theme.mode)] || preset.dark;
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = `appearance-preset ${state.theme.preset === key ? "active" : ""}`;
-        button.innerHTML = `
-          <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${state.theme.accent};">
-            ${renderThemePreviewSwatch(palette, state.theme.accent, key)}
-          </span>
-          <span>${preset.label}</span>
-        `;
-        button.onclick = () => {
-          state.theme = sanitizeTheme({ ...state.theme, preset: key });
-          renderThemeOptions();
-          updatePreview();
-        };
-        presetEl.appendChild(button);
+      getThemePresetGroups().forEach(group => {
+        const groupEl = document.createElement("div");
+        groupEl.className = "appearance-preset-group";
+        groupEl.innerHTML = `<div class="appearance-group-label">${group.label}</div><div class="appearance-preset-grid-inner"></div>`;
+        const gridEl = groupEl.querySelector(".appearance-preset-grid-inner");
+
+        group.presets.forEach(([key, preset]) => {
+          const palette = preset[getResolvedThemeMode(state.theme.mode)] || preset.dark;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `appearance-preset ${state.theme.preset === key ? "active" : ""}`;
+          button.innerHTML = `
+            <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${state.theme.accent};">
+              ${renderThemePreviewSwatch(palette, state.theme.accent, key)}
+            </span>
+            <span>${preset.label}</span>
+          `;
+          button.onclick = () => {
+            state.theme = sanitizeTheme({ ...state.theme, preset: key });
+            renderThemeOptions();
+            updatePreview();
+          };
+          gridEl.appendChild(button);
+        });
+
+        presetEl.appendChild(groupEl);
       });
 
       accentEl.innerHTML = "";

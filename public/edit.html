@@ -48,7 +48,7 @@
             root.style.setProperty("--shadow-color", mode === "light" ? "rgba(17, 24, 39, 0.14)" : "rgba(0, 0, 0, 0.42)");
         })();
     </script>
-    <link rel="stylesheet" href="/nfc/style.css?v=phone-input-group-2">
+    <link rel="stylesheet" href="/nfc/style.css?v=gradient-background-2">
     <link rel="stylesheet" href="/nfc/brand.css">
 
 </head>
@@ -221,6 +221,19 @@
             `;
         }
 
+        function getThemePresetGroups() {
+            return [
+                {
+                    label: "Classic Colors",
+                    presets: Object.entries(themePresets).filter(([, preset]) => (preset.category || "classic") !== "gradient")
+                },
+                {
+                    label: "Gradient Themes",
+                    presets: Object.entries(themePresets).filter(([, preset]) => preset.category === "gradient")
+                }
+            ].filter(group => group.presets.length);
+        }
+
         function applyTheme(theme) {
             const safeTheme = sanitizeTheme(theme);
             const preset = themePresets[safeTheme.preset] || themePresets[defaultTheme.preset];
@@ -267,23 +280,32 @@
             });
 
             presetEl.innerHTML = "";
-            Object.entries(themePresets).forEach(([key, preset]) => {
-                const palette = preset[getResolvedThemeMode(draftTheme.mode)] || preset.dark;
-                const button = document.createElement("button");
-                button.type = "button";
-                button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
-                button.innerHTML = `
-                    <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
-                        ${renderThemePreviewSwatch(palette, draftTheme.accent, key)}
-                    </span>
-                    <span>${preset.label}</span>
-                `;
-                button.onclick = () => {
-                    draftTheme.preset = key;
-                    applyTheme(draftTheme);
-                    renderAppearanceOptions();
-                };
-                presetEl.appendChild(button);
+            getThemePresetGroups().forEach(group => {
+                const groupEl = document.createElement("div");
+                groupEl.className = "appearance-preset-group";
+                groupEl.innerHTML = `<div class="appearance-group-label">${group.label}</div><div class="appearance-preset-grid-inner"></div>`;
+                const gridEl = groupEl.querySelector(".appearance-preset-grid-inner");
+
+                group.presets.forEach(([key, preset]) => {
+                    const palette = preset[getResolvedThemeMode(draftTheme.mode)] || preset.dark;
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
+                    button.innerHTML = `
+                        <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
+                            ${renderThemePreviewSwatch(palette, draftTheme.accent, key)}
+                        </span>
+                        <span>${preset.label}</span>
+                    `;
+                    button.onclick = () => {
+                        draftTheme.preset = key;
+                        applyTheme(draftTheme);
+                        renderAppearanceOptions();
+                    };
+                    gridEl.appendChild(button);
+                });
+
+                presetEl.appendChild(groupEl);
             });
 
             accentEl.innerHTML = "";
