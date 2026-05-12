@@ -197,60 +197,41 @@
             return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
         }
 
-        function isGradientPresetKey(key) {
-            return themePresets[key] && themePresets[key].category === "gradient";
-        }
-
-        function getFirstPresetKey(category = "classic") {
-            const entry = Object.entries(themePresets).find(([, preset]) => {
-                const presetCategory = preset.category || "classic";
-                return category === "gradient" ? presetCategory === "gradient" : presetCategory !== "gradient";
-            });
-            return entry ? entry[0] : defaultTheme.preset;
-        }
-
         function getActiveThemeView(theme) {
-            if (isGradientPresetKey(theme.preset)) return "gradient";
             return theme.mode === "light" ? "light" : "dark";
         }
 
         function setThemeView(theme, view) {
-            if (view === "gradient") {
-                return sanitizeTheme({
-                    ...theme,
-                    mode: "dark",
-                    preset: isGradientPresetKey(theme.preset) ? theme.preset : getFirstPresetKey("gradient")
-                });
-            }
-
             return sanitizeTheme({
                 ...theme,
-                mode: view,
-                preset: isGradientPresetKey(theme.preset) ? getFirstPresetKey("classic") : theme.preset
+                mode: view
             });
         }
 
         function getVisibleThemePresets(theme) {
-            const view = getActiveThemeView(theme);
-            return Object.entries(themePresets).filter(([, preset]) => {
-                const category = preset.category || "classic";
-                return view === "gradient" ? category === "gradient" : category !== "gradient";
-            });
+            return Object.entries(themePresets);
         }
 
-        function renderThemePreviewSwatch(palette, accent) {
+        function getThemeDisplayLabel(preset, mode) {
+            const label = preset.label || "Theme";
+            if (mode !== "light") return label;
+            return label === "Minimal White" ? label : `${label} Light`;
+        }
+
+        function renderThemePreviewSwatch(palette, accent, mode) {
             const stops = Array.isArray(palette.preview) && palette.preview.length
                 ? palette.preview
                 : [palette.bg, palette.surface, accent];
+            const chipStroke = mode === "light" ? "rgba(15,23,42,0.34)" : "rgba(255,255,255,0.28)";
             return `
                 <svg class="theme-preview-svg theme-chip-svg" viewBox="0 0 48 36" aria-hidden="true" focusable="false">
                     <rect x="0.5" y="0.5" width="47" height="35" rx="11" fill="${palette.surface}" stroke="${palette.border}" />
                     <circle cx="20" cy="18" r="9.5" fill="${stops[0]}" />
                     <circle cx="28" cy="14" r="9.5" fill="${stops[1] || stops[0]}" />
                     <circle cx="28" cy="23" r="9.5" fill="${stops[2] || accent}" />
-                    <circle cx="20" cy="18" r="9.5" fill="none" stroke="rgba(255,255,255,0.24)" />
-                    <circle cx="28" cy="14" r="9.5" fill="none" stroke="rgba(255,255,255,0.24)" />
-                    <circle cx="28" cy="23" r="9.5" fill="none" stroke="rgba(255,255,255,0.24)" />
+                    <circle cx="20" cy="18" r="9.5" fill="none" stroke="${chipStroke}" />
+                    <circle cx="28" cy="14" r="9.5" fill="none" stroke="${chipStroke}" />
+                    <circle cx="28" cy="23" r="9.5" fill="none" stroke="${chipStroke}" />
                 </svg>
             `;
         }
@@ -289,8 +270,7 @@
             modeEl.innerHTML = "";
             [
                 { value: "dark", label: "Dark" },
-                { value: "light", label: "Light" },
-                { value: "gradient", label: "Gradient" }
+                { value: "light", label: "Light" }
             ].forEach(option => {
                 const button = document.createElement("button");
                 button.type = "button";
@@ -306,15 +286,16 @@
 
             presetEl.innerHTML = "";
             getVisibleThemePresets(draftTheme).forEach(([key, preset]) => {
-                const palette = preset[getResolvedThemeMode(draftTheme.mode)] || preset.dark;
+                const mode = getResolvedThemeMode(draftTheme.mode);
+                const palette = preset[mode] || preset.dark;
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
                 button.innerHTML = `
                     <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
-                        ${renderThemePreviewSwatch(palette, draftTheme.accent)}
+                        ${renderThemePreviewSwatch(palette, draftTheme.accent, mode)}
                     </span>
-                    <span>${preset.label}</span>
+                    <span>${getThemeDisplayLabel(preset, mode)}</span>
                 `;
                 button.onclick = () => {
                     draftTheme.preset = key;
