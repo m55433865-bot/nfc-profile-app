@@ -250,11 +250,11 @@
                 button.className = `appearance-preset ${draftTheme.preset === key ? "active" : ""}`;
                 button.innerHTML = `
                     <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${draftTheme.accent};">
-                        <span class="theme-preview-card" style="background:${palette.surface}; border-color:${palette.border};">
-                            <span class="theme-preview-avatar" style="background:${draftTheme.accent};"></span>
-                            <span class="theme-preview-line" style="background:${draftTheme.accent};"></span>
-                            <span class="theme-preview-link" style="background:${draftTheme.accent};"></span>
-                        </span>
+                        <div class="theme-preview-card" style="background:${palette.surface}; border-color:${palette.border};">
+                            <div class="theme-preview-avatar" style="background:${draftTheme.accent};"></div>
+                            <div class="theme-preview-line" style="background:${draftTheme.accent};"></div>
+                            <div class="theme-preview-link" style="background:${draftTheme.accent};"></div>
+                        </div>
                     </span>
                     <span>${preset.label}</span>
                 `;

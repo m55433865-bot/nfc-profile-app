@@ -775,10 +775,12 @@ input,
   background: var(--theme-preview-surface);
   border: 1px solid var(--theme-preview-border);
   border-radius: 8px;
+  box-sizing: border-box;
   box-shadow: 0 7px 16px rgba(0, 0, 0, 0.2);
   display: grid;
-  gap: 3px;
-  height: 24px;
+  gap: 2px;
+  height: 26px;
+  overflow: hidden;
   padding: 4px;
   width: 32px;
 }
@@ -792,10 +794,10 @@ input,
 .theme-preview-avatar {
   background: var(--theme-preview-accent);
   border-radius: 50%;
-  height: 6px;
+  height: 7px;
   justify-self: center;
   opacity: 0.95;
-  width: 6px;
+  width: 7px;
 }
 
 .theme-preview-line {

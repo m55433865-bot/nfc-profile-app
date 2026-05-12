@@ -313,10 +313,12 @@
       background: var(--theme-preview-surface);
       border: 1px solid var(--theme-preview-border);
       border-radius: 8px;
+      box-sizing: border-box;
       box-shadow: 0 7px 16px rgba(0, 0, 0, 0.2);
       display: grid;
-      gap: 3px;
-      height: 24px;
+      gap: 2px;
+      height: 26px;
+      overflow: hidden;
       padding: 4px;
       width: 32px;
     }
@@ -330,10 +332,10 @@
     .theme-preview-avatar {
       background: var(--theme-preview-accent);
       border-radius: 50%;
-      height: 6px;
+      height: 7px;
       justify-self: center;
       opacity: 0.95;
-      width: 6px;
+      width: 7px;
     }
 
     .theme-preview-line {
@@ -940,11 +942,11 @@
         button.className = `appearance-preset ${state.theme.preset === key ? "active" : ""}`;
         button.innerHTML = `
           <span class="appearance-swatch theme-preview-swatch" style="--theme-preview-bg:${palette.bg}; --theme-preview-surface:${palette.surface}; --theme-preview-border:${palette.border}; --theme-preview-accent:${state.theme.accent};">
-            <span class="theme-preview-card" style="background:${palette.surface}; border-color:${palette.border};">
-              <span class="theme-preview-avatar" style="background:${state.theme.accent};"></span>
-              <span class="theme-preview-line" style="background:${state.theme.accent};"></span>
-              <span class="theme-preview-link" style="background:${state.theme.accent};"></span>
-            </span>
+            <div class="theme-preview-card" style="background:${palette.surface}; border-color:${palette.border};">
+              <div class="theme-preview-avatar" style="background:${state.theme.accent};"></div>
+              <div class="theme-preview-line" style="background:${state.theme.accent};"></div>
+              <div class="theme-preview-link" style="background:${state.theme.accent};"></div>
+            </div>
           </span>
           <span>${preset.label}</span>
         `;
