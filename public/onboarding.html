@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="/nfc/apple-touch-icon.png">
   <link rel="manifest" href="/nfc/site.webmanifest">
   <meta name="theme-color" content="#00c896">
+  <script src="/nfc/theme-options.js"></script>
   <link rel="stylesheet" href="/nfc/brand.css">
   <style>
     * {
@@ -229,7 +230,105 @@
       box-shadow: none;
     }
 
-    .theme-grid,
+    .onboarding-theme-stack {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .appearance-section {
+      text-align: left;
+    }
+
+    .appearance-label {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .appearance-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .appearance-chip,
+    .appearance-preset {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .appearance-chip {
+      min-height: 38px;
+      padding: 8px 12px;
+    }
+
+    .appearance-chip.active,
+    .appearance-preset.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 88%);
+    }
+
+    .appearance-preset-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .appearance-preset {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      min-height: 58px;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .appearance-swatch {
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: inline-flex;
+      flex: 0 0 34px;
+      height: 34px;
+      justify-content: center;
+      width: 34px;
+    }
+
+    .appearance-swatch span {
+      border-radius: 7px;
+      display: block;
+      height: 18px;
+      width: 18px;
+    }
+
+    .accent-swatch {
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      height: 34px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      width: 34px;
+    }
+
+    .accent-swatch.active {
+      border-color: var(--text);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 88%);
+      transform: scale(1.05);
+    }
+
+    .color-input {
+      margin-top: 10px;
+      max-width: 74px;
+      min-height: 38px;
+      padding: 4px;
+    }
+
     .contact-grid {
       display: grid;
       gap: 10px;
@@ -237,7 +336,6 @@
       margin-top: 18px;
     }
 
-    .theme-option,
     .contact-option {
       background: var(--panel-soft);
       border: 1px solid var(--border);
@@ -249,17 +347,9 @@
       text-align: left;
     }
 
-    .theme-option.active,
     .contact-option.active {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 88%);
-    }
-
-    .theme-swatch {
-      border-radius: 10px;
-      display: block;
-      height: 24px;
-      margin-bottom: 8px;
     }
 
     .setup-actions {
@@ -499,7 +589,7 @@
         border-radius: 18px;
       }
 
-      .theme-grid,
+      .appearance-preset-grid,
       .contact-grid {
         grid-template-columns: 1fr;
       }
@@ -579,8 +669,25 @@
 
       <section class="setup-step" data-step="1">
         <h2 class="section-title">Choose a first impression</h2>
-        <p class="section-copy">Pick a profile theme. You can change this later from Settings.</p>
-        <div id="themeOptions" class="theme-grid"></div>
+        <p class="section-copy">Pick a profile theme and accent. You can change this later from Settings.</p>
+        <div class="onboarding-theme-stack">
+          <div class="appearance-section">
+            <div class="appearance-label">Theme Mode</div>
+            <div id="themeModeOptions" class="appearance-row"></div>
+          </div>
+
+          <div class="appearance-section">
+            <div class="appearance-label">Preset Themes</div>
+            <div id="themePresetOptions" class="appearance-preset-grid"></div>
+          </div>
+
+          <div class="appearance-section">
+            <div class="appearance-label">Accent Color</div>
+            <div id="themeAccentOptions" class="appearance-row accent-row"></div>
+            <input id="customAccent" class="theme-input color-input" type="color" value="#00c896"
+              aria-label="Custom accent color">
+          </div>
+        </div>
       </section>
 
       <section class="setup-step" data-step="2">
@@ -630,14 +737,10 @@
     const password = localStorage.getItem("password") || "";
     let username = "";
 
-    const themes = {
-      midnight: { label: "Midnight", bg: "#0f0f0f", surface: "#202020", text: "#ffffff", muted: "#aaa", border: "#333", accent: "#00c896" },
-      ocean: { label: "Ocean", bg: "#071317", surface: "#142a32", text: "#f2fbff", muted: "#9fb8c2", border: "#24434d", accent: "#22d3ee" },
-      purple: { label: "Purple", bg: "#120e1f", surface: "#28213f", text: "#fbf8ff", muted: "#b6aacd", border: "#3d3357", accent: "#a855f7" },
-      gold: { label: "Gold", bg: "#17130a", surface: "#2d2515", text: "#fffaf0", muted: "#c6b790", border: "#4a3c20", accent: "#d6a83f" },
-      forest: { label: "Forest", bg: "#0d160f", surface: "#1d2f23", text: "#f3fff6", muted: "#a4bda9", border: "#304b38", accent: "#22c55e" },
-      neon: { label: "Neon", bg: "#080a12", surface: "#171d33", text: "#f6f8ff", muted: "#9aa6ce", border: "#2c3558", accent: "#00c896" }
-    };
+    const sharedThemeOptions = window.YourTeckThemeOptions || {};
+    const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#00c896" };
+    const themePresets = sharedThemeOptions.themePresets || {};
+    const accentColors = sharedThemeOptions.accentColors || [];
 
     const contactTypes = [
       { type: "phone", label: "Phone Number", placeholder: "Phone number" },
@@ -673,7 +776,7 @@
       user: null,
       displayName: "",
       title: "",
-      theme: { mode: "dark", preset: "midnight", accent: "#00c896" },
+      theme: { ...defaultTheme },
       contactType: "phone",
       contactValue: "",
       contactLabel: "",
@@ -735,29 +838,91 @@
 
     function sanitizeTheme(theme) {
       const safe = theme && typeof theme === "object" ? theme : {};
-      const preset = themes[safe.preset] ? safe.preset : "midnight";
+      const mode = ["dark", "light", "system"].includes(safe.mode) ? safe.mode : defaultTheme.mode;
+      const preset = themePresets[safe.preset] ? safe.preset : defaultTheme.preset;
       return {
-        mode: "dark",
+        mode,
         preset,
-        accent: /^#[0-9a-f]{6}$/i.test(safe.accent || "") ? safe.accent : themes[preset].accent
+        accent: /^#[0-9a-f]{6}$/i.test(safe.accent || "") ? safe.accent : defaultTheme.accent
+      };
+    }
+
+    function getResolvedThemeMode(mode) {
+      if (mode !== "system") return mode;
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+
+    function getThemePalette(theme) {
+      const safeTheme = sanitizeTheme(theme);
+      const preset = themePresets[safeTheme.preset] || themePresets[defaultTheme.preset];
+      const mode = getResolvedThemeMode(safeTheme.mode);
+      return (preset && (preset[mode] || preset.dark)) || {
+        bg: "#0f0f0f",
+        surface: "#202020",
+        text: "#ffffff",
+        muted: "#aaa",
+        border: "#333"
       };
     }
 
     function renderThemeOptions() {
-      const el = document.getElementById("themeOptions");
-      el.innerHTML = "";
-      Object.entries(themes).forEach(([key, theme]) => {
+      state.theme = sanitizeTheme(state.theme);
+
+      const modeEl = document.getElementById("themeModeOptions");
+      const presetEl = document.getElementById("themePresetOptions");
+      const accentEl = document.getElementById("themeAccentOptions");
+
+      modeEl.innerHTML = "";
+      ["dark", "light", "system"].forEach(mode => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `theme-option ${state.theme.preset === key ? "active" : ""}`;
-        button.innerHTML = `<span class="theme-swatch" style="background:${theme.bg}; border:1px solid ${theme.border};"></span>${theme.label}`;
+        button.className = `appearance-chip ${state.theme.mode === mode ? "active" : ""}`;
+        button.innerText = mode[0].toUpperCase() + mode.slice(1);
         button.onclick = () => {
-          state.theme = { mode: "dark", preset: key, accent: theme.accent };
+          state.theme = sanitizeTheme({ ...state.theme, mode });
           renderThemeOptions();
           updatePreview();
         };
-        el.appendChild(button);
+        modeEl.appendChild(button);
       });
+
+      presetEl.innerHTML = "";
+      Object.entries(themePresets).forEach(([key, preset]) => {
+        const palette = preset[getResolvedThemeMode(state.theme.mode)] || preset.dark;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `appearance-preset ${state.theme.preset === key ? "active" : ""}`;
+        button.innerHTML = `
+          <span class="appearance-swatch" style="background:${palette.bg}; border-color:${palette.border};">
+            <span style="background:${palette.surface};"></span>
+          </span>
+          <span>${preset.label}</span>
+        `;
+        button.onclick = () => {
+          state.theme = sanitizeTheme({ ...state.theme, preset: key });
+          renderThemeOptions();
+          updatePreview();
+        };
+        presetEl.appendChild(button);
+      });
+
+      accentEl.innerHTML = "";
+      accentColors.forEach(accent => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `accent-swatch ${state.theme.accent.toLowerCase() === accent.value.toLowerCase() ? "active" : ""}`;
+        button.title = accent.label;
+        button.style.background = accent.value;
+        button.onclick = () => {
+          state.theme = sanitizeTheme({ ...state.theme, accent: accent.value });
+          renderThemeOptions();
+          updatePreview();
+        };
+        accentEl.appendChild(button);
+      });
+
+      const custom = document.getElementById("customAccent");
+      custom.value = state.theme.accent;
     }
 
     function renderContactOptions() {
@@ -886,10 +1051,12 @@
       state.title = document.getElementById("titleInput").value.trim();
       state.contactValue = document.getElementById("contactValueInput").value.trim();
       state.contactLabel = document.getElementById("contactLabelInput").value.trim();
+      state.theme = sanitizeTheme(state.theme);
 
-      const theme = themes[state.theme.preset] || themes.midnight;
-      const accent = state.theme.accent || theme.accent;
+      const theme = getThemePalette(state.theme);
+      const accent = state.theme.accent;
       document.documentElement.style.setProperty("--accent", accent);
+      document.documentElement.style.setProperty("--accent-color", accent);
       const preview = document.getElementById("previewPhone");
       preview.style.setProperty("--preview-bg", theme.bg);
       preview.style.setProperty("--preview-surface", theme.surface);
@@ -1140,6 +1307,13 @@
 
     document.getElementById("addStarterBlockBtn").onclick = addStarterBlock;
     document.getElementById("phoneCountryCode").addEventListener("change", event => updatePhoneCountryCode(event.target.value));
+    document.getElementById("customAccent").addEventListener("input", event => {
+      const value = event.target.value;
+      if (!/^#[0-9a-f]{6}$/i.test(value)) return;
+      state.theme = sanitizeTheme({ ...state.theme, accent: value });
+      renderThemeOptions();
+      updatePreview();
+    });
 
     ["displayNameInput", "titleInput", "contactValueInput", "contactLabelInput"].forEach(id => {
       document.getElementById(id).addEventListener("input", updatePreview);
