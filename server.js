@@ -56,7 +56,22 @@ function sanitizeTheme(theme) {
   if (!theme || typeof theme !== "object") return { ...DEFAULT_THEME };
 
   const allowedModes = new Set(["dark", "light", "system"]);
-  const allowedPresets = new Set(["midnight", "ocean", "purple", "gold", "forest", "minimal-white", "neon"]);
+  const allowedPresets = new Set([
+    "midnight",
+    "ocean",
+    "purple",
+    "gold",
+    "forest",
+    "minimal-white",
+    "rose",
+    "neon",
+    "aurora",
+    "galaxy",
+    "sunset-gradient",
+    "candy",
+    "fire",
+    "ice"
+  ]);
   const safeAccent = /^#[0-9a-f]{6}$/i.test(theme.accent || "") ? theme.accent : DEFAULT_THEME.accent;
 
   return {
