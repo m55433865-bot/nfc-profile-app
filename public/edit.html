@@ -922,8 +922,6 @@
             const links = Array.isArray(user.links) ? user.links : [];
             const phones = [];
             const emails = [];
-            const websites = [getPublicProfileUrl()];
-            const title = user.bio || "";
 
             links.forEach(link => {
                 const url = (link.finalUrl || link.url || "").trim();
@@ -938,11 +936,7 @@
 
                 if (email) {
                     addUnique(emails, email);
-                    return;
                 }
-
-                const normalized = normalizeContactWebsiteUrl(url);
-                if (normalized) addUnique(websites, normalized);
             });
 
             const lines = [
@@ -952,20 +946,12 @@
                 `N:${escapeVCardValue(displayName)};;;;`
             ];
 
-            if (title) {
-                lines.push(`TITLE:${escapeVCardValue(title)}`);
-            }
-
             phones.forEach(phone => {
-                lines.push(`TEL;TYPE=CELL:${escapeVCardValue(phone)}`);
+                lines.push(`TEL;TYPE=CELL,VOICE:${escapeVCardValue(phone)}`);
             });
 
             emails.forEach(email => {
-                lines.push(`EMAIL;TYPE=INTERNET:${escapeVCardValue(email)}`);
-            });
-
-            websites.forEach(site => {
-                lines.push(`URL:${escapeVCardValue(site)}`);
+                lines.push(`EMAIL;TYPE=INTERNET,HOME:${escapeVCardValue(email)}`);
             });
 
             lines.push("END:VCARD");
@@ -1026,12 +1012,6 @@
             }
 
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanUrl) ? cleanUrl : "";
-        }
-
-        function normalizeContactWebsiteUrl(url) {
-            const cleanUrl = (url || "").trim();
-            if (!cleanUrl || /^(tel|sms|mailto):/i.test(cleanUrl)) return "";
-            return normalizeUrl(cleanUrl);
         }
 
         function escapeVCardValue(value) {
