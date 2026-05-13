@@ -789,10 +789,10 @@
               <select id="phoneCountryCode" class="phone-country-select" aria-label="Country code"></select>
             </div>
             <input id="contactValueInput" class="phone-number-input"
-              placeholder="Phone number, WhatsApp number, or email">
+              placeholder="Phone number, WhatsApp number, or email" inputmode="tel" autocomplete="tel" enterkeyhint="next">
           </div>
           <label>Display label
-            <input id="contactLabelInput" placeholder="Display label, e.g. My Number">
+            <input id="contactLabelInput" placeholder="Display label, e.g. My Number" enterkeyhint="done">
           </label>
         </div>
         <div id="starterBlocksList" class="starter-block-list"></div>
@@ -855,6 +855,8 @@
     ];
 
     let selectedPhoneCountryCode = "+1";
+    let onboardingHistoryReady = false;
+    let navigatingOnboardingHistory = false;
 
     const state = {
       step: 0,
@@ -914,6 +916,7 @@
           renderThemeOptions();
           renderContactOptions();
           renderStep();
+          setupOnboardingHistory();
           updatePreview();
         })
         .catch(() => {
@@ -1085,7 +1088,35 @@
       document.getElementById("contactLabelInput").value = "";
     }
 
-    function selectContactType(type) {
+    function focusContactValue() {
+      if (state.step !== 2) return;
+      const input = document.getElementById("contactValueInput");
+      if (!input) return;
+
+      input.focus({ preventScroll: true });
+      setTimeout(() => {
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        input.focus({ preventScroll: true });
+      }, 160);
+    }
+
+    function updateContactInputMode() {
+      const input = document.getElementById("contactValueInput");
+      if (!input) return;
+
+      const isPhoneType = isPhoneContactType(state.contactType);
+      input.type = isPhoneType ? "tel" : "email";
+      input.inputMode = isPhoneType ? "numeric" : "email";
+      input.autocomplete = isPhoneType ? "tel" : "email";
+      input.enterKeyHint = "next";
+      if (isPhoneType) {
+        input.setAttribute("pattern", "[0-9]*");
+      } else {
+        input.removeAttribute("pattern");
+      }
+    }
+
+    function selectContactType(type, options = {}) {
       if (type === state.contactType) return;
 
       const savedDraft = saveCurrentContactDraft({ useDefaultLabel: true, silent: true });
@@ -1093,12 +1124,17 @@
       clearContactInputs();
       setContactPlaceholders();
       updatePhoneInputMode();
+      updateContactInputMode();
       renderContactOptions();
       renderStarterBlocks();
       updatePreview();
 
       if (savedDraft) {
         document.getElementById("setupError").innerText = "";
+      }
+
+      if (options.focus !== false) {
+        focusContactValue();
       }
     }
 
@@ -1189,6 +1225,23 @@
 
       group.classList.toggle("phone-active", isPhoneType);
       countryField.style.display = isPhoneType ? "flex" : "none";
+      updateContactInputMode();
+    }
+
+    function setStep(nextStep, options = {}) {
+      const safeStep = Math.max(0, Math.min(2, Number(nextStep) || 0));
+      const stepChanged = safeStep !== state.step;
+      state.step = safeStep;
+      renderStep();
+      updatePreview();
+
+      if (stepChanged && !options.skipHistory) {
+        pushOnboardingStepHistory(safeStep);
+      }
+
+      if (safeStep === 2 && options.focusContact !== false) {
+        focusContactValue();
+      }
     }
 
     function renderStep() {
@@ -1202,6 +1255,9 @@
       document.querySelector(".setup-actions").classList.toggle("contact-actions", state.step === 2);
       document.getElementById("backBtn").style.visibility = state.step === 0 ? "hidden" : "visible";
       document.getElementById("nextBtn").innerText = state.step === 2 ? "Finish setup" : "Continue";
+      if (state.step === 2) {
+        updateContactInputMode();
+      }
     }
 
     function updatePreview() {
@@ -1394,11 +1450,22 @@
     }
 
     function addStarterBlock() {
-      saveCurrentContactDraft();
+      if (saveCurrentContactDraft()) {
+        moveContactFlowForwardAfterSave();
+      }
     }
 
     function hasPhoneContact(links) {
       return links.some(link => link.type === "phone" && String(link.value || "").trim());
+    }
+
+    function moveContactFlowForwardAfterSave() {
+      if (state.contactType === "phone") {
+        selectContactType("email");
+        return;
+      }
+
+      focusContactValue();
     }
 
     function finishSetup() {
@@ -1408,8 +1475,7 @@
 
       if (!state.displayName) {
         error.innerText = "Add a display name to continue.";
-        state.step = 0;
-        renderStep();
+        setStep(0);
         return;
       }
 
@@ -1419,13 +1485,13 @@
 
       if (!hasPhoneContact(links)) {
         error.innerText = "Add your phone number to finish setup.";
-        state.step = 2;
+        setStep(2, { focusContact: false });
         state.contactType = "phone";
         setContactPlaceholders();
         updatePhoneInputMode();
         renderContactOptions();
-        renderStep();
         updatePreview();
+        focusContactValue();
         return;
       }
 
@@ -1465,18 +1531,58 @@
         .replace(/'/g, "&#039;");
     }
 
+    function getOnboardingHistoryState(step = state.step, initial = false) {
+      return {
+        nfcOnboarding: true,
+        step,
+        initial
+      };
+    }
+
+    function setupOnboardingHistory() {
+      if (!window.history || !history.pushState || onboardingHistoryReady) return;
+
+      history.replaceState(getOnboardingHistoryState(0, true), "", window.location.href);
+      history.pushState(getOnboardingHistoryState(0), "", window.location.href);
+      onboardingHistoryReady = true;
+    }
+
+    function pushOnboardingStepHistory(step) {
+      if (!onboardingHistoryReady || navigatingOnboardingHistory || !window.history || !history.pushState) return;
+      history.pushState(getOnboardingHistoryState(step), "", window.location.href);
+    }
+
+    function leaveOnboardingToLogin() {
+      window.location.href = appPath("/login");
+    }
+
+    window.addEventListener("popstate", event => {
+      const historyState = event.state || {};
+
+      if (!historyState.nfcOnboarding) {
+        leaveOnboardingToLogin();
+        return;
+      }
+
+      if (historyState.initial && state.step === 0) {
+        leaveOnboardingToLogin();
+        return;
+      }
+
+      navigatingOnboardingHistory = true;
+      setStep(historyState.step || 0, { skipHistory: true, focusContact: false });
+      navigatingOnboardingHistory = false;
+    });
+
     document.getElementById("backBtn").onclick = () => {
       if (state.step > 0) {
-        state.step -= 1;
-        renderStep();
+        history.back();
       }
     };
 
     document.getElementById("nextBtn").onclick = () => {
       if (state.step < 2) {
-        state.step += 1;
-        renderStep();
-        updatePreview();
+        setStep(state.step + 1);
         return;
       }
       finishSetup();
@@ -1487,10 +1593,8 @@
       pill.addEventListener("click", () => {
         const nextStep = Number(pill.dataset.stepTarget);
         if (!Number.isInteger(nextStep)) return;
-        state.step = nextStep;
         document.getElementById("setupError").innerText = "";
-        renderStep();
-        updatePreview();
+        setStep(nextStep);
       });
     });
     document.getElementById("phoneCountryCode").addEventListener("change", event => updatePhoneCountryCode(event.target.value));
@@ -1504,6 +1608,18 @@
 
     ["displayNameInput", "titleInput", "contactValueInput", "contactLabelInput"].forEach(id => {
       document.getElementById(id).addEventListener("input", updatePreview);
+    });
+
+    document.getElementById("contactValueInput").addEventListener("keydown", event => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      document.getElementById("contactLabelInput").focus();
+    });
+
+    document.getElementById("contactLabelInput").addEventListener("keydown", event => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      addStarterBlock();
     });
 
     selectedPhoneCountryCode = getDefaultPhoneCountryCode();

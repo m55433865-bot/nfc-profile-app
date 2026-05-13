@@ -1725,7 +1725,30 @@
             if (group) group.removeAttribute("style");
             if (countryField) countryField.style.display = "none";
             if (select) select.removeAttribute("style");
-            if (input) input.removeAttribute("style");
+            if (input) {
+                input.removeAttribute("style");
+                input.removeAttribute("pattern");
+            }
+        }
+
+        function updateSmartLinkInputMode(type) {
+            const input = document.getElementById("smartLinkValue");
+            if (!input) return;
+
+            if (isPhoneSmartType(type)) {
+                input.type = "tel";
+                input.inputMode = "numeric";
+                input.autocomplete = "tel";
+                input.enterKeyHint = "next";
+                input.setAttribute("pattern", "[0-9]*");
+                return;
+            }
+
+            input.removeAttribute("pattern");
+            input.type = type === "email" ? "email" : "text";
+            input.inputMode = type === "email" ? "email" : "url";
+            input.autocomplete = type === "email" ? "email" : "url";
+            input.enterKeyHint = "next";
         }
 
         setupPhoneCountrySelect();
@@ -1811,6 +1834,7 @@
             document.getElementById('smartLinkValue').placeholder = selectedSmartLink.placeholder || "Paste value or link";
             const isPhoneType = isPhoneSmartType(type);
             resetPhoneInputGroupStyles();
+            updateSmartLinkInputMode(type);
             document.getElementById('phoneCountryField').style.display = isPhoneType ? "flex" : "none";
             document.getElementById('phoneInputGroup').classList.toggle("phone-active", isPhoneType);
             setupPhoneCountrySelect();
