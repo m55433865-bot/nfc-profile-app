@@ -96,14 +96,24 @@
     }
 
     .step-pill {
+      appearance: none;
       background: var(--panel-soft);
       border: 1px solid transparent;
       border-radius: 999px;
       color: var(--muted);
+      cursor: pointer;
       flex: 1;
       font-size: 12px;
       padding: 9px 10px;
       text-align: center;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .step-pill:hover,
+    .step-pill:focus-visible {
+      background: color-mix(in srgb, var(--accent), transparent 90%);
+      color: var(--text);
+      outline: none;
     }
 
     .step-pill.active {
@@ -160,6 +170,18 @@
     select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 86%);
+    }
+
+    .profile-link-field {
+      background:
+        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 8px, transparent 8px 16px),
+        rgba(4, 7, 14, 0.38);
+      border-color: color-mix(in srgb, var(--border), transparent 28%);
+      color: color-mix(in srgb, var(--text), transparent 34%);
+      cursor: not-allowed;
+      opacity: 0.72;
+      pointer-events: none;
+      -webkit-text-fill-color: color-mix(in srgb, var(--text), transparent 34%);
     }
 
     .phone-input-group {
@@ -699,10 +721,10 @@
         </div>
       </div>
 
-      <div class="step-list">
-        <div class="step-pill active">Identity</div>
-        <div class="step-pill">Theme</div>
-        <div class="step-pill">Contact</div>
+      <div class="step-list" role="tablist" aria-label="Profile setup steps">
+        <button class="step-pill active" type="button" role="tab" aria-selected="true" data-step-target="0">Identity</button>
+        <button class="step-pill" type="button" role="tab" aria-selected="false" data-step-target="1">Theme</button>
+        <button class="step-pill" type="button" role="tab" aria-selected="false" data-step-target="2">Contact</button>
       </div>
 
       <section class="setup-step active" data-step="0">
@@ -710,7 +732,7 @@
         <p class="section-copy">Your profile link is already reserved. Add the name and role people should see.</p>
         <div class="field-grid">
           <label>Profile link
-            <input id="slugInput" disabled>
+            <input id="slugInput" class="profile-link-field" disabled aria-disabled="true" tabindex="-1">
           </label>
           <label>Display name
             <input id="displayNameInput" placeholder="Mohamed Mahdi">
@@ -1137,6 +1159,7 @@
       });
       document.querySelectorAll(".step-pill").forEach((pill, index) => {
         pill.classList.toggle("active", index === state.step);
+        pill.setAttribute("aria-selected", index === state.step ? "true" : "false");
       });
       document.querySelector(".setup-actions").classList.toggle("contact-actions", state.step === 2);
       document.getElementById("backBtn").style.visibility = state.step === 0 ? "hidden" : "visible";
@@ -1403,6 +1426,16 @@
     };
 
     document.getElementById("addStarterBlockBtn").onclick = addStarterBlock;
+    document.querySelectorAll(".step-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        const nextStep = Number(pill.dataset.stepTarget);
+        if (!Number.isInteger(nextStep)) return;
+        state.step = nextStep;
+        document.getElementById("setupError").innerText = "";
+        renderStep();
+        updatePreview();
+      });
+    });
     document.getElementById("phoneCountryCode").addEventListener("change", event => updatePhoneCountryCode(event.target.value));
     document.getElementById("customAccent").addEventListener("input", event => {
       const value = event.target.value;
