@@ -1117,6 +1117,8 @@
             const tasks = getProfileProgressTasks();
             const completedCount = tasks.filter(task => task.completed).length;
             const totalCount = tasks.length;
+            if (completedCount === totalCount) return "";
+
             const progressPercent = Math.round((completedCount / totalCount) * 100);
             const taskHtml = profileProgressExpanded
                 ? `

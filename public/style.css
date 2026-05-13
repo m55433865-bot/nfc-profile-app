@@ -471,7 +471,8 @@ input,
 }
 
 .profile-progress-task.completed .profile-progress-arrow {
-  color: #22c55e;
+  color: var(--accent-color);
+  filter: drop-shadow(0 0 7px var(--accent-soft));
   font-size: 18px;
   font-weight: 900;
   opacity: 1;
