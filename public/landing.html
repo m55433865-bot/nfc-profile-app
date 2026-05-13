@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YourTeck NFC Cards</title>
+  <meta name="description"
+    content="Your identity in one tap. Premium NFC smart profile cards for creators, entrepreneurs, and modern professionals.">
+  <link rel="icon" href="/nfc/favicon.ico" sizes="any">
+  <link rel="icon" href="/nfc/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/nfc/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/nfc/apple-touch-icon.png">
+  <link rel="manifest" href="/nfc/site.webmanifest">
+  <meta name="theme-color" content="#00c896">
+  <link rel="stylesheet" href="/nfc/brand.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #07090d;
+      --bg-soft: #0d1219;
+      --card: rgba(18, 24, 34, 0.78);
+      --card-solid: #111823;
+      --text: #f7fbff;
+      --muted: #9aa8ba;
+      --muted-strong: #c9d6e5;
+      --accent: #00c896;
+      --cyan: #30f4ff;
+      --line: rgba(255, 255, 255, 0.11);
+      --line-strong: rgba(0, 200, 150, 0.36);
+      --shadow: 0 30px 90px rgba(0, 0, 0, 0.46);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 12% 8%, rgba(0, 200, 150, 0.18), transparent 30%),
+        radial-gradient(circle at 86% 14%, rgba(48, 244, 255, 0.11), transparent 28%),
+        linear-gradient(180deg, #090c11 0%, #07090d 48%, #090d12 100%);
+      color: var(--text);
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 76px 76px;
+      content: "";
+      inset: 0;
+      mask-image: linear-gradient(to bottom, black, transparent 70%);
+      pointer-events: none;
+      position: fixed;
+      z-index: -1;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .landing-shell {
+      margin: 0 auto;
+      max-width: 1180px;
+      padding: 22px;
+      width: 100%;
+    }
+
+    .nav {
+      align-items: center;
+      backdrop-filter: blur(18px);
+      background: rgba(7, 9, 13, 0.62);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      margin: 0 auto;
+      max-width: 1120px;
+      padding: 12px 14px;
+      position: sticky;
+      top: 14px;
+      z-index: 20;
+    }
+
+    .nav-brand {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .brand-mark-landing {
+      height: 42px;
+      width: 42px;
+    }
+
+    .nav-links {
+      align-items: center;
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav-links a {
+      border-radius: 999px;
+      color: var(--muted-strong);
+      font-size: 14px;
+      padding: 10px 12px;
+      transition: background 180ms ease, color 180ms ease;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+    }
+
+    .nav-cta {
+      background: rgba(0, 200, 150, 0.13);
+      border: 1px solid rgba(0, 200, 150, 0.3);
+      color: #eafff8 !important;
+    }
+
+    .hero {
+      align-items: center;
+      display: grid;
+      gap: 54px;
+      grid-template-columns: minmax(0, 1.03fr) minmax(340px, 0.97fr);
+      min-height: calc(100vh - 90px);
+      padding: 78px 0 58px;
+    }
+
+    .eyebrow {
+      align-items: center;
+      background: rgba(0, 200, 150, 0.11);
+      border: 1px solid rgba(0, 200, 150, 0.28);
+      border-radius: 999px;
+      color: #b9fff0;
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 8px 12px;
+    }
+
+    .eyebrow::before {
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 18px rgba(0, 200, 150, 0.7);
+      content: "";
+      height: 7px;
+      width: 7px;
+    }
+
+    h1 {
+      font-size: clamp(48px, 8vw, 92px);
+      letter-spacing: -0.055em;
+      line-height: 0.92;
+      margin: 0;
+      max-width: 800px;
+    }
+
+    .hero-copy {
+      color: var(--muted-strong);
+      font-size: clamp(17px, 2vw, 21px);
+      line-height: 1.65;
+      margin: 24px 0 0;
+      max-width: 610px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 13px;
+      margin-top: 34px;
+    }
+
+    .btn {
+      align-items: center;
+      border-radius: 14px;
+      display: inline-flex;
+      font-weight: 800;
+      gap: 10px;
+      justify-content: center;
+      min-height: 52px;
+      padding: 14px 18px;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #2fffe0);
+      box-shadow: 0 18px 42px rgba(0, 200, 150, 0.24);
+      color: #05110e;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .hero-proof {
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 13px;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .hero-proof span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 10px;
+    }
+
+    .visual-stage {
+      min-height: 610px;
+      position: relative;
+    }
+
+    .nfc-card {
+      background:
+        radial-gradient(circle at 18% 20%, rgba(48, 244, 255, 0.28), transparent 34%),
+        radial-gradient(circle at 86% 80%, rgba(0, 200, 150, 0.18), transparent 34%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.045));
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 30px;
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      height: 230px;
+      left: 0;
+      overflow: hidden;
+      padding: 24px;
+      position: absolute;
+      top: 82px;
+      transform: rotate(-9deg);
+      width: min(390px, 82vw);
+    }
+
+    .nfc-card::after {
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 999px;
+      content: "";
+      height: 94px;
+      opacity: 0.55;
+      position: absolute;
+      right: -20px;
+      top: -22px;
+      width: 94px;
+    }
+
+    .card-top {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .tap-symbol {
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 999px;
+      height: 48px;
+      position: relative;
+      width: 48px;
+    }
+
+    .tap-symbol::before,
+    .tap-symbol::after {
+      border: 1px solid rgba(48, 244, 255, 0.65);
+      border-left: 0;
+      border-radius: 0 999px 999px 0;
+      content: "";
+      height: 22px;
+      position: absolute;
+      right: 8px;
+      top: 12px;
+      width: 13px;
+    }
+
+    .tap-symbol::after {
+      height: 34px;
+      opacity: 0.42;
+      right: 4px;
+      top: 6px;
+      width: 22px;
+    }
+
+    .card-name {
+      bottom: 24px;
+      left: 24px;
+      position: absolute;
+    }
+
+    .card-name strong {
+      display: block;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .card-name span {
+      color: var(--muted-strong);
+      display: block;
+      margin-top: 5px;
+    }
+
+    .phone-preview {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+        #0c1018;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 42px;
+      box-shadow: var(--shadow), 0 0 52px rgba(0, 200, 150, 0.13);
+      margin-left: auto;
+      min-height: 570px;
+      overflow: hidden;
+      padding: 16px;
+      position: relative;
+      width: min(330px, 82vw);
+      z-index: 2;
+    }
+
+    .phone-screen {
+      background:
+        radial-gradient(circle at top, rgba(0, 200, 150, 0.16), transparent 32%),
+        #0a0d13;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 30px;
+      min-height: 536px;
+      padding: 24px 18px;
+    }
+
+    .profile-avatar {
+      background:
+        linear-gradient(135deg, rgba(0, 200, 150, 0.28), rgba(48, 244, 255, 0.16)),
+        #121a24;
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      box-shadow: 0 0 35px rgba(0, 200, 150, 0.18);
+      height: 84px;
+      margin: 0 auto 16px;
+      position: relative;
+      width: 84px;
+    }
+
+    .profile-avatar::after {
+      color: var(--accent);
+      content: "YT";
+      font-size: 24px;
+      font-weight: 900;
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .phone-screen h2 {
+      font-size: 23px;
+      letter-spacing: -0.03em;
+      margin: 0;
+      text-align: center;
+    }
+
+    .phone-screen p {
+      color: var(--muted);
+      margin: 8px auto 24px;
+      max-width: 210px;
+      text-align: center;
+    }
+
+    .profile-link {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      min-height: 58px;
+      padding: 12px;
+    }
+
+    .profile-link-icon {
+      align-items: center;
+      background: rgba(0, 200, 150, 0.14);
+      border: 1px solid rgba(0, 200, 150, 0.28);
+      border-radius: 12px;
+      color: var(--accent);
+      display: flex;
+      height: 34px;
+      justify-content: center;
+      width: 34px;
+    }
+
+    .profile-link span {
+      font-weight: 700;
+    }
+
+    .floating-stat {
+      backdrop-filter: blur(16px);
+      background: rgba(14, 19, 28, 0.76);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      bottom: 48px;
+      box-shadow: var(--shadow);
+      left: 10px;
+      padding: 14px 16px;
+      position: absolute;
+      z-index: 3;
+    }
+
+    .floating-stat strong {
+      display: block;
+      font-size: 22px;
+    }
+
+    .floating-stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section {
+      padding: 72px 0;
+    }
+
+    .section-head {
+      margin: 0 auto 30px;
+      max-width: 720px;
+      text-align: center;
+    }
+
+    .section-kicker {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-size: clamp(32px, 5vw, 54px);
+      letter-spacing: -0.045em;
+      line-height: 1;
+      margin: 10px 0 0;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+      margin: 16px auto 0;
+      max-width: 610px;
+    }
+
+    .steps,
+    .features,
+    .why-grid,
+    .faq-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .steps {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .features {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .why-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .tile {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.2);
+      min-height: 178px;
+      overflow: hidden;
+      padding: 24px;
+      position: relative;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .tile:hover {
+      background: rgba(21, 29, 41, 0.88);
+      border-color: rgba(0, 200, 150, 0.26);
+      transform: translateY(-4px);
+    }
+
+    .tile-number {
+      color: rgba(48, 244, 255, 0.55);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .tile h4 {
+      font-size: 22px;
+      letter-spacing: -0.025em;
+      margin: 30px 0 10px;
+    }
+
+    .tile p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .feature-icon {
+      align-items: center;
+      background: rgba(0, 200, 150, 0.12);
+      border: 1px solid rgba(0, 200, 150, 0.24);
+      border-radius: 15px;
+      color: var(--accent);
+      display: flex;
+      height: 44px;
+      justify-content: center;
+      margin-bottom: 24px;
+      width: 44px;
+    }
+
+    .preview-showcase {
+      align-items: center;
+      background:
+        radial-gradient(circle at 24% 10%, rgba(0, 200, 150, 0.18), transparent 30%),
+        rgba(17, 24, 35, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      display: grid;
+      gap: 28px;
+      grid-template-columns: 0.95fr 1.05fr;
+      overflow: hidden;
+      padding: 28px;
+    }
+
+    .showcase-copy {
+      padding: 10px;
+    }
+
+    .showcase-copy h3 {
+      max-width: 520px;
+    }
+
+    .showcase-copy p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.75;
+      max-width: 540px;
+    }
+
+    .mini-browser {
+      background: #080b10;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+
+    .mini-browser-bar {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      font-size: 12px;
+      gap: 7px;
+      padding: 8px 10px 14px;
+    }
+
+    .dot {
+      background: rgba(255, 255, 255, 0.28);
+      border-radius: 50%;
+      height: 8px;
+      width: 8px;
+    }
+
+    .pricing-card {
+      align-items: center;
+      background:
+        linear-gradient(135deg, rgba(0, 200, 150, 0.16), rgba(48, 244, 255, 0.06)),
+        rgba(17, 24, 35, 0.86);
+      border: 1px solid var(--line-strong);
+      border-radius: 30px;
+      display: flex;
+      gap: 22px;
+      justify-content: space-between;
+      padding: 28px;
+    }
+
+    .pricing-card h3 {
+      font-size: clamp(28px, 4vw, 46px);
+    }
+
+    .pricing-card p {
+      color: var(--muted-strong);
+      line-height: 1.65;
+      margin: 12px 0 0;
+      max-width: 560px;
+    }
+
+    .price-pill {
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      min-width: 240px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .price-pill strong {
+      display: block;
+      font-size: 24px;
+    }
+
+    .price-pill span {
+      color: var(--muted);
+      display: block;
+      margin-top: 6px;
+    }
+
+    .faq-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    details {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px 20px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 800;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details p {
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 12px 0 0;
+    }
+
+    .final-cta {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(0, 200, 150, 0.26), transparent 42%),
+        rgba(17, 24, 35, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      padding: 54px 24px;
+      text-align: center;
+    }
+
+    .final-cta h3 {
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 720px;
+    }
+
+    .footer {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      font-size: 13px;
+      justify-content: space-between;
+      padding: 32px 0 18px;
+    }
+
+    @keyframes floatCard {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(-9deg);
+      }
+
+      50% {
+        transform: translateY(-10px) rotate(-8deg);
+      }
+    }
+
+    @keyframes floatPhone {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-12px);
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .nfc-card {
+        animation: floatCard 6s ease-in-out infinite;
+      }
+
+      .phone-preview {
+        animation: floatPhone 7s ease-in-out infinite;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .nav {
+        border-radius: 18px;
+      }
+
+      .nav-links a:not(.nav-cta) {
+        display: none;
+      }
+
+      .hero {
+        gap: 26px;
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 56px 0 40px;
+      }
+
+      .visual-stage {
+        min-height: 540px;
+      }
+
+      .nfc-card {
+        left: 0;
+        top: 24px;
+        width: min(330px, 82vw);
+      }
+
+      .phone-preview {
+        margin: 110px auto 0;
+      }
+
+      .floating-stat {
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: max-content;
+      }
+
+      .steps,
+      .features,
+      .why-grid,
+      .faq-grid,
+      .preview-showcase {
+        grid-template-columns: 1fr;
+      }
+
+      .pricing-card {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .price-pill {
+        min-width: 0;
+      }
+
+      .footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .landing-shell {
+        padding: 14px;
+      }
+
+      .nav {
+        padding: 10px;
+        top: 10px;
+      }
+
+      .nav-brand span {
+        font-size: 15px;
+      }
+
+      .brand-mark-landing {
+        height: 38px;
+        width: 38px;
+      }
+
+      .hero-actions .btn {
+        width: 100%;
+      }
+
+      .visual-stage {
+        min-height: 520px;
+      }
+
+      .phone-preview {
+        width: 100%;
+      }
+
+      .nfc-card {
+        width: calc(100% - 18px);
+      }
+
+      .section {
+        padding: 52px 0;
+      }
+
+      .tile,
+      .preview-showcase,
+      .pricing-card,
+      .final-cta {
+        border-radius: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="landing-shell">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-brand" href="/nfc" aria-label="YourTeck NFC home">
+        <span class="brand-mark brand-mark-landing" aria-hidden="true">
+          <svg viewBox="0 0 100 100">
+            <path class="brand-mark-chip"
+              d="M18 74V26c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H26c-4.4 0-8-3.6-8-8Z" />
+            <path class="brand-mark-n" d="M29 72V29l42 43V28" stroke="currentColor" />
+            <path class="brand-mark-wave" d="M72 34c7 5 10 11 10 18s-3 13-10 18" />
+            <path class="brand-mark-wave wave-2" d="M80 25c10 8 15 17 15 27s-5 19-15 27" />
+          </svg>
+        </span>
+        <span>YourTeck NFC</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a class="nav-cta" href="/nfc/login">Login</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">NFC + QR smart profile cards</div>
+          <h1>Your identity in one tap.</h1>
+          <p class="hero-copy">
+            Share your profile, socials, contact details, QR code, and save-contact card instantly. Built for creators,
+            founders, sales teams, and anyone who wants networking to feel effortless.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/nfc/login">Get Your Card</a>
+            <a class="btn btn-secondary" href="#preview">View Demo</a>
+          </div>
+
+          <div class="hero-proof" aria-label="Product highlights">
+            <span>No app required</span>
+            <span>Edit anytime</span>
+            <span>iPhone + Android ready</span>
+          </div>
+        </div>
+
+        <div class="visual-stage" aria-label="YourTeck NFC card and profile preview">
+          <div class="nfc-card">
+            <div class="card-top">
+              <span class="brand-mark brand-mark-landing wave-static" aria-hidden="true">
+                <svg viewBox="0 0 100 100">
+                  <path class="brand-mark-chip"
+                    d="M18 74V26c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H26c-4.4 0-8-3.6-8-8Z" />
+                  <path class="brand-mark-n" d="M29 72V29l42 43V28" stroke="currentColor" />
+                  <path class="brand-mark-wave" d="M72 34c7 5 10 11 10 18s-3 13-10 18" />
+                  <path class="brand-mark-wave wave-2" d="M80 25c10 8 15 17 15 27s-5 19-15 27" />
+                </svg>
+              </span>
+              <span class="tap-symbol" aria-hidden="true"></span>
+            </div>
+            <div class="card-name">
+              <strong>YourTeck</strong>
+              <span>Smart NFC Profile Card</span>
+            </div>
+          </div>
+
+          <div class="phone-preview">
+            <div class="phone-screen">
+              <div class="profile-avatar"></div>
+              <h2>Mohamed Mahdi</h2>
+              <p>Creator, developer, and modern networking profile.</p>
+
+              <div class="profile-link">
+                <div class="profile-link-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M22 16.9v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.63 2.62a2 2 0 0 1-.45 2.11L8 9.74a16 16 0 0 0 6 6l1.29-1.29a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0 1 22 16.9Z"
+                      stroke="currentColor" stroke-width="1.8" />
+                  </svg>
+                </div>
+                <span>Save Contact</span>
+              </div>
+
+              <div class="profile-link">
+                <div class="profile-link-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.8" />
+                  </svg>
+                </div>
+                <span>Instagram</span>
+              </div>
+
+              <div class="profile-link">
+                <div class="profile-link-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.8" />
+                    <path d="m22 6-10 7L2 6" stroke="currentColor" stroke-width="1.8" />
+                  </svg>
+                </div>
+                <span>Email</span>
+              </div>
+
+              <div class="profile-link">
+                <div class="profile-link-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor"
+                      stroke-width="1.8" />
+                    <circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.8" />
+                  </svg>
+                </div>
+                <span>Location</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="floating-stat">
+            <strong>1 tap</strong>
+            <span>to share everything</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how">
+        <div class="section-head">
+          <span class="section-kicker">How it works</span>
+          <h3>Networking without the awkward search.</h3>
+          <p>Tap the card, open the profile, and let people connect from the exact action they need.</p>
+        </div>
+
+        <div class="steps">
+          <article class="tile">
+            <span class="tile-number">01</span>
+            <h4>Tap</h4>
+            <p>Touch your NFC card to a phone or show your QR code when NFC is not available.</p>
+          </article>
+          <article class="tile">
+            <span class="tile-number">02</span>
+            <h4>Share</h4>
+            <p>Your profile opens instantly with your contact details, links, socials, and custom theme.</p>
+          </article>
+          <article class="tile">
+            <span class="tile-number">03</span>
+            <h4>Connect</h4>
+            <p>Visitors can save your contact, message you, follow you, or open your most important links.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="section-head">
+          <span class="section-kicker">Features</span>
+          <h3>Everything your first impression needs.</h3>
+        </div>
+
+        <div class="features">
+          <article class="tile">
+            <div class="feature-icon">ID</div>
+            <h4>Digital profile</h4>
+            <p>A clean mobile profile that holds your contact details, links, and socials in one place.</p>
+          </article>
+          <article class="tile">
+            <div class="feature-icon">FX</div>
+            <h4>Custom themes</h4>
+            <p>Match your personal brand with dark, light, classic, and gradient visual themes.</p>
+          </article>
+          <article class="tile">
+            <div class="feature-icon">QR</div>
+            <h4>QR ready</h4>
+            <p>Use your QR code anywhere: screens, cards, stickers, booths, or printed materials.</p>
+          </article>
+          <article class="tile">
+            <div class="feature-icon">VCF</div>
+            <h4>Save Contact</h4>
+            <p>Make it easy for people to add your name, phone, and email to their contacts.</p>
+          </article>
+          <article class="tile">
+            <div class="feature-icon">UP</div>
+            <h4>Edit anytime</h4>
+            <p>Update your links and details without reprinting the card or changing the QR.</p>
+          </article>
+          <article class="tile">
+            <div class="feature-icon">APP</div>
+            <h4>No app required</h4>
+            <p>Visitors open your profile directly in their browser on iPhone or Android.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="preview">
+        <div class="preview-showcase">
+          <div class="showcase-copy">
+            <span class="section-kicker">Live profile preview</span>
+            <h3>A profile that looks like you meant it.</h3>
+            <p>
+              YourTeck profiles are built for quick scanning: crisp blocks, polished icons, QR sharing, contact export,
+              and themes that make every card feel personal.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/nfc/login">Start Building</a>
+            </div>
+          </div>
+
+          <div class="mini-browser">
+            <div class="mini-browser-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span>yourteck.com/nfc/profile/you</span>
+            </div>
+            <div class="phone-screen">
+              <div class="profile-avatar"></div>
+              <h2>Your Name</h2>
+              <p>Founder, creator, consultant, or anyone worth remembering.</p>
+              <div class="profile-link">
+                <div class="profile-link-icon">TEL</div><span>My Number</span>
+              </div>
+              <div class="profile-link">
+                <div class="profile-link-icon">@</div><span>Socials</span>
+              </div>
+              <div class="profile-link">
+                <div class="profile-link-icon">WEB</div><span>Portfolio</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <span class="section-kicker">Why YourTeck</span>
+          <h3>Built for modern introductions.</h3>
+        </div>
+
+        <div class="why-grid">
+          <article class="tile">
+            <h4>Stylish</h4>
+            <p>Premium dark UI with clean details that feel intentional.</p>
+          </article>
+          <article class="tile">
+            <h4>Fast</h4>
+            <p>Open, scan, tap, and connect without slowing the moment down.</p>
+          </article>
+          <article class="tile">
+            <h4>Custom</h4>
+            <p>Change themes, profile blocks, icons, and your contact details.</p>
+          </article>
+          <article class="tile">
+            <h4>NFC + QR</h4>
+            <p>Two ways to share, so your profile works in more situations.</p>
+          </article>
+          <article class="tile">
+            <h4>Mobile-first</h4>
+            <p>Designed for the phone screen where introductions actually happen.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="pricing">
+        <div class="pricing-card">
+          <div>
+            <span class="section-kicker">Pricing preview</span>
+            <h3>NFC card + 1 year included.</h3>
+            <p>Full pricing is coming soon. The first offer will include your physical NFC card and one year of profile
+              access.</p>
+          </div>
+          <div class="price-pill">
+            <strong>Coming soon</strong>
+            <span>Simple launch pricing</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <span class="section-kicker">FAQ</span>
+          <h3>Quick answers.</h3>
+        </div>
+
+        <div class="faq-grid">
+          <details>
+            <summary>Works on iPhone and Android?</summary>
+            <p>Yes. NFC works on most modern phones, and every card can also be shared with a QR code.</p>
+          </details>
+          <details>
+            <summary>Does the other person need an app?</summary>
+            <p>No. Your profile opens in the browser, so visitors can connect without installing anything.</p>
+          </details>
+          <details>
+            <summary>Can I edit later?</summary>
+            <p>Yes. Update your name, bio, links, theme, QR, and contact details whenever you want.</p>
+          </details>
+          <details>
+            <summary>What happens if I lose the card?</summary>
+            <p>Your profile stays online. You can keep using your QR link and replace the physical card when needed.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="final-cta">
+          <span class="section-kicker">Ready?</span>
+          <h3>Ready to make your first tap count?</h3>
+          <div class="hero-actions" style="justify-content:center;">
+            <a class="btn btn-primary" href="/nfc/login">Get Your Card</a>
+            <a class="btn btn-secondary" href="#features">Explore Features</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>&copy; 2026 YourTeck. NFC smart profile cards.</span>
+      <span>Built for one-tap introductions.</span>
+    </footer>
+  </div>
+</body>
+
+</html>

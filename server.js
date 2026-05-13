@@ -1271,7 +1271,7 @@ app.get('/', (req, res) => {
 });
 
 app.get(`${BASE_PATH}`, (req, res) => {
-  res.redirect(`${BASE_PATH}/login`);
+  res.sendFile(path.join(publicDir, 'landing.html'));
 });
 
 app.get(`${BASE_PATH}/login`, (req, res) => {
@@ -1288,6 +1288,10 @@ app.get(`${BASE_PATH}/admin`, (req, res) => {
 
 app.get(`${BASE_PATH}/onboarding`, (req, res) => {
   res.sendFile(path.join(publicDir, 'onboarding.html'));
+});
+
+app.get(`${BASE_PATH}/edit`, (req, res) => {
+  res.sendFile(path.join(publicDir, 'edit.html'));
 });
 
 app.get(`${BASE_PATH}/profile/:username`, sendProfilePage);
