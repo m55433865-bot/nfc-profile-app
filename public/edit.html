@@ -1101,7 +1101,7 @@
                 },
                 {
                     id: "save-contact",
-                    title: "Try Save Contact",
+                    title: "Save contact",
                     description: "See how visitors can save your details to their phone.",
                     completed: saveContactTried,
                     action: "guideProfileTask('save-contact')"
@@ -1213,6 +1213,7 @@
             }
 
             if (taskId === "save-contact") {
+                localStorage.setItem(getProfileProgressStorageKey("saveContactTried"), "true");
                 switchTab("view");
                 requestAnimationFrame(() => {
                     const target = document.getElementById("saveContactRow");
