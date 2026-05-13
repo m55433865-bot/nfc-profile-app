@@ -722,7 +722,8 @@
       </div>
 
       <div class="step-list" role="tablist" aria-label="Profile setup steps">
-        <button class="step-pill active" type="button" role="tab" aria-selected="true" data-step-target="0">Identity</button>
+        <button class="step-pill active" type="button" role="tab" aria-selected="true"
+          data-step-target="0">Identity</button>
         <button class="step-pill" type="button" role="tab" aria-selected="false" data-step-target="1">Theme</button>
         <button class="step-pill" type="button" role="tab" aria-selected="false" data-step-target="2">Contact</button>
       </div>
@@ -789,7 +790,7 @@
 
       <div class="setup-actions">
         <button id="backBtn" class="setup-btn secondary" type="button">Back</button>
-        <button id="addStarterBlockBtn" class="setup-btn ghost" type="button">Add another block</button>
+        <button id="addStarterBlockBtn" class="setup-btn ghost" type="button">Save</button>
         <button id="nextBtn" class="setup-btn primary" type="button">Continue</button>
       </div>
       <div id="setupError" class="setup-error"></div>
@@ -820,9 +821,7 @@
 
     const contactTypes = [
       { type: "phone", label: "Phone Number", placeholder: "Phone number" },
-      { type: "whatsapp", label: "WhatsApp", placeholder: "WhatsApp number" },
-      { type: "email", label: "Email", placeholder: "Email address" },
-      { type: "instagram", label: "Instagram", placeholder: "Instagram username or URL" }
+      { type: "email", label: "Email", placeholder: "Email address" }
     ];
 
     const phoneCountryOptions = [
@@ -1053,15 +1052,44 @@
         button.className = `contact-option ${state.contactType === item.type ? "active" : ""}`;
         button.innerText = item.label;
         button.onclick = () => {
-          state.contactType = item.type;
-          document.getElementById("contactValueInput").placeholder = item.placeholder;
-          document.getElementById("contactLabelInput").placeholder = `Display label, e.g. ${item.label}`;
-          updatePhoneInputMode();
-          renderContactOptions();
-          updatePreview();
+          selectContactType(item.type);
         };
         el.appendChild(button);
       });
+    }
+
+    function getContactTypeConfig(type = state.contactType) {
+      return contactTypes.find(item => item.type === type) || contactTypes[0];
+    }
+
+    function setContactPlaceholders() {
+      const config = getContactTypeConfig();
+      document.getElementById("contactValueInput").placeholder = config.placeholder;
+      document.getElementById("contactLabelInput").placeholder = `Display label, e.g. ${config.label}`;
+    }
+
+    function clearContactInputs() {
+      state.contactValue = "";
+      state.contactLabel = "";
+      document.getElementById("contactValueInput").value = "";
+      document.getElementById("contactLabelInput").value = "";
+    }
+
+    function selectContactType(type) {
+      if (type === state.contactType) return;
+
+      const savedDraft = saveCurrentContactDraft({ useDefaultLabel: true, silent: true });
+      state.contactType = type;
+      clearContactInputs();
+      setContactPlaceholders();
+      updatePhoneInputMode();
+      renderContactOptions();
+      renderStarterBlocks();
+      updatePreview();
+
+      if (savedDraft) {
+        document.getElementById("setupError").innerText = "";
+      }
     }
 
     function getDefaultPhoneCountryCode() {
@@ -1115,7 +1143,7 @@
     }
 
     function isPhoneContactType(type) {
-      return ["phone", "whatsapp"].includes(type);
+      return type === "phone";
     }
 
     function setupPhoneCountrySelect() {
@@ -1324,7 +1352,7 @@
     function buildContactLink(type = state.contactType, rawValue = state.contactValue, rawLabel = state.contactLabel) {
       const value = String(rawValue || "").trim();
       if (!value) return null;
-      const config = contactTypes.find(item => item.type === type) || contactTypes[0];
+      const config = getContactTypeConfig(type);
       const label = String(rawLabel || "").trim() || config.label;
       const url = buildFinalUrl(type, value, getSelectedPhoneCountryCode());
       if (!url) return null;
@@ -1338,22 +1366,29 @@
       };
     }
 
-    function addStarterBlock() {
+    function saveCurrentContactDraft({ useDefaultLabel = false, silent = false } = {}) {
       const error = document.getElementById("setupError");
       error.innerText = "";
       updatePreview();
-      const link = buildContactLink();
+      const label = useDefaultLabel ? "" : state.contactLabel;
+      const link = buildContactLink(state.contactType, state.contactValue, label);
       if (!link) {
-        error.innerText = "Add a valid contact value first.";
-        return;
+        if (!silent) error.innerText = "Add a valid contact value first.";
+        return false;
       }
       state.starterLinks.push(link);
-      state.contactValue = "";
-      state.contactLabel = "";
-      document.getElementById("contactValueInput").value = "";
-      document.getElementById("contactLabelInput").value = "";
+      clearContactInputs();
       renderStarterBlocks();
       updatePreview();
+      return true;
+    }
+
+    function addStarterBlock() {
+      saveCurrentContactDraft();
+    }
+
+    function hasPhoneContact(links) {
+      return links.some(link => link.type === "phone" && String(link.value || "").trim());
     }
 
     function finishSetup() {
@@ -1371,6 +1406,18 @@
       const links = [...state.starterLinks];
       const contact = buildContactLink();
       if (contact) links.push(contact);
+
+      if (!hasPhoneContact(links)) {
+        error.innerText = "Add your phone number to finish setup.";
+        state.step = 2;
+        state.contactType = "phone";
+        setContactPlaceholders();
+        updatePhoneInputMode();
+        renderContactOptions();
+        renderStep();
+        updatePreview();
+        return;
+      }
 
       fetch(apiPath(`/${username}`), {
         method: "POST",
@@ -1452,8 +1499,7 @@
     selectedPhoneCountryCode = getDefaultPhoneCountryCode();
     setupPhoneCountrySelect();
     updatePhoneInputMode();
-    document.getElementById("contactValueInput").placeholder = contactTypes[0].placeholder;
-    document.getElementById("contactLabelInput").placeholder = `Display label, e.g. ${contactTypes[0].label}`;
+    setContactPlaceholders();
     loadUser();
   </script>
 </body>
