@@ -1122,10 +1122,12 @@
             const progressPercent = Math.round((completedCount / totalCount) * 100);
             const taskHtml = profileProgressExpanded
                 ? `
-                    <div class="profile-progress-body">
+                    <div class="profile-progress-panel">
+                        <div class="profile-progress-track" aria-hidden="true">
+                            <span style="width:${progressPercent}%"></span>
+                        </div>
                         ${incompleteTasks.map(task => `
                             <button type="button" class="profile-progress-task" onclick="${task.action}">
-                                <span class="profile-progress-check" aria-hidden="true"></span>
                                 <span class="profile-progress-copy">
                                     <strong>${task.title}</strong>
                                     <small>${task.description}</small>
@@ -1138,18 +1140,14 @@
                 : "";
 
             return `
-                <section class="profile-progress-card ${profileProgressExpanded ? "expanded" : ""}">
-                    <button type="button" class="profile-progress-header" onclick="toggleProfileProgress()">
-                        <span>
-                            <strong>Profile Progress</strong>
-                            <small>${completedCount}/${totalCount} completed</small>
-                        </span>
-                        <span class="profile-progress-chevron" aria-hidden="true">›</span>
+                <section class="profile-progress-wrap ${profileProgressExpanded ? "expanded" : ""}">
+                    <button type="button" class="link no-sort profile-progress-row" onclick="toggleProfileProgress()">
+                        <span class="profile-progress-title">Profile Progress</span>
+                        <span class="profile-progress-meta">${completedCount}/${totalCount} ›</span>
                     </button>
-                    <div class="profile-progress-track" aria-hidden="true">
-                        <span style="width:${progressPercent}%"></span>
+                    <div class="profile-progress-collapse">
+                        ${taskHtml}
                     </div>
-                    ${taskHtml}
                 </section>
             `;
         }
