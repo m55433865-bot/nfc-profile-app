@@ -932,6 +932,7 @@
             layer.innerHTML = `
                 <div class="coachmark-spotlight" aria-hidden="true"></div>
                 <section class="coachmark-card" role="dialog" aria-modal="true" aria-labelledby="addCoachTitle">
+                    <div class="coachmark-arrow" aria-hidden="true"></div>
                     <div class="coachmark-kicker">Next step</div>
                     <h3 id="addCoachTitle">Add your first profile blocks</h3>
                     <p>Use <strong>+ Add</strong> to add WhatsApp, Instagram, phone, email, websites, and anything else you want visitors to open from your NFC profile.</p>
@@ -965,16 +966,23 @@
                 const gap = 16;
                 const sidePad = 16;
                 let top = rect.bottom + gap;
+                let placement = "below";
                 if (top + cardRect.height > window.innerHeight - sidePad) {
                     top = rect.top - cardRect.height - gap;
+                    placement = "above";
                 }
                 if (top < sidePad) top = window.innerHeight - cardRect.height - sidePad;
 
                 let left = rect.left + rect.width / 2 - cardRect.width / 2;
                 left = Math.max(sidePad, Math.min(left, window.innerWidth - cardRect.width - sidePad));
 
+                layer.dataset.placement = placement;
                 card.style.left = `${left}px`;
                 card.style.top = `${top}px`;
+
+                const arrow = card.querySelector(".coachmark-arrow");
+                const arrowLeft = rect.left + rect.width / 2 - left;
+                arrow.style.left = `${Math.max(24, Math.min(arrowLeft, cardRect.width - 24))}px`;
             };
 
             const closeCoachMark = () => {

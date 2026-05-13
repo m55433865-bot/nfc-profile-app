@@ -410,6 +410,7 @@ input,
 .coachmark-layer {
   position: fixed;
   inset: 0;
+  pointer-events: auto;
   z-index: 2300;
 }
 
@@ -441,6 +442,25 @@ input,
   text-align: left;
   width: 360px;
   z-index: 2303;
+}
+
+.coachmark-arrow {
+  background: color-mix(in srgb, var(--card-color), #000 5%);
+  border-left: 1px solid var(--accent-soft);
+  border-top: 1px solid var(--accent-soft);
+  height: 16px;
+  position: absolute;
+  transform: translateX(-50%) rotate(45deg);
+  width: 16px;
+}
+
+.coachmark-layer[data-placement="below"] .coachmark-arrow {
+  top: -9px;
+}
+
+.coachmark-layer[data-placement="above"] .coachmark-arrow {
+  bottom: -9px;
+  transform: translateX(-50%) rotate(225deg);
 }
 
 .coachmark-kicker {
@@ -502,6 +522,10 @@ input,
     left: 16px !important;
     top: auto !important;
     width: calc(100vw - 32px);
+  }
+
+  .coachmark-arrow {
+    display: none;
   }
 }
 
