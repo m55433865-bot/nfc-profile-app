@@ -45,6 +45,20 @@
     </div>
   </div>
 
+  <div id="resetUserConfirmModal" class="smart-modal" onclick="closeResetUserConfirm()">
+    <div class="modal-card confirm-card" onclick="event.stopPropagation()">
+      <div class="modal-title">Reset user profile?</div>
+      <div id="resetUserCopy" class="smart-add-subtitle">
+        This clears the user's profile details and sends them through onboarding again.
+      </div>
+      <div id="resetUserError" class="modal-error"></div>
+      <div class="form-actions">
+        <button type="button" class="ui-btn secondary" onclick="closeResetUserConfirm()">Cancel</button>
+        <button id="confirmResetUserBtn" type="button" class="ui-btn danger" onclick="confirmResetUser()">Reset profile</button>
+      </div>
+    </div>
+  </div>
+
   <div id="adminModal" style="
     position: fixed;
     top: 0;
@@ -94,6 +108,7 @@
     const adminSearchInput = document.getElementById("adminSearchInput");
 
     let selectedUsername = null;
+    let resetUsername = null;
     let modalMode = "add";
     let allUsers = [];
     let expandedUsername = null;
@@ -195,6 +210,11 @@
             <strong>${escapeHtml(phone)}</strong>
           </div>
         </div>
+        ${user.isAdmin ? "" : `
+          <div class="admin-detail-actions">
+            <button type="button" class="ui-btn danger admin-reset-btn" onclick="openResetUserConfirm('${escapeAttr(user.username)}', event)">Reset profile setup</button>
+          </div>
+        `}
       `;
     }
 
@@ -235,6 +255,10 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
     }
 
     function showUserMenu(username, event) {
@@ -386,6 +410,64 @@
           showMessage("User deleted");
           closeUserMenu();
           loadUsers();
+        });
+    }
+
+    function openResetUserConfirm(username, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      const user = allUsers.find(item => item.username === username);
+      if (!user || user.isAdmin) return;
+
+      resetUsername = username;
+      document.getElementById("resetUserError").innerText = "";
+      document.getElementById("resetUserCopy").innerText = `This clears ${user.email || username}'s profile details, links, avatar, and theme. Their login account stays active.`;
+      const button = document.getElementById("confirmResetUserBtn");
+      button.disabled = false;
+      button.innerText = "Reset profile";
+      document.getElementById("resetUserConfirmModal").style.display = "flex";
+    }
+
+    function closeResetUserConfirm() {
+      document.getElementById("resetUserConfirmModal").style.display = "none";
+      resetUsername = null;
+    }
+
+    function confirmResetUser() {
+      if (!resetUsername) return;
+
+      const error = document.getElementById("resetUserError");
+      const button = document.getElementById("confirmResetUserBtn");
+      error.innerText = "";
+      button.disabled = true;
+      button.innerText = "Resetting...";
+
+      fetch(apiPath(`/admin/users/${resetUsername}/reset-profile`), {
+        method: "POST",
+        headers: adminHeaders()
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            error.innerText = data.error;
+            button.disabled = false;
+            button.innerText = "Reset profile";
+            return;
+          }
+
+          const resetEmail = allUsers.find(item => item.username === resetUsername)?.email || "User";
+          showMessage(`${resetEmail} profile reset`);
+          closeResetUserConfirm();
+          expandedUsername = resetUsername;
+          loadUsers();
+        })
+        .catch(() => {
+          error.innerText = "Profile could not be reset. Try again.";
+          button.disabled = false;
+          button.innerText = "Reset profile";
         });
     }
 

@@ -443,8 +443,7 @@
         .then(user => {
           if (user && user.username) {
             localStorage.setItem("username", user.username);
-            const completeKey = `onboardingComplete:${user.username}`;
-            if (user && !user.error && needsOnboarding(user) && localStorage.getItem(completeKey) !== "true") {
+            if (user && !user.error && needsOnboarding(user)) {
               window.location.replace(appPath("/onboarding"));
               return;
             }

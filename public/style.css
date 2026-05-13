@@ -696,6 +696,12 @@ input,
   transform: translateY(-1px);
 }
 
+.ui-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+}
+
 .ui-btn.primary {
   background: var(--button-bg);
   color: var(--button-text);
@@ -706,6 +712,25 @@ input,
   background: var(--surface-hover-color);
   border-color: var(--border-color);
   color: var(--text-color);
+}
+
+.ui-btn.danger {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.34);
+  color: #ffb4b4;
+  font-weight: 700;
+}
+
+.ui-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.48);
+}
+
+.modal-error {
+  color: #ff8b8b;
+  font-size: 13px;
+  line-height: 1.35;
+  min-height: 18px;
 }
 
 .profile-qr-card {
@@ -1488,7 +1513,7 @@ input,
 }
 
 .admin-user-card.expanded .admin-user-details {
-  max-height: 140px;
+  max-height: 230px;
   opacity: 1;
   padding: 0 14px 12px;
   transform: translateY(0);
@@ -1547,6 +1572,17 @@ input,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.admin-detail-actions {
+  display: grid;
+  margin-top: 10px;
+}
+
+.admin-reset-btn {
+  justify-content: center;
+  min-height: 42px;
+  width: 100%;
 }
 
 .admin-empty {

@@ -1084,6 +1084,37 @@ apiRouter.post('/admin/users/:username/password', async (req, res) => {
   }
 });
 
+// ADMIN: reset profile setup
+apiRouter.post('/admin/users/:username/reset-profile', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!requireServiceRole(res)) return;
+
+  try {
+    const username = req.params.username.toLowerCase();
+
+    if (username === ADMIN_USERNAME) {
+      return res.status(403).json({ error: "Admin user cannot be reset" });
+    }
+
+    const user = await getUser(username, supabaseAdmin);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const updatedUser = await updateUser(username, {
+      displayname: user.username,
+      bio: "",
+      avatar: "",
+      links: [],
+      theme: DEFAULT_THEME
+    }, supabaseAdmin);
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
 // ADMIN: delete user
 apiRouter.delete('/admin/users/:username', async (req, res) => {
   if (!requireAdmin(req, res)) return;

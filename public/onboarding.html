@@ -909,7 +909,7 @@
           }
           localStorage.setItem("username", username);
 
-          if (!needsOnboarding(user) || localStorage.getItem(`onboardingComplete:${username}`) === "true") {
+          if (!needsOnboarding(user)) {
             window.location.replace(appPath(`/profile/${username}`));
             return;
           }
