@@ -48,7 +48,7 @@
             root.style.setProperty("--shadow-color", mode === "light" ? "rgba(17, 24, 39, 0.14)" : "rgba(0, 0, 0, 0.42)");
         })();
     </script>
-    <link rel="stylesheet" href="/nfc/style.css?v=profile-progress-2">
+    <link rel="stylesheet" href="/nfc/style.css?v=profile-progress-check-1">
     <link rel="stylesheet" href="/nfc/brand.css">
 
 </head>
@@ -1135,7 +1135,7 @@
                         ${tasks.map(task => `
                             <button type="button" class="link no-sort profile-progress-task ${task.completed ? "completed" : ""}" ${task.completed ? `aria-disabled="true"` : `onclick="${task.action}"`}>
                                 <span>${task.title}</span>
-                                <span class="profile-progress-arrow" ${task.completed ? `style="--progress-done-color:${progressAccent};"` : ""} aria-hidden="true">${task.completed ? "✓" : "›"}</span>
+                                <span class="profile-progress-arrow" ${task.completed ? `style="--progress-done-color:${progressAccent}; color:${progressAccent}; filter:drop-shadow(0 0 8px color-mix(in srgb, ${progressAccent}, transparent 30%));"` : ""} aria-hidden="true">${task.completed ? "✓" : "›"}</span>
                             </button>
                         `).join("")}
                     </div>
