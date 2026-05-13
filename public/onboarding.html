@@ -756,7 +756,7 @@
             <input id="displayNameInput" placeholder="" autocomplete="name" enterkeyhint="next">
           </label>
           <label>Bio
-            <input id="titleInput" placeholder="" autocomplete="organization-title"
+            <input id="bioInput" placeholder="" autocomplete="off"
               enterkeyhint="done">
           </label>
         </div>
@@ -818,7 +818,7 @@
       <div id="previewPhone" class="phone-preview">
         <div id="previewAvatar" class="preview-avatar">N</div>
         <h2 id="previewName" class="preview-name">Your Name</h2>
-        <p id="previewTitle" class="preview-title"></p>
+        <p id="previewBio" class="preview-title"></p>
         <div id="previewLinks" class="preview-links"></div>
       </div>
     </aside>
@@ -919,11 +919,11 @@
           state.displayName = loadedDisplayName.trim().toLowerCase() === (user.username || "").trim().toLowerCase()
             ? ""
             : loadedDisplayName;
-          state.title = user.bio || "";
+          state.bio = user.bio || "";
           state.theme = sanitizeTheme(user.theme);
           document.getElementById("slugInput").value = `${window.location.origin}${appPath(`/profile/${user.username}`)}`;
           document.getElementById("displayNameInput").value = state.displayName;
-          document.getElementById("titleInput").value = state.title;
+          document.getElementById("bioInput").value = state.bio;
           renderThemeOptions();
           renderContactOptions();
           renderStep();
@@ -1122,7 +1122,7 @@
     }
 
     function getVisibleStepInputIds() {
-      if (state.step === 0) return ["displayNameInput", "titleInput"];
+      if (state.step === 0) return ["displayNameInput", "bioInput"];
       if (state.step === 2) return ["contactValueInput", "contactLabelInput"];
       return [];
     }
@@ -1326,7 +1326,7 @@
 
     function updatePreview() {
       state.displayName = document.getElementById("displayNameInput").value.trim();
-      state.title = document.getElementById("titleInput").value.trim();
+      state.bio = document.getElementById("bioInput").value.trim();
       state.contactValue = document.getElementById("contactValueInput").value.trim();
       state.contactLabel = document.getElementById("contactLabelInput").value.trim();
       state.theme = sanitizeTheme(state.theme);
@@ -1345,7 +1345,7 @@
       const name = state.displayName || state.user?.username || "Your Name";
       document.getElementById("previewAvatar").innerText = name.trim()[0]?.toUpperCase() || "N";
       document.getElementById("previewName").innerText = name;
-      document.getElementById("previewTitle").innerText = state.title || "";
+      document.getElementById("previewBio").innerText = state.bio || "";
 
       const links = [...state.starterLinks];
       const draft = buildContactLink();
@@ -1565,7 +1565,7 @@
         body: JSON.stringify({
           password,
           displayName: state.displayName,
-          bio: state.title,
+          bio: state.bio,
           avatar: state.user.avatar || "",
           links,
           theme: state.theme
@@ -1582,7 +1582,7 @@
           localStorage.removeItem(`addCoachSeen:${username}`);
           localStorage.removeItem(`showAddGuide:${username}`);
 
-          const progressComplete = Boolean(state.title.trim())
+          const progressComplete = Boolean(state.bio.trim())
             && Boolean(state.user.avatar)
             && links.length > 0
             && localStorage.getItem(`saveContactTried:${username}`) === "true";
@@ -1678,7 +1678,7 @@
       updatePreview();
     });
 
-    ["displayNameInput", "titleInput", "contactValueInput", "contactLabelInput"].forEach(id => {
+    ["displayNameInput", "bioInput", "contactValueInput", "contactLabelInput"].forEach(id => {
       const input = document.getElementById(id);
       input.addEventListener("input", event => {
         updatePreview();
