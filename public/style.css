@@ -744,6 +744,14 @@ input,
   opacity: 0.6;
 }
 
+#links .link.profile-progress-task.completed > .profile-progress-arrow {
+  color: var(--accent-color) !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-color), transparent 30%));
+  font-size: 18px;
+  font-weight: 900;
+  opacity: 1 !important;
+}
+
 .link .link-icon,
 .link .link-main .link-title {
   font-size: 15px;

@@ -1076,9 +1076,13 @@
             return `${name}:${profileUsername}`;
         }
 
+        function getSaveContactProgressKey() {
+            return getProfileProgressStorageKey("saveContactIntroSeen:v2");
+        }
+
         function getProfileProgressTasks(user = currentUser) {
             const links = Array.isArray(user && user.links) ? user.links : [];
-            const saveContactTried = localStorage.getItem(getProfileProgressStorageKey("saveContactTried")) === "true";
+            const saveContactTried = localStorage.getItem(getSaveContactProgressKey()) === "true";
 
             return [
                 {
@@ -1238,7 +1242,7 @@
             }
 
             if (taskId === "save-contact") {
-                localStorage.setItem(getProfileProgressStorageKey("saveContactTried"), "true");
+                localStorage.setItem(getSaveContactProgressKey(), "true");
                 switchTab("view");
                 requestAnimationFrame(() => {
                     const target = document.getElementById("saveContactRow");
@@ -1284,7 +1288,7 @@
             left.appendChild(text);
             button.appendChild(left);
             button.onclick = () => {
-                if (isOwner) localStorage.setItem(getProfileProgressStorageKey("saveContactTried"), "true");
+                if (isOwner) localStorage.setItem(getSaveContactProgressKey(), "true");
                 saveContactCard(user);
             };
             return button;
