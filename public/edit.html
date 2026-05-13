@@ -177,6 +177,7 @@
         let currentTab = "view";
         let editingLinkIndex = null;
         let draftTheme = null;
+        let closingModalFromUi = false;
 
         const sharedThemeOptions = window.YourTeckThemeOptions || {};
         const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#00c896" };
@@ -324,15 +325,103 @@
             custom.value = draftTheme.accent;
         }
 
+        function getAppHistoryState(extra = {}) {
+            return {
+                nfcProfileApp: true,
+                tab: currentTab,
+                ...extra
+            };
+        }
+
+        function replaceAppHistoryState(extra = {}) {
+            if (!window.history || !window.history.replaceState) return;
+            history.replaceState(getAppHistoryState(extra), "", window.location.href);
+        }
+
+        function pushAppHistoryState(extra = {}) {
+            if (!window.history || !window.history.pushState) return;
+            history.pushState(getAppHistoryState(extra), "", window.location.href);
+        }
+
+        function pushModalHistory(modalId) {
+            pushAppHistoryState({ modal: modalId });
+        }
+
+        function clearModalHistory(modalId) {
+            if (closingModalFromUi) return;
+            const state = history.state || {};
+            if (state.nfcProfileApp && state.modal === modalId) {
+                closingModalFromUi = true;
+                history.back();
+                return;
+            }
+            replaceAppHistoryState();
+        }
+
+        function getVisibleAppModalId() {
+            return [
+                "appearanceModal",
+                "profileQrModal",
+                "logoutConfirmModal",
+                "smartLinkModal",
+                "inputModal"
+            ].find(id => {
+                const modal = document.getElementById(id);
+                return modal && modal.style.display && modal.style.display !== "none";
+            }) || "";
+        }
+
+        function closeVisibleAppModalFromBack(modalId) {
+            if (modalId === "appearanceModal") {
+                closeAppearanceModal(false, { fromHistory: true });
+                switchTab("view", true);
+                replaceAppHistoryState({ tab: "view" });
+                return;
+            }
+
+            if (modalId === "profileQrModal") closeProfileQrModal({ fromHistory: true });
+            if (modalId === "logoutConfirmModal") closeLogoutConfirm({ fromHistory: true });
+            if (modalId === "smartLinkModal") closeSmartLinkModal({ fromHistory: true });
+            if (modalId === "inputModal") closeModal({ fromHistory: true });
+        }
+
+        function syncTabFromHistory(state) {
+            const targetTab = state && state.nfcProfileApp && state.tab ? state.tab : "view";
+            if (["view", "edit", "settings"].includes(targetTab) && targetTab !== currentTab) {
+                switchTab(targetTab, true);
+            }
+        }
+
+        function setupAppBackButtonHandling() {
+            replaceAppHistoryState();
+
+            window.addEventListener("popstate", event => {
+                if (closingModalFromUi) {
+                    closingModalFromUi = false;
+                    syncTabFromHistory(event.state);
+                    return;
+                }
+
+                const visibleModalId = getVisibleAppModalId();
+                if (visibleModalId) {
+                    closeVisibleAppModalFromBack(visibleModalId);
+                    return;
+                }
+
+                syncTabFromHistory(event.state);
+            });
+        }
+
         function openAppearanceModal() {
             if (!currentUser) return;
             draftTheme = sanitizeTheme(currentUser.theme);
             document.getElementById("appearanceModal").style.display = "flex";
+            pushModalHistory("appearanceModal");
             renderAppearanceOptions();
             applyTheme(draftTheme);
         }
 
-        function closeAppearanceModal(save = false) {
+        function closeAppearanceModal(save = false, options = {}) {
             const modal = document.getElementById("appearanceModal");
             modal.style.display = "none";
 
@@ -340,12 +429,14 @@
                 currentUser.theme = sanitizeTheme(draftTheme);
                 console.log("selected theme before save", currentUser.theme);
                 draftTheme = null;
+                if (!options.fromHistory) clearModalHistory("appearanceModal");
                 saveTheme(currentUser.theme);
                 return;
             }
 
             draftTheme = null;
             applyTheme(currentUser ? sanitizeTheme(currentUser.theme) : defaultTheme);
+            if (!options.fromHistory) clearModalHistory("appearanceModal");
         }
 
         function updateCustomAccent(value) {
@@ -361,7 +452,7 @@
             });
         }
 
-        function switchTab(tab) {
+        function switchTab(tab, skipHistory = false) {
             currentTab = tab;
             editingLinkIndex = null;
             setActiveTabUi(tab);
@@ -369,6 +460,10 @@
             loadUser(); // critical
             if (tab === "edit" && isOwner) {
                 showEditModeHint();
+            }
+
+            if (!skipHistory) {
+                pushAppHistoryState({ tab });
             }
         }
 
@@ -1034,10 +1129,12 @@
             img.alt = `QR code for ${profileUrl}`;
             img.src = getProfileQrUrl(profileUrl);
             modal.style.display = "flex";
+            pushModalHistory("profileQrModal");
         }
 
-        function closeProfileQrModal() {
+        function closeProfileQrModal(options = {}) {
             document.getElementById("profileQrModal").style.display = "none";
+            if (!options.fromHistory) clearModalHistory("profileQrModal");
         }
 
         function handleProfileQrError(img) {
@@ -1065,10 +1162,12 @@
 
         function openLogoutConfirm() {
             document.getElementById("logoutConfirmModal").style.display = "flex";
+            pushModalHistory("logoutConfirmModal");
         }
 
-        function closeLogoutConfirm() {
+        function closeLogoutConfirm(options = {}) {
             document.getElementById("logoutConfirmModal").style.display = "none";
+            if (!options.fromHistory) clearModalHistory("logoutConfirmModal");
         }
 
         function confirmLogout() {
@@ -1644,6 +1743,7 @@
             selectedPhoneCountryCode = getDefaultPhoneCountryCode();
             setupPhoneCountrySelect();
             document.getElementById('smartLinkModal').style.display = "flex";
+            pushModalHistory("smartLinkModal");
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = "";
             document.getElementById('smartLinkForm').style.display = "none";
@@ -1654,7 +1754,7 @@
             renderSmartLinkOptions();
         }
 
-        function closeSmartLinkModal() {
+        function closeSmartLinkModal(options = {}) {
             selectedSmartLink = null;
             document.getElementById('smartLinkValue').value = "";
             document.getElementById('smartLinkLabel').value = "";
@@ -1663,6 +1763,7 @@
             resetPhoneInputGroupStyles();
             document.getElementById('smartAddCancel').style.display = "flex";
             document.getElementById('smartLinkModal').style.display = "none";
+            if (!options.fromHistory) clearModalHistory("smartLinkModal");
         }
 
         function renderSmartLinkOptions() {
@@ -1780,6 +1881,7 @@
             currentAction = action;
 
             document.getElementById('inputModal').style.display = "flex";
+            pushModalHistory("inputModal");
 
             const title = document.getElementById('modalTitle');
             const input1 = document.getElementById('input1');
@@ -1888,12 +1990,15 @@
                 });
         }
 
-        function closeModal() {
+        function closeModal(options = {}) {
             currentAction = null;
             document.getElementById('inputModal').style.display = "none";
+            if (!options.fromHistory) clearModalHistory("inputModal");
         }
 
         window.addEventListener("DOMContentLoaded", () => {
+            setupAppBackButtonHandling();
+
             const input = document.getElementById('avatarInput');
 
             if (!input) return;
