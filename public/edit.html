@@ -453,17 +453,23 @@
         }
 
         function switchTab(tab, skipHistory = false) {
-            currentTab = tab;
+            const nextTab = tab !== "view" && !isOwner ? "view" : tab;
+            currentTab = nextTab;
             editingLinkIndex = null;
-            setActiveTabUi(tab);
+            setActiveTabUi(currentTab);
 
-            loadUser(); // critical
-            if (tab === "edit" && isOwner) {
+            if (currentUser) {
+                renderCurrentUser();
+            } else {
+                loadUser();
+            }
+
+            if (currentTab === "edit" && isOwner) {
                 showEditModeHint();
             }
 
             if (!skipHistory) {
-                pushAppHistoryState({ tab });
+                pushAppHistoryState({ tab: currentTab });
             }
         }
 
@@ -536,14 +542,20 @@
             setActiveTabUi(currentTab);
         }
 
-        function loadUser(preloadedUser = null) {
+        function renderCurrentUser() {
+            if (!currentUser) return;
+            loadUser(currentUser, {
+                skipOwnerResolve: true,
+                skipThemeApply: true
+            });
+        }
+
+        function loadUser(preloadedUser = null, options = {}) {
             const renderLoadedUser = async (user) => {
                 if (user.error) {
                     console.error(user.error);
                     return;
                 }
-
-                await resolveOwnerForProfile(user);
 
                 if (!Array.isArray(user.links)) {
                     user.links = [];
@@ -555,8 +567,19 @@
                 if (!user.avatar) user.avatar = "";
                 if (!user.displayName) user.displayName = user.username;
                 user.theme = sanitizeTheme(user.theme);
-                console.log("loaded user.theme", user.theme);
-                applyTheme(user.theme);
+                currentUser = user;
+
+                if (!options.skipThemeApply) {
+                    console.log("loaded user.theme", user.theme);
+                    applyTheme(user.theme);
+                }
+
+                if (options.skipOwnerResolve) {
+                    updateOwnerTabs();
+                    setActiveTabUi(currentTab);
+                } else {
+                    await resolveOwnerForProfile(user);
+                }
 
                 const loaderBrand = document.getElementById('profileLoaderBrand');
                 if (loaderBrand) loaderBrand.style.display = "none";
@@ -604,7 +627,6 @@
                     avatarContainer.innerHTML = "";
                 }
 
-                currentUser = user;
                 const displayName = user.displayName || user.username;
 
                 if (isOwner && currentTab === "edit") {
@@ -768,7 +790,7 @@
                             e.preventDefault();
                             e.stopPropagation();
                             editingLinkIndex = null;
-                            loadUser();
+                            renderCurrentUser();
                         };
 
                         const saveBtn = document.createElement('button');
@@ -1404,7 +1426,7 @@
 
         function editLink(index) {
             editingLinkIndex = index;
-            loadUser();
+            renderCurrentUser();
         }
 
         function saveEditedLink(index, name, url, customIcon) {
@@ -1610,7 +1632,7 @@
                     }
                 }
 
-                loadUser();
+                renderCurrentUser();
             };
 
             editor.addEventListener("blur", () => finish(true));
