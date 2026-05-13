@@ -671,14 +671,7 @@
       }
 
       .preview-panel {
-        height: auto;
-        min-height: 0;
-        order: -1;
-        position: static;
-      }
-
-      .phone-preview {
-        min-height: 420px;
+        display: none;
       }
     }
 
@@ -1583,6 +1576,7 @@
           }
 
           localStorage.setItem(`onboardingComplete:${username}`, "true");
+          localStorage.setItem(`showAddGuide:${username}`, "true");
           window.location.href = appPath(`/profile/${username}`);
         })
         .catch(() => {

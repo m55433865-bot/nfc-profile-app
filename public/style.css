@@ -395,6 +395,56 @@ input,
   font: inherit;
 }
 
+.add-guide-highlight {
+  border-color: var(--accent-color) !important;
+  box-shadow:
+    0 0 0 3px var(--accent-faint),
+    0 14px 34px var(--shadow-color);
+  opacity: 1 !important;
+  position: relative;
+  transform: translateY(-1px);
+  z-index: 20;
+}
+
+.add-guide-bubble {
+  background: color-mix(in srgb, var(--card-color), #000 8%);
+  border: 1px solid var(--accent-soft);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px var(--shadow-color);
+  color: var(--text-color);
+  display: grid;
+  gap: 7px;
+  margin: -4px auto 12px;
+  max-width: 320px;
+  padding: 13px;
+  text-align: left;
+  width: 90%;
+  z-index: 19;
+}
+
+.add-guide-bubble strong {
+  font-size: 14px;
+}
+
+.add-guide-bubble span {
+  color: var(--muted-text-color);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.add-guide-bubble button {
+  background: var(--button-bg);
+  border: 0;
+  border-radius: 9px;
+  color: var(--button-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 36px;
+  padding: 8px 12px;
+  touch-action: manipulation;
+}
+
 .link-main {
   min-width: 0;
   display: flex;

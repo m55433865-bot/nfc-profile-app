@@ -876,6 +876,7 @@
                     };
 
                     linksEl.appendChild(addRow);
+                    maybeShowAddGuide(addRow);
                 }
 
                 if (isOwner && currentTab === "edit") {
@@ -902,6 +903,37 @@
                 item.style.setProperty("--edit-delay", `${Math.min(index * 45, 320)}ms`);
                 void item.offsetWidth;
                 item.classList.add("edit-active");
+            });
+        }
+
+        function maybeShowAddGuide(addRow) {
+            if (!addRow || !isOwner || currentTab !== "edit" || !username) return;
+
+            const guideKey = `showAddGuide:${username}`;
+            if (localStorage.getItem(guideKey) !== "true") return;
+
+            localStorage.removeItem(guideKey);
+
+            requestAnimationFrame(() => {
+                addRow.classList.add("add-guide-highlight");
+                addRow.scrollIntoView({ behavior: "smooth", block: "center" });
+
+                const guide = document.createElement("div");
+                guide.className = "add-guide-bubble";
+                guide.innerHTML = `
+                    <strong>Add your links</strong>
+                    <span>Tap + Add to add social media, WhatsApp, websites, and more.</span>
+                    <button type="button">Got it</button>
+                `;
+
+                const closeGuide = () => {
+                    addRow.classList.remove("add-guide-highlight");
+                    guide.remove();
+                };
+
+                guide.querySelector("button").onclick = closeGuide;
+                addRow.insertAdjacentElement("afterend", guide);
+                setTimeout(closeGuide, 7000);
             });
         }
 
