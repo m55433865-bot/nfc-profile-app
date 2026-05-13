@@ -1127,11 +1127,8 @@
                             <span style="width:${progressPercent}%"></span>
                         </div>
                         ${incompleteTasks.map(task => `
-                            <button type="button" class="profile-progress-task" onclick="${task.action}">
-                                <span class="profile-progress-copy">
-                                    <strong>${task.title}</strong>
-                                    <small>${task.description}</small>
-                                </span>
+                            <button type="button" class="link no-sort profile-progress-task" onclick="${task.action}">
+                                <span>${task.title}</span>
                                 <span class="profile-progress-arrow" aria-hidden="true">›</span>
                             </button>
                         `).join("")}
