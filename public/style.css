@@ -395,19 +395,9 @@ input,
   font: inherit;
 }
 
-.profile-progress-wrap {
-  display: block;
-  margin: 0;
-  max-width: none;
-  width: 100%;
-}
-
 .profile-progress-row {
   cursor: pointer;
   font: inherit;
-  margin: 0 auto;
-  max-width: 320px;
-  width: 90%;
 }
 
 .profile-progress-title {
@@ -429,7 +419,7 @@ input,
   width: 90%;
 }
 
-.profile-progress-wrap.expanded .profile-progress-collapse {
+.profile-progress-collapse.expanded {
   grid-template-rows: 1fr;
 }
 

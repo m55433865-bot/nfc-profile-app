@@ -48,7 +48,7 @@
             root.style.setProperty("--shadow-color", mode === "light" ? "rgba(17, 24, 39, 0.14)" : "rgba(0, 0, 0, 0.42)");
         })();
     </script>
-    <link rel="stylesheet" href="/nfc/style.css?v=coachmark-1">
+    <link rel="stylesheet" href="/nfc/style.css?v=profile-progress-2">
     <link rel="stylesheet" href="/nfc/brand.css">
 
 </head>
@@ -1136,16 +1136,20 @@
                 `
                 : "";
 
+            const progressRow = `
+                <button type="button" class="link no-sort profile-progress-row" onclick="toggleProfileProgress()">
+                    <span class="profile-progress-title">Profile Progress</span>
+                    <span class="profile-progress-meta">${completedCount}/${totalCount} ›</span>
+                </button>
+            `;
+
+            if (!profileProgressExpanded) return progressRow;
+
             return `
-                <section class="profile-progress-wrap ${profileProgressExpanded ? "expanded" : ""}">
-                    <button type="button" class="link no-sort profile-progress-row" onclick="toggleProfileProgress()">
-                        <span class="profile-progress-title">Profile Progress</span>
-                        <span class="profile-progress-meta">${completedCount}/${totalCount} ›</span>
-                    </button>
-                    <div class="profile-progress-collapse">
-                        ${taskHtml}
-                    </div>
-                </section>
+                ${progressRow}
+                <div class="profile-progress-collapse expanded">
+                    ${taskHtml}
+                </div>
             `;
         }
 
