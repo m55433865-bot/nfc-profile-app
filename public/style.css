@@ -399,50 +399,110 @@ input,
   border-color: var(--accent-color) !important;
   box-shadow:
     0 0 0 3px var(--accent-faint),
-    0 14px 34px var(--shadow-color);
+    0 0 34px color-mix(in srgb, var(--accent-color), transparent 50%),
+    0 18px 46px rgba(0, 0, 0, 0.38);
   opacity: 1 !important;
   position: relative;
   transform: translateY(-1px);
-  z-index: 20;
+  z-index: 2302;
 }
 
-.add-guide-bubble {
-  background: color-mix(in srgb, var(--card-color), #000 8%);
+.coachmark-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+}
+
+.coachmark-spotlight {
+  border: 1px solid color-mix(in srgb, var(--accent-color), white 18%);
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.66),
+    0 0 0 4px var(--accent-faint),
+    0 0 34px color-mix(in srgb, var(--accent-color), transparent 48%);
+  pointer-events: none;
+  position: fixed;
+  transition: left 0.22s ease, top 0.22s ease, width 0.22s ease, height 0.22s ease;
+  z-index: 2301;
+}
+
+.coachmark-card {
+  background:
+    radial-gradient(circle at 12% 0%, var(--accent-faint), transparent 42%),
+    color-mix(in srgb, var(--card-color), #000 5%);
   border: 1px solid var(--accent-soft);
-  border-radius: 12px;
-  box-shadow: 0 16px 40px var(--shadow-color);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
   color: var(--text-color);
   display: grid;
-  gap: 7px;
-  margin: -4px auto 12px;
-  max-width: 320px;
-  padding: 13px;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 18px;
+  position: fixed;
   text-align: left;
-  width: 90%;
-  z-index: 19;
+  width: 360px;
+  z-index: 2303;
 }
 
-.add-guide-bubble strong {
-  font-size: 14px;
+.coachmark-kicker {
+  color: var(--accent-color);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
-.add-guide-bubble span {
+.coachmark-card h3 {
+  font-size: 18px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.coachmark-card p {
   color: var(--muted-text-color);
-  font-size: 13px;
-  line-height: 1.35;
+  font-size: 14px;
+  line-height: 1.45;
+  margin: 0;
 }
 
-.add-guide-bubble button {
-  background: var(--button-bg);
-  border: 0;
-  border-radius: 9px;
-  color: var(--button-text);
+.coachmark-card p strong {
+  color: var(--text-color);
+}
+
+.coachmark-actions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 0.85fr 1fr;
+  margin-top: 4px;
+}
+
+.coachmark-actions button {
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  min-height: 36px;
-  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 800;
+  min-height: 42px;
+  padding: 10px 12px;
   touch-action: manipulation;
+}
+
+.coachmark-primary {
+  background: var(--button-bg);
+  border: 1px solid transparent;
+  color: var(--button-text);
+}
+
+.coachmark-secondary {
+  background: var(--surface-color);
+  border: 1px solid var(--soft-border-color);
+  color: var(--text-color);
+}
+
+@media (max-width: 520px) {
+  .coachmark-card {
+    bottom: 18px !important;
+    left: 16px !important;
+    top: auto !important;
+    width: calc(100vw - 32px);
+  }
 }
 
 .link-main {
