@@ -396,20 +396,12 @@ input,
 }
 
 .profile-progress-wrap {
-  margin: 0 auto;
-  max-width: 320px;
-  width: 90%;
+  display: contents;
 }
 
 .profile-progress-row {
-  box-sizing: border-box;
   cursor: pointer;
   font: inherit;
-  margin: 0;
-  max-width: none;
-  min-height: 46px;
-  padding: 10px 12px;
-  width: 100%;
 }
 
 .profile-progress-title {
@@ -424,8 +416,11 @@ input,
 
 .profile-progress-collapse {
   display: grid;
+  margin: 0 auto;
+  max-width: 320px;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.24s ease;
+  width: 90%;
 }
 
 .profile-progress-wrap.expanded .profile-progress-collapse {
