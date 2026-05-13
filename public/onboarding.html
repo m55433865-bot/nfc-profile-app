@@ -1461,6 +1461,36 @@
       return `${baseUrl}${usernamePrefix}${encodeURIComponent(username)}`;
     }
 
+    function buildInstagramUrl(value) {
+      const cleanValue = (value || "").trim();
+      if (!cleanValue) return "";
+
+      const valueWithScheme = /^[a-z][a-z0-9+.-]*:/i.test(cleanValue)
+        ? cleanValue
+        : `https://${cleanValue.replace(/^\/+/, "")}`;
+
+      try {
+        const parsed = new URL(valueWithScheme);
+        const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
+
+        if (hostname === "instagram.com") {
+          const username = cleanUsername(parsed.pathname.split("/").filter(Boolean)[0] || "");
+          return username ? `https://www.instagram.com/${encodeURIComponent(username)}/` : "https://www.instagram.com/";
+        }
+
+        if (/^[a-z][a-z0-9+.-]*:/i.test(cleanValue)) {
+          return normalizeUrl(cleanValue);
+        }
+      } catch (error) {
+        if (/^[a-z][a-z0-9+.-]*:/i.test(cleanValue)) {
+          return normalizeUrl(cleanValue);
+        }
+      }
+
+      const username = cleanUsername(cleanValue);
+      return username ? `https://www.instagram.com/${encodeURIComponent(username)}/` : "";
+    }
+
     function buildFinalUrl(type, value, countryCode = getSelectedPhoneCountryCode()) {
       const cleanValue = (value || "").trim();
       if (!cleanValue) return "";
@@ -1473,7 +1503,7 @@
         case "email":
           return cleanValue.startsWith("mailto:") ? cleanValue : `mailto:${cleanValue}`;
         case "instagram":
-          return buildSocialUrl(type, cleanValue, "https://instagram.com/");
+          return buildInstagramUrl(cleanValue);
         default:
           return normalizeUrl(cleanValue);
       }
