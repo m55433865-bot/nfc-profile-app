@@ -1137,10 +1137,10 @@
                 : "";
 
             const progressRow = `
-                <button type="button" class="link no-sort profile-progress-row" onclick="toggleProfileProgress()">
+                <div class="link no-sort profile-progress-row" onclick="toggleProfileProgress()" role="button" tabindex="0" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleProfileProgress(); }">
                     <span class="profile-progress-title">Profile Progress</span>
                     <span class="profile-progress-meta">${completedCount}/${totalCount} ›</span>
-                </button>
+                </div>
             `;
 
             if (!profileProgressExpanded) return progressRow;
