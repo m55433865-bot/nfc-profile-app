@@ -40,7 +40,7 @@
       label: "Minimal White",
       category: "classic",
       dark: { bg: "#151515", card: "#222", surface: "#2a2a2a", surfaceHover: "#343434", text: "#ffffff", muted: "#b8b8b8", border: "#3a3a3a", input: "#1b1b1b" },
-      light: { bg: "#ffffff", card: "#ffffff", surface: "#f7f7f7", surfaceHover: "#eeeeee", text: "#111111", muted: "#666666", border: "#dddddd", input: "#ffffff" }
+      light: { bg: "#ffffff", card: "#ffffff", surface: "#f5f6f7", surfaceHover: "#eceff2", text: "#111111", muted: "#666666", border: "#c9cdd3", input: "#ffffff" }
     },
     "rose": {
       label: "Rose",
