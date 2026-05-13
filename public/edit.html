@@ -178,6 +178,7 @@
         let editingLinkIndex = null;
         let draftTheme = null;
         let closingModalFromUi = false;
+        let profileProgressExpanded = true;
 
         const sharedThemeOptions = window.YourTeckThemeOptions || {};
         const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#00c896" };
@@ -884,6 +885,7 @@
 
                 if (isOwner && currentTab === "edit") {
                     const addRow = document.createElement('div');
+                    addRow.id = "addBlockRow";
                     addRow.className = "link edit-mode-link no-sort";
 
                     addRow.style.justifyContent = "center";
@@ -899,7 +901,6 @@
                     };
 
                     linksEl.appendChild(addRow);
-                    maybeShowAddGuide(addRow);
                 }
 
                 if (isOwner && currentTab === "edit") {
@@ -929,38 +930,30 @@
             });
         }
 
-        function maybeShowAddGuide(addRow) {
-            if (!addRow || !isOwner || currentTab !== "edit" || !username) return;
+        function showCoachMark(target, options = {}) {
+            if (!target || !document.body.contains(target)) return;
 
-            const guideKey = `showAddGuide:${username}`;
-            const seenKey = `addCoachSeen:${username}`;
-            if (localStorage.getItem(seenKey) === "true") return;
-            if (localStorage.getItem(guideKey) !== "true") return;
-
-            requestAnimationFrame(() => {
-                addRow.scrollIntoView({ behavior: "smooth", block: "center" });
-
-                setTimeout(() => showAddCoachMark(addRow, guideKey, seenKey), 320);
-            });
-        }
-
-        function showAddCoachMark(addRow, guideKey, seenKey) {
-            if (!document.body.contains(addRow)) return;
+            const title = options.title || "Next step";
+            const body = options.body || "";
+            const kicker = options.kicker || "Profile progress";
+            const buttonText = options.buttonText || "Got it";
+            const highlightClass = options.highlightClass || "add-guide-highlight";
 
             document.querySelector(".coachmark-layer")?.remove();
-            addRow.classList.add("add-guide-highlight");
+            document.querySelectorAll(`.${highlightClass}`).forEach(item => item.classList.remove(highlightClass));
+            target.classList.add(highlightClass);
 
             const layer = document.createElement("div");
             layer.className = "coachmark-layer";
             layer.innerHTML = `
                 <div class="coachmark-spotlight" aria-hidden="true"></div>
-                <section class="coachmark-card" role="dialog" aria-modal="true" aria-labelledby="addCoachTitle">
+                <section class="coachmark-card" role="dialog" aria-modal="true" aria-labelledby="coachMarkTitle">
                     <div class="coachmark-arrow" aria-hidden="true"></div>
-                    <div class="coachmark-kicker">Next step</div>
-                    <h3 id="addCoachTitle">Add your first profile blocks</h3>
-                    <p>Use <strong>+ Add</strong> to add WhatsApp, Instagram, phone, email, websites, and anything else visitors should open from your NFC profile.</p>
+                    <div class="coachmark-kicker">${kicker}</div>
+                    <h3 id="coachMarkTitle">${title}</h3>
+                    <p>${body}</p>
                     <div class="coachmark-actions">
-                        <button class="coachmark-primary" type="button">Got it</button>
+                        <button class="coachmark-primary" type="button">${buttonText}</button>
                     </div>
                 </section>
             `;
@@ -971,12 +964,12 @@
             const card = layer.querySelector(".coachmark-card");
 
             const positionCoachMark = () => {
-                if (!document.body.contains(addRow)) {
+                if (!document.body.contains(target)) {
                     closeCoachMark();
                     return;
                 }
 
-                const rect = addRow.getBoundingClientRect();
+                const rect = target.getBoundingClientRect();
                 const pad = 8;
                 spotlight.style.width = `${rect.width + pad * 2}px`;
                 spotlight.style.height = `${rect.height + pad * 2}px`;
@@ -1026,13 +1019,12 @@
             };
 
             const closeCoachMark = () => {
-                localStorage.removeItem(guideKey);
-                localStorage.setItem(seenKey, "true");
-                addRow.classList.remove("add-guide-highlight");
+                target.classList.remove(highlightClass);
                 layer.remove();
                 window.removeEventListener("resize", positionCoachMark);
                 window.removeEventListener("scroll", positionCoachMark, true);
                 document.removeEventListener("keydown", handleCoachKeydown);
+                if (typeof options.onClose === "function") options.onClose();
             };
 
             const handleCoachKeydown = (event) => {
@@ -1051,10 +1043,12 @@
         }
 
         function renderSettings() {
+            const progressSection = renderProfileProgressSection();
             linksEl.innerHTML = `
                 <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
                     Settings
                 </div>
+                ${progressSection}
                 <div class="link no-sort" onclick="openAppearanceModal()" style="cursor:pointer;">
                     <span>Theme</span>
                     <span>›</span>
@@ -1074,6 +1068,168 @@
             `;
         }
 
+        function getProfileProgressStorageKey(name) {
+            const profileUsername = (currentUser && currentUser.username) || username || "profile";
+            return `${name}:${profileUsername}`;
+        }
+
+        function getProfileProgressTasks(user = currentUser) {
+            const links = Array.isArray(user && user.links) ? user.links : [];
+            const saveContactTried = localStorage.getItem(getProfileProgressStorageKey("saveContactTried")) === "true";
+
+            return [
+                {
+                    id: "bio",
+                    title: "Add a bio",
+                    description: "Give visitors a quick reason to remember you.",
+                    completed: Boolean(user && user.bio && user.bio.trim()),
+                    action: "guideProfileTask('bio')"
+                },
+                {
+                    id: "avatar",
+                    title: "Upload a profile picture",
+                    description: "Make the profile feel personal and trustworthy.",
+                    completed: Boolean(user && user.avatar),
+                    action: "guideProfileTask('avatar')"
+                },
+                {
+                    id: "block",
+                    title: "Add a new block",
+                    description: "Add WhatsApp, Instagram, email, location, or any link.",
+                    completed: links.length > 0,
+                    action: "guideProfileTask('block')"
+                },
+                {
+                    id: "save-contact",
+                    title: "Try Save Contact",
+                    description: "See how visitors can save your details to their phone.",
+                    completed: saveContactTried,
+                    action: "guideProfileTask('save-contact')"
+                }
+            ];
+        }
+
+        function renderProfileProgressSection() {
+            if (!currentUser || !isOwner) return "";
+
+            const tasks = getProfileProgressTasks();
+            const completedCount = tasks.filter(task => task.completed).length;
+            const totalCount = tasks.length;
+            const incompleteTasks = tasks.filter(task => !task.completed);
+
+            if (!incompleteTasks.length) return "";
+
+            const progressPercent = Math.round((completedCount / totalCount) * 100);
+            const taskHtml = profileProgressExpanded
+                ? `
+                    <div class="profile-progress-body">
+                        ${incompleteTasks.map(task => `
+                            <button type="button" class="profile-progress-task" onclick="${task.action}">
+                                <span class="profile-progress-check" aria-hidden="true"></span>
+                                <span class="profile-progress-copy">
+                                    <strong>${task.title}</strong>
+                                    <small>${task.description}</small>
+                                </span>
+                                <span class="profile-progress-arrow" aria-hidden="true">›</span>
+                            </button>
+                        `).join("")}
+                    </div>
+                `
+                : "";
+
+            return `
+                <section class="profile-progress-card ${profileProgressExpanded ? "expanded" : ""}">
+                    <button type="button" class="profile-progress-header" onclick="toggleProfileProgress()">
+                        <span>
+                            <strong>Profile Progress</strong>
+                            <small>${completedCount}/${totalCount} completed</small>
+                        </span>
+                        <span class="profile-progress-chevron" aria-hidden="true">›</span>
+                    </button>
+                    <div class="profile-progress-track" aria-hidden="true">
+                        <span style="width:${progressPercent}%"></span>
+                    </div>
+                    ${taskHtml}
+                </section>
+            `;
+        }
+
+        function toggleProfileProgress() {
+            profileProgressExpanded = !profileProgressExpanded;
+            renderSettings();
+        }
+
+        function guideProfileTask(taskId) {
+            if (!isOwner || !currentUser) return;
+
+            if (taskId === "bio") {
+                switchTab("edit");
+                requestAnimationFrame(() => {
+                    bioEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(() => {
+                        startInlineEdit("bio");
+                        const editor = document.querySelector(".inline-profile-editor.bio-editor") || bioEl;
+                        showCoachMark(editor, {
+                            title: "Write a short bio",
+                            body: "A simple title, role, or one-line intro is enough. Press Enter or tap away to save it.",
+                            buttonText: "Got it"
+                        });
+                    }, 260);
+                });
+                return;
+            }
+
+            if (taskId === "avatar") {
+                switchTab("edit");
+                requestAnimationFrame(() => {
+                    const target = document.getElementById("avatarContainer");
+                    if (!target) return;
+                    target.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(() => {
+                        showCoachMark(target, {
+                            title: "Add your profile picture",
+                            body: "Tap the avatar circle to change or upload your photo.",
+                            buttonText: "Got it"
+                        });
+                    }, 260);
+                });
+                return;
+            }
+
+            if (taskId === "block") {
+                switchTab("edit");
+                requestAnimationFrame(() => {
+                    const target = document.getElementById("addBlockRow");
+                    if (!target) return;
+                    target.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(() => {
+                        showCoachMark(target, {
+                            title: "Add a profile block",
+                            body: "Use <strong>+ Add</strong> to add WhatsApp, Instagram, phone, email, websites, and anything else visitors should open.",
+                            buttonText: "Got it"
+                        });
+                    }, 260);
+                });
+                return;
+            }
+
+            if (taskId === "save-contact") {
+                switchTab("view");
+                requestAnimationFrame(() => {
+                    const target = document.getElementById("saveContactRow");
+                    if (!target) return;
+                    target.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(() => {
+                        showCoachMark(target, {
+                            title: "Let visitors save you",
+                            body: "<strong>Save Contact</strong> exports your name, phone, and email so visitors can add you to their phone quickly.",
+                            buttonText: "Got it"
+                        });
+                    }, 260);
+                });
+            }
+        }
+
         function getPublicProfileUrl() {
             const profileUsername = (currentUser && currentUser.username) || username;
             return `${window.location.origin}${appPath(`/profile/${encodeURIComponent(profileUsername)}`)}`;
@@ -1086,6 +1242,7 @@
         function createSaveContactButton(user) {
             const button = document.createElement("button");
             button.type = "button";
+            button.id = "saveContactRow";
             button.className = "link save-contact-link no-sort";
 
             const left = document.createElement("div");
@@ -1101,7 +1258,10 @@
             left.appendChild(icon);
             left.appendChild(text);
             button.appendChild(left);
-            button.onclick = () => saveContactCard(user);
+            button.onclick = () => {
+                if (isOwner) localStorage.setItem(getProfileProgressStorageKey("saveContactTried"), "true");
+                saveContactCard(user);
+            };
             return button;
         }
 
