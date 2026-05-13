@@ -180,6 +180,7 @@
         let draftTheme = null;
         let closingModalFromUi = false;
         let profileProgressExpanded = false;
+        let profileProgressCoachShown = false;
 
         const sharedThemeOptions = window.YourTeckThemeOptions || {};
         const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#00c896" };
@@ -1160,9 +1161,8 @@
 
         function maybeShowProfileProgressCoachMark() {
             if (!isOwner || params.get("spotlightProgress") !== "1") return;
-
-            const seenKey = getProfileProgressStorageKey("progressCoachSeen");
-            if (localStorage.getItem(seenKey) === "true") return;
+            if (profileProgressCoachShown) return;
+            profileProgressCoachShown = true;
 
             requestAnimationFrame(() => {
                 const target = document.querySelector(".profile-progress-row");
@@ -1175,7 +1175,6 @@
                         body: "Use <strong>Profile Progress</strong> to finish the important details that make your profile feel ready to share.",
                         buttonText: "Got it",
                         onClose: () => {
-                            localStorage.setItem(seenKey, "true");
                             const cleanUrl = `${window.location.pathname}?tab=settings`;
                             history.replaceState(getAppHistoryState({ tab: "settings" }), "", cleanUrl);
                         }

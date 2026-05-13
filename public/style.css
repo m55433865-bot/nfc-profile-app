@@ -478,6 +478,12 @@ input,
   opacity: 1;
 }
 
+#links .profile-progress-task.completed .profile-progress-arrow {
+  color: var(--accent-color) !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-color), transparent 35%));
+  opacity: 1 !important;
+}
+
 .add-guide-highlight {
   border-color: var(--accent-color) !important;
   box-shadow:
