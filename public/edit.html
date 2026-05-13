@@ -516,6 +516,7 @@
         }
 
         function updateOwnerTabs() {
+            document.getElementById("tabs").style.display = isOwner ? "" : "none";
             document.getElementById("tabEdit").style.display = isOwner ? "" : "none";
             document.getElementById("tabSettings").style.display = isOwner ? "" : "none";
         }
