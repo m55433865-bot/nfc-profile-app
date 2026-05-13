@@ -463,6 +463,24 @@ input,
   transform: translateX(-50%) rotate(225deg);
 }
 
+.coachmark-layer[data-placement="right"] .coachmark-arrow {
+  left: -9px;
+}
+
+.coachmark-layer[data-placement="left"] .coachmark-arrow {
+  right: -9px;
+  transform: translateY(-50%) rotate(135deg);
+}
+
+.coachmark-layer[data-placement="right"] .coachmark-arrow,
+.coachmark-layer[data-placement="left"] .coachmark-arrow {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.coachmark-layer[data-placement="left"] .coachmark-arrow {
+  transform: translateY(-50%) rotate(225deg);
+}
+
 .coachmark-kicker {
   color: var(--accent-color);
   font-size: 12px;

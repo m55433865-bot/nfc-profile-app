@@ -1576,6 +1576,7 @@
           }
 
           localStorage.setItem(`onboardingComplete:${username}`, "true");
+          localStorage.removeItem(`addCoachSeen:${username}`);
           localStorage.setItem(`showAddGuide:${username}`, "true");
           window.location.href = appPath(`/profile/${username}`);
         })
