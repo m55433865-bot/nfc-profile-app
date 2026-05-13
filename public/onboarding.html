@@ -1155,6 +1155,10 @@
       setTimeout(() => {
         focusNextEmptyOnboardingInput(input);
         updatePreview();
+
+        if (state.step === 2 && input.id === "contactLabelInput" && state.contactValue) {
+          addStarterBlock();
+        }
       }, 80);
     }
 
@@ -1529,7 +1533,7 @@
         return;
       }
 
-      focusContactValue();
+      finishSetup();
     }
 
     function finishSetup() {
