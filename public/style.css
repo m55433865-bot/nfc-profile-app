@@ -484,16 +484,16 @@ input,
 }
 
 .profile-progress-task.completed .profile-progress-arrow {
-  color: var(--accent-color);
-  filter: drop-shadow(0 0 7px var(--accent-soft));
+  color: var(--progress-done-color, var(--accent-color));
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--progress-done-color, var(--accent-color)), transparent 35%));
   font-size: 18px;
   font-weight: 900;
   opacity: 1;
 }
 
 #links .profile-progress-task.completed .profile-progress-arrow {
-  color: var(--accent-color) !important;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-color), transparent 35%));
+  color: var(--progress-done-color, var(--accent-color)) !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--progress-done-color, var(--accent-color)), transparent 35%));
   opacity: 1 !important;
 }
 
@@ -788,8 +788,8 @@ input,
 }
 
 #links .link.profile-progress-task.completed > .profile-progress-arrow {
-  color: var(--accent-color) !important;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-color), transparent 30%));
+  color: var(--progress-done-color, var(--accent-color)) !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--progress-done-color, var(--accent-color)), transparent 30%));
   font-size: 18px;
   font-weight: 900;
   opacity: 1 !important;

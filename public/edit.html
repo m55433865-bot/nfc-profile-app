@@ -1125,6 +1125,7 @@
             if (completedCount === totalCount) return "";
 
             const progressPercent = Math.round((completedCount / totalCount) * 100);
+            const progressAccent = sanitizeTheme(currentUser.theme).accent;
             const taskHtml = profileProgressExpanded
                 ? `
                     <div class="profile-progress-panel">
@@ -1134,7 +1135,7 @@
                         ${tasks.map(task => `
                             <button type="button" class="link no-sort profile-progress-task ${task.completed ? "completed" : ""}" ${task.completed ? `aria-disabled="true"` : `onclick="${task.action}"`}>
                                 <span>${task.title}</span>
-                                <span class="profile-progress-arrow" aria-hidden="true">${task.completed ? "✓" : "›"}</span>
+                                <span class="profile-progress-arrow" ${task.completed ? `style="--progress-done-color:${progressAccent};"` : ""} aria-hidden="true">${task.completed ? "✓" : "›"}</span>
                             </button>
                         `).join("")}
                     </div>
