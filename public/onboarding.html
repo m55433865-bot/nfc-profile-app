@@ -521,14 +521,24 @@
     }
 
     .starter-remove-btn {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid var(--border);
+      background: rgba(255, 77, 79, 0.14);
+      border: 1px solid rgba(255, 77, 79, 0.48);
       border-radius: 10px;
-      color: var(--muted);
+      color: #ff8b8b;
       cursor: pointer;
       flex: 0 0 auto;
       min-height: 34px;
       padding: 7px 10px;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+
+    .starter-remove-btn:hover,
+    .starter-remove-btn:focus-visible {
+      background: rgba(255, 77, 79, 0.22);
+      border-color: rgba(255, 77, 79, 0.72);
+      color: #ffd1d1;
+      outline: none;
+      transform: translateY(-1px);
     }
 
     .preview-panel {
