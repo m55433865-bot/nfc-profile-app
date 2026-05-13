@@ -57,12 +57,12 @@ body::before {
 
 @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
   :root[data-theme-mode="light"] {
-    --bg-color: color-mix(in srgb, var(--bg-color), #0f172a 10%);
-    --card-color: color-mix(in srgb, var(--card-color), #0f172a 8%);
-    --surface-color: color-mix(in srgb, var(--surface-color), #0f172a 7%);
-    --surface-hover-color: color-mix(in srgb, var(--surface-hover-color), #0f172a 9%);
-    --input-bg: color-mix(in srgb, var(--input-bg), #0f172a 7%);
-    --border-color: color-mix(in srgb, var(--border-color), #0f172a 12%);
+    --bg-color: color-mix(in srgb, var(--bg-color), #0f172a 16%);
+    --card-color: color-mix(in srgb, var(--card-color), #0f172a 12%);
+    --surface-color: color-mix(in srgb, var(--surface-color), #0f172a 11%);
+    --surface-hover-color: color-mix(in srgb, var(--surface-hover-color), #0f172a 14%);
+    --input-bg: color-mix(in srgb, var(--input-bg), #0f172a 11%);
+    --border-color: color-mix(in srgb, var(--border-color), #0f172a 16%);
     --soft-border-color: color-mix(in srgb, var(--border-color), transparent 28%);
     --shadow-color: rgba(15, 23, 42, 0.18);
   }
