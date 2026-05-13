@@ -130,10 +130,27 @@
     .hero {
       align-items: center;
       display: grid;
-      gap: 54px;
-      grid-template-columns: minmax(0, 1.03fr) minmax(340px, 0.97fr);
+      gap: 48px;
+      grid-template-columns: minmax(0, 0.96fr) minmax(390px, 1.04fr);
       min-height: calc(100vh - 90px);
-      padding: 78px 0 58px;
+      padding: 72px 0 50px;
+      position: relative;
+    }
+
+    .hero::before {
+      background:
+        radial-gradient(circle, rgba(0, 200, 150, 0.18), transparent 58%),
+        radial-gradient(circle, rgba(48, 244, 255, 0.12), transparent 64%);
+      content: "";
+      filter: blur(18px);
+      height: 420px;
+      opacity: 0.86;
+      pointer-events: none;
+      position: absolute;
+      right: -160px;
+      top: 80px;
+      width: 520px;
+      z-index: -1;
     }
 
     .eyebrow {
@@ -160,11 +177,20 @@
     }
 
     h1 {
-      font-size: clamp(48px, 8vw, 92px);
+      font-size: clamp(54px, 8.6vw, 104px);
       letter-spacing: -0.055em;
-      line-height: 0.92;
+      line-height: 0.88;
       margin: 0;
       max-width: 800px;
+    }
+
+    .hero-gradient {
+      background: linear-gradient(115deg, #ffffff 8%, #dffff8 38%, var(--accent) 72%, var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: inline-block;
+      filter: drop-shadow(0 0 34px rgba(0, 200, 150, 0.22));
     }
 
     .hero-copy {
@@ -200,8 +226,9 @@
 
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), #2fffe0);
-      box-shadow: 0 18px 42px rgba(0, 200, 150, 0.24);
+      box-shadow: 0 18px 46px rgba(0, 200, 150, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.36);
       color: #05110e;
+      min-width: 168px;
     }
 
     .btn-secondary {
@@ -230,22 +257,52 @@
       position: relative;
     }
 
+    .hero-orbit {
+      border: 1px solid rgba(48, 244, 255, 0.12);
+      border-radius: 50%;
+      height: 520px;
+      left: 50%;
+      opacity: 0.8;
+      position: absolute;
+      top: 48%;
+      transform: translate(-50%, -50%) rotate(-12deg);
+      width: 520px;
+    }
+
+    .hero-orbit::before,
+    .hero-orbit::after {
+      border: inherit;
+      border-radius: inherit;
+      content: "";
+      inset: 38px;
+      position: absolute;
+    }
+
+    .hero-orbit::after {
+      inset: 86px;
+      opacity: 0.7;
+    }
+
     .nfc-card {
       background:
-        radial-gradient(circle at 18% 20%, rgba(48, 244, 255, 0.28), transparent 34%),
-        radial-gradient(circle at 86% 80%, rgba(0, 200, 150, 0.18), transparent 34%),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.045));
-      border: 1px solid rgba(255, 255, 255, 0.16);
+        linear-gradient(115deg, rgba(255, 255, 255, 0.16), transparent 18%, rgba(255, 255, 255, 0.04) 44%, transparent 72%),
+        radial-gradient(circle at 18% 20%, rgba(48, 244, 255, 0.18), transparent 34%),
+        radial-gradient(circle at 86% 80%, rgba(0, 200, 150, 0.16), transparent 34%),
+        linear-gradient(145deg, #151a20, #05070a 58%, #0b1214);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 30px;
-      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-      height: 230px;
-      left: 0;
+      box-shadow:
+        0 34px 100px rgba(0, 0, 0, 0.58),
+        0 0 60px rgba(0, 200, 150, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      height: 238px;
+      left: -6px;
       overflow: hidden;
       padding: 24px;
       position: absolute;
-      top: 82px;
-      transform: rotate(-9deg);
-      width: min(390px, 82vw);
+      top: 64px;
+      transform: rotate(-10deg);
+      width: min(410px, 82vw);
     }
 
     .nfc-card::after {
@@ -325,7 +382,7 @@
       overflow: hidden;
       padding: 16px;
       position: relative;
-      width: min(330px, 82vw);
+      width: min(338px, 82vw);
       z-index: 2;
     }
 
@@ -416,6 +473,34 @@
       padding: 14px 16px;
       position: absolute;
       z-index: 3;
+    }
+
+    .tap-pill {
+      align-items: center;
+      backdrop-filter: blur(16px);
+      background: rgba(8, 12, 18, 0.78);
+      border: 1px solid rgba(0, 200, 150, 0.24);
+      border-radius: 999px;
+      box-shadow: 0 18px 58px rgba(0, 0, 0, 0.32);
+      color: #dffff7;
+      display: flex;
+      font-size: 13px;
+      font-weight: 800;
+      gap: 8px;
+      padding: 10px 12px;
+      position: absolute;
+      right: 20px;
+      top: 44px;
+      z-index: 4;
+    }
+
+    .tap-pill::before {
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 18px rgba(0, 200, 150, 0.8);
+      content: "";
+      height: 8px;
+      width: 8px;
     }
 
     .floating-stat strong {
@@ -532,6 +617,114 @@
       width: 44px;
     }
 
+    .save-contact-showcase {
+      align-items: center;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(0, 200, 150, 0.2), transparent 30%),
+        radial-gradient(circle at 88% 10%, rgba(48, 244, 255, 0.14), transparent 32%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+        rgba(17, 24, 35, 0.82);
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      display: grid;
+      gap: 28px;
+      grid-template-columns: 0.92fr 1.08fr;
+      overflow: hidden;
+      padding: 30px;
+      position: relative;
+    }
+
+    .contact-demo {
+      display: grid;
+      gap: 14px;
+      margin: 0 auto;
+      max-width: 380px;
+      position: relative;
+      width: 100%;
+    }
+
+    .contact-card {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
+        #0d131c;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.36);
+      padding: 20px;
+    }
+
+    .contact-card-top {
+      align-items: center;
+      display: flex;
+      gap: 13px;
+      margin-bottom: 18px;
+    }
+
+    .contact-avatar {
+      align-items: center;
+      background: linear-gradient(135deg, rgba(0, 200, 150, 0.28), rgba(48, 244, 255, 0.14));
+      border: 1px solid rgba(0, 200, 150, 0.28);
+      border-radius: 50%;
+      color: var(--accent);
+      display: flex;
+      font-weight: 900;
+      height: 54px;
+      justify-content: center;
+      width: 54px;
+    }
+
+    .contact-card h4 {
+      font-size: 20px;
+      margin: 0 0 4px;
+    }
+
+    .contact-card p {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .contact-row {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 9px;
+      padding: 12px 13px;
+    }
+
+    .contact-row span:first-child {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .saved-badge {
+      align-items: center;
+      background: rgba(0, 200, 150, 0.14);
+      border: 1px solid rgba(0, 200, 150, 0.28);
+      border-radius: 18px;
+      color: #dffff7;
+      display: flex;
+      font-weight: 900;
+      gap: 9px;
+      justify-content: center;
+      padding: 14px 16px;
+    }
+
+    .saved-badge::before {
+      align-items: center;
+      background: var(--accent);
+      border-radius: 50%;
+      color: #06110e;
+      content: "OK";
+      display: flex;
+      font-size: 10px;
+      height: 25px;
+      justify-content: center;
+      width: 25px;
+    }
+
     .preview-showcase {
       align-items: center;
       background:
@@ -544,6 +737,77 @@
       grid-template-columns: 0.95fr 1.05fr;
       overflow: hidden;
       padding: 28px;
+    }
+
+    .demo-profiles {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .demo-card {
+      background:
+        radial-gradient(circle at 30% 0%, var(--demo-glow, rgba(0, 200, 150, 0.16)), transparent 38%),
+        var(--card);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      min-height: 300px;
+      overflow: hidden;
+      padding: 18px;
+      position: relative;
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    .demo-card:hover {
+      border-color: rgba(0, 200, 150, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .demo-card-header {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .demo-avatar {
+      background: linear-gradient(135deg, var(--demo-a, #00c896), var(--demo-b, #30f4ff));
+      border-radius: 50%;
+      height: 54px;
+      width: 54px;
+    }
+
+    .demo-card h4 {
+      font-size: 21px;
+      margin: 0 0 4px;
+    }
+
+    .demo-card p {
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .demo-lines {
+      display: grid;
+      gap: 9px;
+      margin-top: 22px;
+    }
+
+    .demo-line {
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 13px;
+      height: 42px;
+    }
+
+    .demo-link {
+      align-items: center;
+      color: #dffff7;
+      display: flex;
+      font-weight: 800;
+      justify-content: space-between;
+      margin-top: 22px;
     }
 
     .showcase-copy {
@@ -567,6 +831,11 @@
       border-radius: 28px;
       box-shadow: var(--shadow);
       padding: 12px;
+      transition: transform 180ms ease;
+    }
+
+    .mini-browser.is-switching {
+      transform: scale(0.985);
     }
 
     .mini-browser-bar {
@@ -756,7 +1025,9 @@
       .features,
       .why-grid,
       .faq-grid,
-      .preview-showcase {
+      .preview-showcase,
+      .save-contact-showcase,
+      .demo-profiles {
         grid-template-columns: 1fr;
       }
 
@@ -817,6 +1088,7 @@
 
       .tile,
       .preview-showcase,
+      .save-contact-showcase,
       .pricing-card,
       .final-cta {
         border-radius: 22px;
@@ -853,10 +1125,10 @@
       <section class="hero">
         <div>
           <div class="eyebrow">NFC + QR smart profile cards</div>
-          <h1>Your identity in one tap.</h1>
+          <h1>Your identity <span class="hero-gradient">in one tap.</span></h1>
           <p class="hero-copy">
-            Share your profile, socials, contact details, QR code, and save-contact card instantly. Built for creators,
-            founders, sales teams, and anyone who wants networking to feel effortless.
+            Premium NFC cards that open your live profile, socials, QR, and contact details instantly. No app. No
+            searching. Just tap, connect, and be remembered.
           </p>
 
           <div class="hero-actions">
@@ -872,6 +1144,8 @@
         </div>
 
         <div class="visual-stage" aria-label="YourTeck NFC card and profile preview">
+          <div class="hero-orbit" aria-hidden="true"></div>
+          <div class="tap-pill">Tap-ready card</div>
           <div class="nfc-card">
             <div class="card-top">
               <span class="brand-mark brand-mark-landing wave-static" aria-hidden="true">
@@ -978,39 +1252,73 @@
         <div class="section-head">
           <span class="section-kicker">Features</span>
           <h3>Everything your first impression needs.</h3>
+          <p>Made for real moments: meetings, events, stores, creator meetups, and sales conversations.</p>
         </div>
 
         <div class="features">
           <article class="tile">
             <div class="feature-icon">ID</div>
             <h4>Digital profile</h4>
-            <p>A clean mobile profile that holds your contact details, links, and socials in one place.</p>
+            <p>Your contact details, links, and socials in one clean mobile page.</p>
           </article>
           <article class="tile">
             <div class="feature-icon">FX</div>
             <h4>Custom themes</h4>
-            <p>Match your personal brand with dark, light, classic, and gradient visual themes.</p>
+            <p>Choose a look that fits your identity and brand.</p>
           </article>
           <article class="tile">
             <div class="feature-icon">QR</div>
             <h4>QR ready</h4>
-            <p>Use your QR code anywhere: screens, cards, stickers, booths, or printed materials.</p>
+            <p>Share from screens, cards, stickers, booths, or print.</p>
           </article>
           <article class="tile">
             <div class="feature-icon">VCF</div>
             <h4>Save Contact</h4>
-            <p>Make it easy for people to add your name, phone, and email to their contacts.</p>
+            <p>Let people add your name, phone, and email faster.</p>
           </article>
           <article class="tile">
             <div class="feature-icon">UP</div>
             <h4>Edit anytime</h4>
-            <p>Update your links and details without reprinting the card or changing the QR.</p>
+            <p>Change your profile without reprinting your card.</p>
           </article>
           <article class="tile">
             <div class="feature-icon">APP</div>
             <h4>No app required</h4>
-            <p>Visitors open your profile directly in their browser on iPhone or Android.</p>
+            <p>Visitors open your profile directly in the browser.</p>
           </article>
+        </div>
+      </section>
+
+      <section class="section" id="save-contact">
+        <div class="save-contact-showcase">
+          <div class="showcase-copy">
+            <span class="section-kicker">Save Contact</span>
+            <h3>Turn a quick meeting into a saved contact.</h3>
+            <p>
+              One tap can hand over the essentials: name, mobile, and email. It feels simple for visitors and valuable
+              for people who network every day.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/nfc/login">Get Your Card</a>
+              <a class="btn btn-secondary" href="#demo-profiles">See Profiles</a>
+            </div>
+          </div>
+
+          <div class="contact-demo" aria-label="Save contact preview">
+            <div class="contact-card">
+              <div class="contact-card-top">
+                <div class="contact-avatar">YT</div>
+                <div>
+                  <h4>Mohamed Mahdi</h4>
+                  <p>Saved from YourTeck profile</p>
+                </div>
+              </div>
+              <div class="contact-row"><span>Mobile</span><strong>+965 6654 6788</strong></div>
+              <div class="contact-row"><span>Email</span><strong>hello@yourteck.com</strong></div>
+              <div class="contact-row"><span>Profile</span><strong>yourteck.com/nfc</strong></div>
+            </div>
+            <div class="saved-badge">Ready to save to contacts</div>
+          </div>
         </div>
       </section>
 
@@ -1035,19 +1343,77 @@
             </div>
             <div class="phone-screen">
               <div class="profile-avatar"></div>
-              <h2>Your Name</h2>
-              <p>Founder, creator, consultant, or anyone worth remembering.</p>
+              <h2 id="demoPreviewName">Your Name</h2>
+              <p id="demoPreviewBio">Founder, creator, consultant, or anyone worth remembering.</p>
               <div class="profile-link">
-                <div class="profile-link-icon">TEL</div><span>My Number</span>
+                <div class="profile-link-icon">TEL</div><span id="demoPreviewLinkOne">My Number</span>
               </div>
               <div class="profile-link">
-                <div class="profile-link-icon">@</div><span>Socials</span>
+                <div class="profile-link-icon">@</div><span id="demoPreviewLinkTwo">Socials</span>
               </div>
               <div class="profile-link">
-                <div class="profile-link-icon">WEB</div><span>Portfolio</span>
+                <div class="profile-link-icon">WEB</div><span id="demoPreviewLinkThree">Portfolio</span>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="section" id="demo-profiles">
+        <div class="section-head">
+          <span class="section-kicker">Live demo profiles</span>
+          <h3>Different people. Same one-tap magic.</h3>
+          <p>Explore profile styles for creators, business owners, and minimal professional identities.</p>
+        </div>
+
+        <div class="demo-profiles">
+          <a class="demo-card" style="--demo-a:#ff3d8b;--demo-b:#7c3aed;--demo-glow:rgba(255,61,139,0.2);" href="#preview" data-demo-name="Sara Visuals" data-demo-bio="Creator profile for social links, bookings, and content." data-link-one="Instagram" data-link-two="TikTok" data-link-three="Booking">
+            <div class="demo-card-header">
+              <div class="demo-avatar"></div>
+              <div>
+                <h4>Creator</h4>
+                <p>Social-first profile</p>
+              </div>
+            </div>
+            <div class="demo-lines">
+              <div class="demo-line"></div>
+              <div class="demo-line"></div>
+              <div class="demo-line"></div>
+            </div>
+            <div class="demo-link"><span>View demo</span><span>-></span></div>
+          </a>
+
+          <a class="demo-card" style="--demo-a:#00c896;--demo-b:#30f4ff;--demo-glow:rgba(0,200,150,0.2);" href="#preview" data-demo-name="YourTeck Studio" data-demo-bio="Business profile for contact, location, and customer action." data-link-one="Save Contact" data-link-two="Location" data-link-three="Website">
+            <div class="demo-card-header">
+              <div class="demo-avatar"></div>
+              <div>
+                <h4>Business</h4>
+                <p>Contact and location ready</p>
+              </div>
+            </div>
+            <div class="demo-lines">
+              <div class="demo-line"></div>
+              <div class="demo-line"></div>
+              <div class="demo-line"></div>
+            </div>
+            <div class="demo-link"><span>View demo</span><span>-></span></div>
+          </a>
+
+          <a class="demo-card" style="--demo-a:#f4c542;--demo-b:#ffffff;--demo-glow:rgba(244,197,66,0.18);" href="#preview" data-demo-name="Mahdi F." data-demo-bio="Minimal professional profile with only the essentials." data-link-one="Mobile" data-link-two="Email" data-link-three="LinkedIn">
+            <div class="demo-card-header">
+              <div class="demo-avatar"></div>
+              <div>
+                <h4>Minimal</h4>
+                <p>Clean professional profile</p>
+              </div>
+            </div>
+            <div class="demo-lines">
+              <div class="demo-line"></div>
+              <div class="demo-line"></div>
+              <div class="demo-line"></div>
+            </div>
+            <div class="demo-link"><span>View demo</span><span>-></span></div>
+          </a>
         </div>
       </section>
 
@@ -1139,6 +1505,31 @@
       <span>Built for one-tap introductions.</span>
     </footer>
   </div>
+
+  <script>
+    document.querySelectorAll(".demo-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const preview = document.querySelector(".mini-browser");
+        const fields = {
+          demoPreviewName: card.dataset.demoName,
+          demoPreviewBio: card.dataset.demoBio,
+          demoPreviewLinkOne: card.dataset.linkOne,
+          demoPreviewLinkTwo: card.dataset.linkTwo,
+          demoPreviewLinkThree: card.dataset.linkThree
+        };
+
+        Object.entries(fields).forEach(([id, value]) => {
+          const element = document.getElementById(id);
+          if (element && value) element.textContent = value;
+        });
+
+        if (preview) {
+          preview.classList.add("is-switching");
+          window.setTimeout(() => preview.classList.remove("is-switching"), 180);
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>
