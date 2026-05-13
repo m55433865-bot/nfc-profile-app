@@ -454,10 +454,27 @@ input,
   width: 100%;
 }
 
+.profile-progress-task.completed {
+  cursor: default;
+}
+
+.profile-progress-task.completed:hover {
+  background: var(--surface-color);
+  border-color: var(--soft-border-color);
+  transform: none;
+}
+
 .profile-progress-arrow {
   color: var(--muted-text-color);
   font-size: 16px;
   opacity: 0.8;
+}
+
+.profile-progress-task.completed .profile-progress-arrow {
+  color: #22c55e;
+  font-size: 18px;
+  font-weight: 900;
+  opacity: 1;
 }
 
 .add-guide-highlight {

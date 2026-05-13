@@ -747,16 +747,16 @@
 
       <section class="setup-step active" data-step="0">
         <h2 class="section-title">Start with your identity</h2>
-        <p class="section-copy">Your profile link is already reserved. Add the name and role people should see.</p>
+        <p class="section-copy">Your profile link is already reserved. Add the name and bio people should see.</p>
         <div class="field-grid">
           <label>Profile link
             <input id="slugInput" class="profile-link-field" disabled aria-disabled="true" tabindex="-1">
           </label>
           <label>Display name
-            <input id="displayNameInput" placeholder="Mohamed Mahdi" autocomplete="name" enterkeyhint="next">
+            <input id="displayNameInput" placeholder="" autocomplete="name" enterkeyhint="next">
           </label>
-          <label>Title / role
-            <input id="titleInput" placeholder="Developer, Founder, Designer..." autocomplete="organization-title"
+          <label>Bio
+            <input id="titleInput" placeholder="" autocomplete="organization-title"
               enterkeyhint="done">
           </label>
         </div>
@@ -818,7 +818,7 @@
       <div id="previewPhone" class="phone-preview">
         <div id="previewAvatar" class="preview-avatar">N</div>
         <h2 id="previewName" class="preview-name">Your Name</h2>
-        <p id="previewTitle" class="preview-title">Your title</p>
+        <p id="previewTitle" class="preview-title"></p>
         <div id="previewLinks" class="preview-links"></div>
       </div>
     </aside>
@@ -915,7 +915,10 @@
           }
 
           state.user = user;
-          state.displayName = user.displayName || user.username;
+          const loadedDisplayName = user.displayName || "";
+          state.displayName = loadedDisplayName.trim().toLowerCase() === (user.username || "").trim().toLowerCase()
+            ? ""
+            : loadedDisplayName;
           state.title = user.bio || "";
           state.theme = sanitizeTheme(user.theme);
           document.getElementById("slugInput").value = `${window.location.origin}${appPath(`/profile/${user.username}`)}`;
@@ -1342,7 +1345,7 @@
       const name = state.displayName || state.user?.username || "Your Name";
       document.getElementById("previewAvatar").innerText = name.trim()[0]?.toUpperCase() || "N";
       document.getElementById("previewName").innerText = name;
-      document.getElementById("previewTitle").innerText = state.title || "Your title";
+      document.getElementById("previewTitle").innerText = state.title || "";
 
       const links = [...state.starterLinks];
       const draft = buildContactLink();
@@ -1577,8 +1580,14 @@
 
           localStorage.setItem(`onboardingComplete:${username}`, "true");
           localStorage.removeItem(`addCoachSeen:${username}`);
-          localStorage.setItem(`showAddGuide:${username}`, "true");
-          window.location.href = appPath(`/profile/${username}`);
+          localStorage.removeItem(`showAddGuide:${username}`);
+
+          const progressComplete = Boolean(state.title.trim())
+            && Boolean(state.user.avatar)
+            && links.length > 0
+            && localStorage.getItem(`saveContactTried:${username}`) === "true";
+          const guideParam = progressComplete ? "" : "?tab=settings&spotlightProgress=1";
+          window.location.href = appPath(`/profile/${username}${guideParam || "?tab=edit"}`);
         })
         .catch(() => {
           error.innerText = "Setup could not be saved. Try again.";

@@ -149,6 +149,7 @@
         const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
         const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
         const params = new URLSearchParams(window.location.search);
+        const requestedInitialTab = ["view", "edit", "settings"].includes(params.get("tab")) ? params.get("tab") : "view";
         const pathParts = window.location.pathname.split('/').filter(Boolean);
         const routeUsername = pathParts[0] === "nfc" && pathParts[1] === "profile"
             ? pathParts[2]
@@ -174,7 +175,7 @@
         const bioEl = document.getElementById('bio');
         const linksEl = document.getElementById('links');
 
-        let currentTab = "view";
+        let currentTab = requestedInitialTab;
         let editingLinkIndex = null;
         let draftTheme = null;
         let closingModalFromUi = false;
@@ -1066,6 +1067,7 @@
                     <span>›</span>
                 </div>
             `;
+            maybeShowProfileProgressCoachMark();
         }
 
         function getProfileProgressStorageKey(name) {
@@ -1115,10 +1117,6 @@
             const tasks = getProfileProgressTasks();
             const completedCount = tasks.filter(task => task.completed).length;
             const totalCount = tasks.length;
-            const incompleteTasks = tasks.filter(task => !task.completed);
-
-            if (!incompleteTasks.length) return "";
-
             const progressPercent = Math.round((completedCount / totalCount) * 100);
             const taskHtml = profileProgressExpanded
                 ? `
@@ -1126,10 +1124,10 @@
                         <div class="profile-progress-track" aria-hidden="true">
                             <span style="width:${progressPercent}%"></span>
                         </div>
-                        ${incompleteTasks.map(task => `
-                            <button type="button" class="link no-sort profile-progress-task" onclick="${task.action}">
+                        ${tasks.map(task => `
+                            <button type="button" class="link no-sort profile-progress-task ${task.completed ? "completed" : ""}" ${task.completed ? `aria-disabled="true"` : `onclick="${task.action}"`}>
                                 <span>${task.title}</span>
-                                <span class="profile-progress-arrow" aria-hidden="true">›</span>
+                                <span class="profile-progress-arrow" aria-hidden="true">${task.completed ? "✓" : "›"}</span>
                             </button>
                         `).join("")}
                     </div>
@@ -1156,6 +1154,32 @@
         function toggleProfileProgress() {
             profileProgressExpanded = !profileProgressExpanded;
             renderSettings();
+        }
+
+        function maybeShowProfileProgressCoachMark() {
+            if (!isOwner || params.get("spotlightProgress") !== "1") return;
+
+            const seenKey = getProfileProgressStorageKey("progressCoachSeen");
+            if (localStorage.getItem(seenKey) === "true") return;
+
+            requestAnimationFrame(() => {
+                const target = document.querySelector(".profile-progress-row");
+                if (!target) return;
+
+                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                setTimeout(() => {
+                    showCoachMark(target, {
+                        title: "Complete your profile setup",
+                        body: "Use <strong>Profile Progress</strong> to finish the important details that make your profile feel ready to share.",
+                        buttonText: "Got it",
+                        onClose: () => {
+                            localStorage.setItem(seenKey, "true");
+                            const cleanUrl = `${window.location.pathname}?tab=settings`;
+                            history.replaceState(getAppHistoryState({ tab: "settings" }), "", cleanUrl);
+                        }
+                    });
+                }, 280);
+            });
         }
 
         function guideProfileTask(taskId) {
