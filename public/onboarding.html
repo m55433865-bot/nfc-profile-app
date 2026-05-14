@@ -9,8 +9,8 @@
   <link rel="icon" href="/nfc/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/nfc/apple-touch-icon.png">
   <link rel="manifest" href="/nfc/site.webmanifest">
-  <meta name="theme-color" content="#00c896">
-  <script src="/nfc/theme-options.js?v=minimal-white-border-1"></script>
+  <meta name="theme-color" content="#070807">
+  <script src="/nfc/theme-options.js?v=premium-black-1"></script>
   <link rel="stylesheet" href="/nfc/brand.css">
   <style>
     * {
@@ -18,20 +18,21 @@
     }
 
     :root {
-      --bg: #080a12;
-      --panel: rgba(17, 21, 37, 0.88);
-      --panel-soft: rgba(255, 255, 255, 0.055);
-      --border: rgba(255, 255, 255, 0.12);
-      --text: #f7f9ff;
-      --muted: #9aa6ce;
-      --accent: #00c896;
-      --shadow: rgba(0, 0, 0, 0.42);
+      --bg: #070807;
+      --panel: rgba(18, 20, 21, 0.9);
+      --panel-soft: rgba(255, 255, 255, 0.045);
+      --border: rgba(255, 255, 255, 0.105);
+      --text: #f6f4ef;
+      --muted: #9daaa8;
+      --accent: #14b89a;
+      --shadow: rgba(0, 0, 0, 0.56);
     }
 
     body {
       background:
-        radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--accent), transparent 78%), transparent 32%),
-        radial-gradient(circle at 92% 12%, rgba(48, 244, 255, 0.12), transparent 30%),
+        radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--accent), transparent 90%), transparent 32%),
+        radial-gradient(circle at 92% 12%, rgba(111, 216, 207, 0.055), transparent 30%),
+        linear-gradient(180deg, #101110, var(--bg) 58%),
         var(--bg);
       color: var(--text);
       font-family: Arial, sans-serif;
@@ -55,7 +56,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 24px;
-      box-shadow: 0 26px 70px var(--shadow);
+      box-shadow: 0 30px 90px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.045);
       overflow: hidden;
     }
 
@@ -72,7 +73,7 @@
 
     .onboarding-brand-mark {
       --brand-accent: var(--accent);
-      --brand-secondary: color-mix(in srgb, var(--accent), #30f4ff 34%);
+      --brand-secondary: color-mix(in srgb, var(--accent), #6fd8cf 34%);
     }
 
     .setup-brand h1 {
@@ -238,7 +239,7 @@
     }
 
     .phone-country-select option {
-      background: #1f1f1f;
+      background: #121416;
       color: #ffffff;
     }
 
@@ -557,7 +558,7 @@
     }
 
     .phone-preview {
-      background: var(--preview-bg, #0f0f0f);
+      background: var(--preview-bg, #070807);
       border: 1px solid color-mix(in srgb, var(--preview-border, #333), transparent 20%);
       border-radius: 34px;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 70px rgba(0, 0, 0, 0.38);
@@ -722,8 +723,8 @@
             <defs>
               <linearGradient id="onboardingBrandGradient" x1="16" y1="48" x2="48" y2="16"
                 gradientUnits="userSpaceOnUse">
-                <stop offset="0" style="stop-color: var(--brand-accent, #00c896)" />
-                <stop offset="1" style="stop-color: var(--brand-secondary, #30f4ff)" />
+                <stop offset="0" style="stop-color: var(--brand-accent, #14b89a)" />
+                <stop offset="1" style="stop-color: var(--brand-secondary, #6fd8cf)" />
               </linearGradient>
             </defs>
             <rect class="brand-mark-chip" x="14" y="14" width="36" height="36" rx="10" />
@@ -779,7 +780,7 @@
           <div class="appearance-section">
             <div class="appearance-label">Accent Color</div>
             <div id="themeAccentOptions" class="appearance-row accent-row"></div>
-            <input id="customAccent" class="theme-input color-input" type="color" value="#00c896"
+            <input id="customAccent" class="theme-input color-input" type="color" value="#14b89a"
               aria-label="Custom accent color">
           </div>
         </div>
@@ -833,7 +834,7 @@
     let username = "";
 
     const sharedThemeOptions = window.YourTeckThemeOptions || {};
-    const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#00c896" };
+    const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#14b89a" };
     const themePresets = sharedThemeOptions.themePresets || {};
     const accentColors = sharedThemeOptions.accentColors || [];
 
@@ -995,8 +996,8 @@
       const preset = themePresets[safeTheme.preset] || themePresets[defaultTheme.preset];
       const mode = getResolvedThemeMode(safeTheme.mode);
       return (preset && (preset[mode] || preset.dark)) || {
-        bg: "#0f0f0f",
-        surface: "#202020",
+        bg: "#070807",
+        surface: "#181b1e",
         text: "#ffffff",
         muted: "#aaa",
         border: "#333"

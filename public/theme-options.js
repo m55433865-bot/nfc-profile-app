@@ -2,14 +2,14 @@
   const defaultTheme = {
     mode: "dark",
     preset: "midnight",
-    accent: "#00c896"
+    accent: "#14b89a"
   };
 
   const themePresets = {
     "midnight": {
       label: "Midnight",
       category: "classic",
-      dark: { bg: "#0f0f0f", card: "#1f1f1f", surface: "#202020", surfaceHover: "#292929", text: "#ffffff", muted: "#aaa", border: "#333", input: "#141414" },
+      dark: { bg: "#070809", card: "#121416", surface: "#181b1e", surfaceHover: "#202428", text: "#f7f7f4", muted: "#9daaa8", border: "#2b3033", input: "#0c0e10" },
       light: { bg: "#f5f5f7", card: "#ffffff", surface: "#f8f8fa", surfaceHover: "#ededf1", text: "#171717", muted: "#666", border: "#dedee4", input: "#ffffff" }
     },
     "ocean": {
@@ -57,7 +57,7 @@
     "aurora": {
       label: "Aurora",
       category: "gradient",
-      dark: { bg: "linear-gradient(135deg, #051b1f 0%, #111827 46%, #26123f 100%)", card: "rgba(15, 23, 42, 0.92)", surface: "rgba(30, 41, 59, 0.9)", surfaceHover: "rgba(51, 65, 85, 0.92)", text: "#f8fbff", muted: "#a7b7c9", border: "rgba(125, 211, 252, 0.28)", input: "rgba(8, 13, 28, 0.86)", preview: ["#00c896", "#22d3ee", "#a855f7"] },
+      dark: { bg: "linear-gradient(135deg, #051b1f 0%, #111827 46%, #26123f 100%)", card: "rgba(15, 23, 42, 0.92)", surface: "rgba(30, 41, 59, 0.9)", surfaceHover: "rgba(51, 65, 85, 0.92)", text: "#f8fbff", muted: "#a7b7c9", border: "rgba(125, 211, 252, 0.28)", input: "rgba(8, 13, 28, 0.86)", preview: ["#14b89a", "#22d3ee", "#a855f7"] },
       light: { bg: "linear-gradient(135deg, #ecfeff 0%, #f5f3ff 52%, #fdf2f8 100%)", card: "rgba(255, 255, 255, 0.88)", surface: "rgba(248, 250, 252, 0.9)", surfaceHover: "rgba(241, 245, 249, 0.94)", text: "#172033", muted: "#64748b", border: "rgba(14, 165, 233, 0.22)", input: "rgba(255, 255, 255, 0.9)", preview: ["#22d3ee", "#a78bfa", "#f0abfc"] }
     },
     "galaxy": {
@@ -95,7 +95,7 @@
   const accentColors = [
     { label: "Blue", value: "#3b82f6" },
     { label: "Purple", value: "#7c3aed" },
-    { label: "Green", value: "#00c896" },
+    { label: "Green", value: "#14b89a" },
     { label: "Gold", value: "#d6a83f" },
     { label: "Red", value: "#ef4444" },
     { label: "Pink", value: "#ec4899" }

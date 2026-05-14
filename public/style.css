@@ -1,16 +1,16 @@
 :root {
-  --bg-color: #0f0f0f;
-  --card-color: #1f1f1f;
-  --surface-color: #202020;
-  --surface-hover-color: #292929;
-  --text-color: #ffffff;
-  --muted-text-color: #aaa;
-  --border-color: #333;
-  --input-bg: #141414;
-  --accent-color: #00c896;
-  --button-bg: #00c896;
+  --bg-color: #070809;
+  --card-color: #121416;
+  --surface-color: #181b1e;
+  --surface-hover-color: #202428;
+  --text-color: #f7f7f4;
+  --muted-text-color: #9daaa8;
+  --border-color: #2b3033;
+  --input-bg: #0c0e10;
+  --accent-color: #14b89a;
+  --button-bg: #14b89a;
   --button-text: #ffffff;
-  --shadow-color: rgba(0, 0, 0, 0.42);
+  --shadow-color: rgba(0, 0, 0, 0.56);
   --soft-border-color: color-mix(in srgb, var(--border-color), transparent 45%);
   --accent-soft: color-mix(in srgb, var(--accent-color), transparent 78%);
   --accent-faint: color-mix(in srgb, var(--accent-color), transparent 90%);
@@ -44,7 +44,9 @@ body {
 }
 
 body::before {
-  background: var(--bg-color);
+  background:
+    radial-gradient(circle at 50% -8%, color-mix(in srgb, var(--accent-color), transparent 90%), transparent 34%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-color), #111417 12%), var(--bg-color) 52%);
   background-attachment: fixed;
   background-repeat: no-repeat;
   background-size: cover;
@@ -364,10 +366,14 @@ input,
   max-width: 320px;
   width: 90%;
 
-  background: var(--surface-color);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-color), white 3%), var(--surface-color)),
+    var(--surface-color);
   border: 1px solid var(--soft-border-color);
-  border-radius: 10px;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-color), transparent 96%);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text-color), transparent 94%),
+    0 10px 28px color-mix(in srgb, var(--shadow-color), transparent 38%);
 
   text-decoration: none;
   color: var(--text-color);
@@ -394,9 +400,11 @@ input,
 }
 
 .link:hover {
-  background: var(--surface-hover-color);
-  border-color: var(--accent-soft);
-  transform: translateY(-1px) scale(1.02);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-hover-color), white 4%), var(--surface-hover-color)),
+    var(--surface-hover-color);
+  border-color: color-mix(in srgb, var(--accent-color), var(--border-color) 72%);
+  transform: translateY(-1px) scale(1.01);
 }
 
 .link:active {
@@ -1313,7 +1321,7 @@ input,
 }
 
 .phone-country-select option {
-  background: #1f1f1f;
+  background: #121416;
   color: var(--text-color);
 }
 
@@ -1491,8 +1499,8 @@ input,
 }
 
 #smartLinkModal .phone-country-select.phone-control-select option {
-  background: #1f1f1f !important;
-  color: #ffffff !important;
+  background: #121416 !important;
+  color: #f7f7f4 !important;
 }
 
 #smartLinkModal .phone-input-group.phone-active .phone-control-input {

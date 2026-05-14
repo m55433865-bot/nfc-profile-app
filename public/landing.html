@@ -12,7 +12,7 @@
   <link rel="icon" href="/nfc/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/nfc/apple-touch-icon.png">
   <link rel="manifest" href="/nfc/site.webmanifest">
-  <meta name="theme-color" content="#00c896">
+  <meta name="theme-color" content="#070807">
   <link rel="stylesheet" href="/nfc/brand.css">
   <style>
     * {
@@ -20,27 +20,27 @@
     }
 
     :root {
-      --bg: #07090d;
-      --bg-soft: #0d1219;
-      --card: rgba(18, 24, 34, 0.78);
-      --card-solid: #111823;
-      --text: #f7fbff;
-      --muted: #9aa8ba;
-      --muted-strong: #c9d6e5;
-      --accent: #00c896;
-      --cyan: #30f4ff;
-      --line: rgba(255, 255, 255, 0.11);
-      --line-strong: rgba(0, 200, 150, 0.36);
-      --shadow: 0 30px 90px rgba(0, 0, 0, 0.46);
+      --bg: #070807;
+      --bg-soft: #0d0f10;
+      --card: rgba(17, 19, 20, 0.82);
+      --card-solid: #111314;
+      --text: #f6f4ef;
+      --muted: #8f9996;
+      --muted-strong: #c1c9c6;
+      --accent: #14b89a;
+      --cyan: #6fd8cf;
+      --line: rgba(255, 255, 255, 0.105);
+      --line-strong: rgba(20, 184, 154, 0.22);
+      --shadow: 0 34px 110px rgba(0, 0, 0, 0.62);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       scroll-behavior: smooth;
     }
 
     body {
       background:
-        radial-gradient(circle at 12% 8%, rgba(0, 200, 150, 0.18), transparent 30%),
-        radial-gradient(circle at 86% 14%, rgba(48, 244, 255, 0.11), transparent 28%),
-        linear-gradient(180deg, #090c11 0%, #07090d 48%, #090d12 100%);
+        radial-gradient(circle at 16% 4%, rgba(20, 184, 154, 0.09), transparent 31%),
+        radial-gradient(circle at 82% 8%, rgba(111, 216, 207, 0.055), transparent 28%),
+        linear-gradient(180deg, #101110 0%, #070807 44%, #0a0b0a 100%);
       color: var(--text);
       margin: 0;
       min-height: 100vh;
@@ -49,8 +49,8 @@
 
     body::before {
       background-image:
-        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
       background-size: 76px 76px;
       content: "";
       inset: 0;
@@ -75,8 +75,8 @@
     .nav {
       align-items: center;
       backdrop-filter: blur(18px);
-      background: rgba(7, 9, 13, 0.62);
-      border: 1px solid var(--line);
+      background: rgba(8, 9, 9, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.095);
       border-radius: 22px;
       display: flex;
       gap: 18px;
@@ -122,8 +122,8 @@
     }
 
     .nav-cta {
-      background: rgba(0, 200, 150, 0.13);
-      border: 1px solid rgba(0, 200, 150, 0.3);
+      background: rgba(20, 184, 154, 0.08);
+      border: 1px solid rgba(20, 184, 154, 0.24);
       color: #eafff8 !important;
     }
 
@@ -139,8 +139,8 @@
 
     .hero::before {
       background:
-        radial-gradient(circle, rgba(0, 200, 150, 0.18), transparent 58%),
-        radial-gradient(circle, rgba(48, 244, 255, 0.12), transparent 64%);
+        radial-gradient(circle, rgba(20, 184, 154, 0.105), transparent 58%),
+        radial-gradient(circle, rgba(111, 216, 207, 0.055), transparent 64%);
       content: "";
       filter: blur(18px);
       height: 420px;
@@ -155,8 +155,8 @@
 
     .eyebrow {
       align-items: center;
-      background: rgba(0, 200, 150, 0.11);
-      border: 1px solid rgba(0, 200, 150, 0.28);
+      background: rgba(20, 184, 154, 0.075);
+      border: 1px solid rgba(20, 184, 154, 0.18);
       border-radius: 999px;
       color: #b9fff0;
       display: inline-flex;
@@ -170,7 +170,7 @@
     .eyebrow::before {
       background: var(--accent);
       border-radius: 50%;
-      box-shadow: 0 0 18px rgba(0, 200, 150, 0.7);
+      box-shadow: 0 0 15px rgba(20, 184, 154, 0.42);
       content: "";
       height: 7px;
       width: 7px;
@@ -185,12 +185,12 @@
     }
 
     .hero-gradient {
-      background: linear-gradient(115deg, #ffffff 8%, #dffff8 38%, var(--accent) 72%, var(--cyan));
+      background: linear-gradient(115deg, #ffffff 8%, #e7ebe7 42%, #6bd5c5 72%, var(--accent));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
       display: inline-block;
-      filter: drop-shadow(0 0 34px rgba(0, 200, 150, 0.22));
+      filter: drop-shadow(0 0 28px rgba(20, 184, 154, 0.16));
     }
 
     .hero-copy {
@@ -225,14 +225,14 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #2fffe0);
-      box-shadow: 0 18px 46px rgba(0, 200, 150, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+      background: linear-gradient(135deg, #f4f1e8, #c9d7d1);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.55);
       color: #05110e;
       min-width: 168px;
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.055);
+      background: rgba(255, 255, 255, 0.045);
       border: 1px solid var(--line);
       color: var(--text);
     }
@@ -247,7 +247,7 @@
     }
 
     .hero-proof span {
-      border: 1px solid var(--line);
+      border: 1px solid rgba(255, 255, 255, 0.085);
       border-radius: 999px;
       padding: 8px 10px;
     }
@@ -258,7 +258,7 @@
     }
 
     .hero-orbit {
-      border: 1px solid rgba(48, 244, 255, 0.12);
+      border: 1px solid rgba(111, 216, 207, 0.07);
       border-radius: 50%;
       height: 520px;
       left: 50%;
@@ -286,14 +286,14 @@
     .nfc-card {
       background:
         linear-gradient(115deg, rgba(255, 255, 255, 0.16), transparent 18%, rgba(255, 255, 255, 0.04) 44%, transparent 72%),
-        radial-gradient(circle at 18% 20%, rgba(48, 244, 255, 0.18), transparent 34%),
-        radial-gradient(circle at 86% 80%, rgba(0, 200, 150, 0.16), transparent 34%),
-        linear-gradient(145deg, #151a20, #05070a 58%, #0b1214);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+        radial-gradient(circle at 18% 20%, rgba(111, 216, 207, 0.08), transparent 34%),
+        radial-gradient(circle at 86% 80%, rgba(20, 184, 154, 0.08), transparent 34%),
+        linear-gradient(145deg, #171817, #050505 58%, #0a0c0b);
+      border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 30px;
       box-shadow:
         0 34px 100px rgba(0, 0, 0, 0.58),
-        0 0 60px rgba(0, 200, 150, 0.16),
+        0 0 50px rgba(20, 184, 154, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.22);
       height: 238px;
       left: -6px;
@@ -333,7 +333,7 @@
 
     .tap-symbol::before,
     .tap-symbol::after {
-      border: 1px solid rgba(48, 244, 255, 0.65);
+      border: 1px solid rgba(111, 216, 207, 0.52);
       border-left: 0;
       border-radius: 0 999px 999px 0;
       content: "";
@@ -373,10 +373,10 @@
     .phone-preview {
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
-        #0c1018;
-      border: 1px solid rgba(255, 255, 255, 0.16);
+        #0b0d0d;
+      border: 1px solid rgba(255, 255, 255, 0.13);
       border-radius: 42px;
-      box-shadow: var(--shadow), 0 0 52px rgba(0, 200, 150, 0.13);
+      box-shadow: var(--shadow), 0 0 42px rgba(20, 184, 154, 0.08);
       margin-left: auto;
       min-height: 570px;
       overflow: hidden;
@@ -388,8 +388,8 @@
 
     .phone-screen {
       background:
-        radial-gradient(circle at top, rgba(0, 200, 150, 0.16), transparent 32%),
-        #0a0d13;
+        radial-gradient(circle at top, rgba(20, 184, 154, 0.08), transparent 32%),
+        #090a0a;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 30px;
       min-height: 536px;
@@ -398,11 +398,11 @@
 
     .profile-avatar {
       background:
-        linear-gradient(135deg, rgba(0, 200, 150, 0.28), rgba(48, 244, 255, 0.16)),
-        #121a24;
+        linear-gradient(135deg, rgba(20, 184, 154, 0.16), rgba(111, 216, 207, 0.075)),
+        #121514;
       border: 2px solid rgba(255, 255, 255, 0.18);
       border-radius: 50%;
-      box-shadow: 0 0 35px rgba(0, 200, 150, 0.18);
+      box-shadow: 0 0 30px rgba(20, 184, 154, 0.1);
       height: 84px;
       margin: 0 auto 16px;
       position: relative;
@@ -436,8 +436,8 @@
 
     .profile-link {
       align-items: center;
-      background: rgba(255, 255, 255, 0.055);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.095);
       border-radius: 15px;
       display: flex;
       gap: 12px;
@@ -448,8 +448,8 @@
 
     .profile-link-icon {
       align-items: center;
-      background: rgba(0, 200, 150, 0.14);
-      border: 1px solid rgba(0, 200, 150, 0.28);
+      background: rgba(20, 184, 154, 0.095);
+      border: 1px solid rgba(20, 184, 154, 0.2);
       border-radius: 12px;
       color: var(--accent);
       display: flex;
@@ -478,8 +478,8 @@
     .tap-pill {
       align-items: center;
       backdrop-filter: blur(16px);
-      background: rgba(8, 12, 18, 0.78);
-      border: 1px solid rgba(0, 200, 150, 0.24);
+      background: rgba(8, 9, 9, 0.82);
+      border: 1px solid rgba(20, 184, 154, 0.19);
       border-radius: 999px;
       box-shadow: 0 18px 58px rgba(0, 0, 0, 0.32);
       color: #dffff7;
@@ -497,7 +497,7 @@
     .tap-pill::before {
       background: var(--accent);
       border-radius: 50%;
-      box-shadow: 0 0 18px rgba(0, 200, 150, 0.8);
+      box-shadow: 0 0 14px rgba(20, 184, 154, 0.48);
       content: "";
       height: 8px;
       width: 8px;
@@ -580,7 +580,7 @@
 
     .tile:hover {
       background: rgba(21, 29, 41, 0.88);
-      border-color: rgba(0, 200, 150, 0.26);
+      border-color: rgba(20, 184, 154, 0.18);
       transform: translateY(-4px);
     }
 
@@ -606,8 +606,8 @@
 
     .feature-icon {
       align-items: center;
-      background: rgba(0, 200, 150, 0.12);
-      border: 1px solid rgba(0, 200, 150, 0.24);
+      background: rgba(20, 184, 154, 0.075);
+      border: 1px solid rgba(20, 184, 154, 0.18);
       border-radius: 15px;
       color: var(--accent);
       display: flex;
@@ -620,8 +620,8 @@
     .save-contact-showcase {
       align-items: center;
       background:
-        radial-gradient(circle at 18% 22%, rgba(0, 200, 150, 0.2), transparent 30%),
-        radial-gradient(circle at 88% 10%, rgba(48, 244, 255, 0.14), transparent 32%),
+        radial-gradient(circle at 18% 22%, rgba(20, 184, 154, 0.1), transparent 30%),
+        radial-gradient(circle at 88% 10%, rgba(111, 216, 207, 0.06), transparent 32%),
         linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
         rgba(17, 24, 35, 0.82);
       border: 1px solid var(--line);
@@ -662,8 +662,8 @@
 
     .contact-avatar {
       align-items: center;
-      background: linear-gradient(135deg, rgba(0, 200, 150, 0.28), rgba(48, 244, 255, 0.14));
-      border: 1px solid rgba(0, 200, 150, 0.28);
+      background: linear-gradient(135deg, rgba(20, 184, 154, 0.18), rgba(111, 216, 207, 0.08));
+      border: 1px solid rgba(20, 184, 154, 0.2);
       border-radius: 50%;
       color: var(--accent);
       display: flex;
@@ -701,8 +701,8 @@
 
     .saved-badge {
       align-items: center;
-      background: rgba(0, 200, 150, 0.14);
-      border: 1px solid rgba(0, 200, 150, 0.28);
+      background: rgba(20, 184, 154, 0.09);
+      border: 1px solid rgba(20, 184, 154, 0.2);
       border-radius: 18px;
       color: #dffff7;
       display: flex;
@@ -728,7 +728,7 @@
     .preview-showcase {
       align-items: center;
       background:
-        radial-gradient(circle at 24% 10%, rgba(0, 200, 150, 0.18), transparent 30%),
+        radial-gradient(circle at 24% 10%, rgba(20, 184, 154, 0.09), transparent 30%),
         rgba(17, 24, 35, 0.72);
       border: 1px solid var(--line);
       border-radius: 34px;
@@ -747,7 +747,7 @@
 
     .demo-card {
       background:
-        radial-gradient(circle at 30% 0%, var(--demo-glow, rgba(0, 200, 150, 0.16)), transparent 38%),
+        radial-gradient(circle at 30% 0%, var(--demo-glow, rgba(20, 184, 154, 0.09)), transparent 38%),
         var(--card);
       border: 1px solid var(--line);
       border-radius: 26px;
@@ -759,7 +759,7 @@
     }
 
     .demo-card:hover {
-      border-color: rgba(0, 200, 150, 0.3);
+      border-color: rgba(20, 184, 154, 0.2);
       transform: translateY(-4px);
     }
 
@@ -771,7 +771,7 @@
     }
 
     .demo-avatar {
-      background: linear-gradient(135deg, var(--demo-a, #00c896), var(--demo-b, #30f4ff));
+      background: linear-gradient(135deg, var(--demo-a, #14b89a), var(--demo-b, #6fd8cf));
       border-radius: 50%;
       height: 54px;
       width: 54px;
@@ -857,7 +857,7 @@
     .pricing-card {
       align-items: center;
       background:
-        linear-gradient(135deg, rgba(0, 200, 150, 0.16), rgba(48, 244, 255, 0.06)),
+        linear-gradient(135deg, rgba(20, 184, 154, 0.09), rgba(111, 216, 207, 0.035)),
         rgba(17, 24, 35, 0.86);
       border: 1px solid var(--line-strong);
       border-radius: 30px;
@@ -927,7 +927,7 @@
 
     .final-cta {
       background:
-        radial-gradient(circle at 50% 0%, rgba(0, 200, 150, 0.26), transparent 42%),
+        radial-gradient(circle at 50% 0%, rgba(20, 184, 154, 0.12), transparent 42%),
         rgba(17, 24, 35, 0.72);
       border: 1px solid var(--line);
       border-radius: 34px;
@@ -1383,7 +1383,7 @@
             <div class="demo-link"><span>View demo</span><span>-></span></div>
           </a>
 
-          <a class="demo-card" style="--demo-a:#00c896;--demo-b:#30f4ff;--demo-glow:rgba(0,200,150,0.2);" href="#preview" data-demo-name="YourTeck Studio" data-demo-bio="Business profile for contact, location, and customer action." data-link-one="Save Contact" data-link-two="Location" data-link-three="Website">
+          <a class="demo-card" style="--demo-a:#14b89a;--demo-b:#6fd8cf;--demo-glow:rgba(20,184,154,0.12);" href="#preview" data-demo-name="YourTeck Studio" data-demo-bio="Business profile for contact, location, and customer action." data-link-one="Save Contact" data-link-two="Location" data-link-three="Website">
             <div class="demo-card-header">
               <div class="demo-avatar"></div>
               <div>

@@ -9,8 +9,8 @@
     <link rel="icon" href="/nfc/favicon-32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="/nfc/apple-touch-icon.png">
     <link rel="manifest" href="/nfc/site.webmanifest">
-    <meta name="theme-color" content="#00c896">
-    <script src="/nfc/theme-options.js?v=minimal-white-border-1"></script>
+    <meta name="theme-color" content="#070807">
+    <script src="/nfc/theme-options.js?v=premium-black-1"></script>
     <script>
         window.__INITIAL_PROFILE_THEME__ = null;
         (function () {
@@ -18,7 +18,7 @@
             if (!initialTheme || typeof initialTheme !== "object") return;
 
             const sharedThemeOptions = window.YourTeckThemeOptions || {};
-            const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#00c896" };
+            const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#14b89a" };
             const themePresets = sharedThemeOptions.themePresets || {};
 
             const safeTheme = {
@@ -48,7 +48,7 @@
             root.style.setProperty("--shadow-color", mode === "light" ? "rgba(17, 24, 39, 0.14)" : "rgba(0, 0, 0, 0.42)");
         })();
     </script>
-    <link rel="stylesheet" href="/nfc/style.css?v=profile-progress-check-1">
+    <link rel="stylesheet" href="/nfc/style.css?v=premium-black-1">
     <link rel="stylesheet" href="/nfc/brand.css">
 
 </head>
@@ -75,9 +75,9 @@
                     <defs>
                         <linearGradient id="brandNGradientLoading" x1="16" y1="48" x2="48" y2="16"
                             gradientUnits="userSpaceOnUse">
-                            <stop offset="0" style="stop-color: var(--accent-color, #00c896)" />
+                            <stop offset="0" style="stop-color: var(--accent-color, #14b89a)" />
                             <stop offset="1"
-                                style="stop-color: color-mix(in srgb, var(--accent-color, #00c896) 68%, #30f4ff)" />
+                                style="stop-color: color-mix(in srgb, var(--accent-color, #14b89a) 68%, #6fd8cf)" />
                         </linearGradient>
                     </defs>
                     <rect class="brand-mark-chip" x="14" y="14" width="36" height="36" rx="10" />
@@ -183,7 +183,7 @@
         let profileProgressCoachShown = false;
 
         const sharedThemeOptions = window.YourTeckThemeOptions || {};
-        const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#00c896" };
+        const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#14b89a" };
         const themePresets = sharedThemeOptions.themePresets || {};
         const accentColors = sharedThemeOptions.accentColors || [];
 
@@ -2960,7 +2960,7 @@
             <div class="appearance-section">
                 <div class="appearance-label">Accent Color</div>
                 <div id="themeAccentOptions" class="appearance-row accent-row"></div>
-                <input id="customAccent" class="theme-input color-input" type="color" value="#00c896"
+                <input id="customAccent" class="theme-input color-input" type="color" value="#14b89a"
                     onchange="updateCustomAccent(this.value)">
             </div>
 
