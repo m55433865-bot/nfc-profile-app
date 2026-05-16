@@ -788,17 +788,42 @@
       margin: 0;
     }
 
-    .demo-lines {
+    .demo-mini-profile {
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.075);
+      border-radius: 18px;
       display: grid;
-      gap: 9px;
+      gap: 8px;
       margin-top: 22px;
+      padding: 10px;
     }
 
-    .demo-line {
-      background: rgba(255, 255, 255, 0.055);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 13px;
-      height: 42px;
+    .demo-mini-row {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.048);
+      border: 1px solid rgba(255, 255, 255, 0.075);
+      border-radius: 12px;
+      color: var(--muted-strong);
+      display: flex;
+      font-size: 13px;
+      font-weight: 800;
+      gap: 9px;
+      min-height: 38px;
+      padding: 9px 10px;
+    }
+
+    .demo-mini-icon {
+      align-items: center;
+      background: color-mix(in srgb, var(--demo-a, var(--accent)), transparent 84%);
+      border: 1px solid color-mix(in srgb, var(--demo-a, var(--accent)), transparent 68%);
+      border-radius: 10px;
+      color: color-mix(in srgb, var(--demo-a, var(--accent)), white 20%);
+      display: inline-flex;
+      flex: 0 0 24px;
+      font-size: 11px;
+      height: 24px;
+      justify-content: center;
+      width: 24px;
     }
 
     .demo-link {
@@ -1309,12 +1334,12 @@
               <div class="contact-card-top">
                 <div class="contact-avatar">YT</div>
                 <div>
-                  <h4>Mohamed Mahdi</h4>
+                  <h4>Sarah Jones</h4>
                   <p>Saved from YourTeck profile</p>
                 </div>
               </div>
-              <div class="contact-row"><span>Mobile</span><strong>+965 6654 6788</strong></div>
-              <div class="contact-row"><span>Email</span><strong>hello@yourteck.com</strong></div>
+              <div class="contact-row"><span>Mobile</span><strong>+XXX XXX XXXX</strong></div>
+              <div class="contact-row"><span>Email</span><strong>example@gmail.com</strong></div>
               <div class="contact-row"><span>Profile</span><strong>yourteck.com/nfc</strong></div>
             </div>
             <div class="saved-badge">Ready to save to contacts</div>
@@ -1372,13 +1397,13 @@
               <div class="demo-avatar"></div>
               <div>
                 <h4>Creator</h4>
-                <p>Social-first profile</p>
+                <p>For influencers, artists, and content creators.</p>
               </div>
             </div>
-            <div class="demo-lines">
-              <div class="demo-line"></div>
-              <div class="demo-line"></div>
-              <div class="demo-line"></div>
+            <div class="demo-mini-profile">
+              <div class="demo-mini-row"><span class="demo-mini-icon">IG</span><span>Instagram</span></div>
+              <div class="demo-mini-row"><span class="demo-mini-icon">TT</span><span>TikTok</span></div>
+              <div class="demo-mini-row"><span class="demo-mini-icon">BK</span><span>Book a collab</span></div>
             </div>
             <div class="demo-link"><span>View demo</span><span>-></span></div>
           </a>
@@ -1388,29 +1413,29 @@
               <div class="demo-avatar"></div>
               <div>
                 <h4>Business</h4>
-                <p>Contact and location ready</p>
+                <p>For stores, sales teams, and service brands.</p>
               </div>
             </div>
-            <div class="demo-lines">
-              <div class="demo-line"></div>
-              <div class="demo-line"></div>
-              <div class="demo-line"></div>
+            <div class="demo-mini-profile">
+              <div class="demo-mini-row"><span class="demo-mini-icon">VCF</span><span>Save Contact</span></div>
+              <div class="demo-mini-row"><span class="demo-mini-icon">MAP</span><span>Location</span></div>
+              <div class="demo-mini-row"><span class="demo-mini-icon">WEB</span><span>Website</span></div>
             </div>
             <div class="demo-link"><span>View demo</span><span>-></span></div>
           </a>
 
-          <a class="demo-card" style="--demo-a:#f4c542;--demo-b:#ffffff;--demo-glow:rgba(244,197,66,0.18);" href="#preview" data-demo-name="Mahdi F." data-demo-bio="Minimal professional profile with only the essentials." data-link-one="Mobile" data-link-two="Email" data-link-three="LinkedIn">
+          <a class="demo-card" style="--demo-a:#f4c542;--demo-b:#ffffff;--demo-glow:rgba(244,197,66,0.18);" href="#preview" data-demo-name="Adam Blake" data-demo-bio="Minimal professional profile with only the essentials." data-link-one="Mobile" data-link-two="Email" data-link-three="LinkedIn">
             <div class="demo-card-header">
               <div class="demo-avatar"></div>
               <div>
                 <h4>Minimal</h4>
-                <p>Clean professional profile</p>
+                <p>For clean, direct professional networking.</p>
               </div>
             </div>
-            <div class="demo-lines">
-              <div class="demo-line"></div>
-              <div class="demo-line"></div>
-              <div class="demo-line"></div>
+            <div class="demo-mini-profile">
+              <div class="demo-mini-row"><span class="demo-mini-icon">TEL</span><span>Mobile</span></div>
+              <div class="demo-mini-row"><span class="demo-mini-icon">EM</span><span>Email</span></div>
+              <div class="demo-mini-row"><span class="demo-mini-icon">IN</span><span>LinkedIn</span></div>
             </div>
             <div class="demo-link"><span>View demo</span><span>-></span></div>
           </a>
