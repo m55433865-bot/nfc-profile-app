@@ -1278,6 +1278,10 @@ app.get(`${BASE_PATH}/login`, (req, res) => {
   res.sendFile(path.join(publicDir, 'login.html'));
 });
 
+app.get(`${BASE_PATH}/card`, (req, res) => {
+  res.redirect('/card');
+});
+
 app.get(`${BASE_PATH}/reset-password`, (req, res) => {
   res.sendFile(path.join(publicDir, 'reset-password.html'));
 });
@@ -1302,6 +1306,10 @@ app.get(`${BASE_PATH}/:username`, (req, res) => {
 
 app.get('/login', (req, res) => {
   res.redirect(`${BASE_PATH}/login`);
+});
+
+app.get('/card', (req, res) => {
+  res.sendFile(path.join(publicDir, 'card.html'));
 });
 
 app.get('/reset-password', (req, res) => {
