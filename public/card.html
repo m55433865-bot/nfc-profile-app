@@ -212,13 +212,34 @@
     }
 
     .yourteck-y {
-      color: #e7e7e2;
-      font-size: 74px;
-      font-weight: 900;
-      letter-spacing: -0.12em;
-      line-height: 0.9;
       margin-bottom: 24px;
-      text-shadow: 0 8px 16px rgba(0, 0, 0, 0.52), 0 0 18px rgba(255, 255, 255, 0.12);
+    }
+
+    .broken-y-logo {
+      display: inline-block;
+      filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
+      height: var(--logo-size, 74px);
+      position: relative;
+      width: var(--logo-size, 74px);
+    }
+
+    .broken-y-logo::before {
+      background: linear-gradient(180deg, #f2f2ee, #8d8d89);
+      clip-path: polygon(45% 58%, 73% 0, 98% 0, 58% 70%, 58% 100%, 40% 100%, 40% 70%);
+      content: "";
+      inset: 0;
+      position: absolute;
+    }
+
+    .broken-y-logo::after {
+      background: linear-gradient(180deg, #f2f2ee, #8d8d89);
+      clip-path: polygon(0 0, 48% 0, 100% 100%, 52% 100%);
+      content: "";
+      height: 42%;
+      left: 15%;
+      position: absolute;
+      top: 0;
+      width: 34%;
     }
 
     .yourteck-wordmark {
@@ -468,7 +489,7 @@
         <span class="brand-mark brand-mark-card" aria-hidden="true">
           <svg viewBox="0 0 100 100">
             <path class="brand-mark-chip" d="M18 74V26c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H26c-4.4 0-8-3.6-8-8Z" />
-            <path class="brand-mark-n" d="M28 28L50 58L72 28M50 58V76" stroke="currentColor" />
+            <path class="brand-mark-n" d="M50 76V58L72 28M30 28L43 47" stroke="currentColor" />
             <path class="brand-mark-wave" d="M72 34c7 5 10 11 10 18s-3 13-10 18" />
             <path class="brand-mark-wave wave-2" d="M80 25c10 8 15 17 15 27s-5 19-15 27" />
           </svg>
@@ -495,7 +516,7 @@
             <div class="premium-card front">
               <div class="nfc-waves" aria-hidden="true"><span></span><span></span><span></span></div>
               <div class="card-face-center">
-                <div class="yourteck-y">Y</div>
+                <div class="yourteck-y"><span class="broken-y-logo" aria-hidden="true"></span></div>
                 <div class="yourteck-wordmark">YourTeck</div>
               </div>
             </div>
