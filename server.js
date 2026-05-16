@@ -1267,7 +1267,7 @@ app.use(`${BASE_PATH}/api`, apiRouter);
 
 // page
 app.get('/', (req, res) => {
-  res.redirect(`${BASE_PATH}/login`);
+  res.redirect(BASE_PATH);
 });
 
 app.get(`${BASE_PATH}`, (req, res) => {
