@@ -216,6 +216,7 @@
     }
 
     .broken-y-logo {
+      background: url("/nfc/yourteck-mark.svg?v=exact-1") center / contain no-repeat;
       display: inline-block;
       filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
       height: var(--logo-size, 74px);
@@ -223,23 +224,9 @@
       width: var(--logo-size, 74px);
     }
 
-    .broken-y-logo::before {
-      background: linear-gradient(180deg, #f2f2ee, #8d8d89);
-      clip-path: polygon(49% 55%, 72% 4%, 96% 4%, 60% 66%, 60% 100%, 41% 100%, 41% 66%);
-      content: "";
-      inset: 0;
-      position: absolute;
-    }
-
+    .broken-y-logo::before,
     .broken-y-logo::after {
-      background: linear-gradient(180deg, #f2f2ee, #8d8d89);
-      clip-path: polygon(6% 4%, 34% 4%, 51% 42%, 31% 42%);
-      content: "";
-      height: 100%;
-      left: 0;
-      position: absolute;
-      top: 0;
-      width: 100%;
+      display: none;
     }
 
     .yourteck-wordmark {
@@ -487,12 +474,7 @@
     <nav class="nav" aria-label="Card page navigation">
       <a class="nav-brand" href="/nfc" aria-label="Back to YourTeck NFC landing page">
         <span class="brand-mark brand-mark-card" aria-hidden="true">
-          <svg viewBox="0 0 100 100">
-            <path class="brand-mark-chip" d="M18 74V26c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H26c-4.4 0-8-3.6-8-8Z" />
-            <path class="brand-mark-n" d="M50 76V58L72 28M24 28L39 52" stroke="currentColor" />
-            <path class="brand-mark-wave" d="M72 34c7 5 10 11 10 18s-3 13-10 18" />
-            <path class="brand-mark-wave wave-2" d="M80 25c10 8 15 17 15 27s-5 19-15 27" />
-          </svg>
+          <img src="/nfc/yourteck-mark.svg?v=exact-1" alt="">
         </span>
         <span>YourTeck NFC</span>
       </a>

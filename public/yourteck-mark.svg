@@ -1,0 +1,13 @@
+<svg width="128" height="128" viewBox="490 254 107 105" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="yourteckMarkGradient" x1="543.775" y1="254" x2="543.775" y2="359" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2F2EE"/>
+      <stop offset="1" stop-color="#8D8D89"/>
+    </linearGradient>
+    <filter id="yourteckMarkGlow" x="478.9" y="242" width="129.75" height="129" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#FFFFFF" flood-opacity="0.1"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#FFFFFF" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <path filter="url(#yourteckMarkGlow)" d="M555.85 321.823V359H531.55V322.564L558.219 278.181L558.218 278.18L572.8 254H596.65L555.85 321.823ZM537.717 289L524.843 310.426L490.9 254H516.7L537.717 289Z" fill="url(#yourteckMarkGradient)"/>
+</svg>
