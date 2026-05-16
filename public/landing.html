@@ -323,6 +323,32 @@
       justify-content: space-between;
     }
 
+    .landing-card-brand {
+      left: 50%;
+      position: absolute;
+      text-align: center;
+      top: 52%;
+      transform: translate(-50%, -50%);
+    }
+
+    .landing-y {
+      color: #e7e7e2;
+      font-size: 58px;
+      font-weight: 900;
+      letter-spacing: -0.12em;
+      line-height: 0.9;
+      margin-bottom: 18px;
+      text-shadow: 0 8px 16px rgba(0, 0, 0, 0.52), 0 0 18px rgba(255, 255, 255, 0.12);
+    }
+
+    .landing-wordmark {
+      color: #d8d8d4;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
     .tap-symbol {
       border: 1px solid rgba(255, 255, 255, 0.24);
       border-radius: 999px;
@@ -352,22 +378,37 @@
       width: 22px;
     }
 
-    .card-name {
-      bottom: 24px;
+    .landing-card-backcopy {
+      bottom: 22px;
       left: 24px;
       position: absolute;
     }
 
-    .card-name strong {
+    .landing-card-backcopy strong {
       display: block;
-      font-size: 24px;
-      letter-spacing: -0.02em;
+      color: #d8d8d4;
+      font-size: 20px;
+      font-weight: 300;
+      letter-spacing: 0.04em;
     }
 
-    .card-name span {
+    .landing-card-backcopy span {
       color: var(--muted-strong);
       display: block;
       margin-top: 5px;
+    }
+
+    .landing-qr {
+      background:
+        linear-gradient(90deg, #e7e7e2 4px, transparent 4px) 0 0 / 8px 8px,
+        linear-gradient(#e7e7e2 4px, transparent 4px) 0 0 / 8px 8px,
+        #111;
+      border: 8px solid #080808;
+      bottom: 24px;
+      height: 56px;
+      position: absolute;
+      right: 24px;
+      width: 56px;
     }
 
     .phone-preview {
@@ -1130,7 +1171,7 @@
           <svg viewBox="0 0 100 100">
             <path class="brand-mark-chip"
               d="M18 74V26c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H26c-4.4 0-8-3.6-8-8Z" />
-            <path class="brand-mark-n" d="M29 72V29l42 43V28" stroke="currentColor" />
+            <path class="brand-mark-n" d="M28 28L50 58L72 28M50 58V76" stroke="currentColor" />
             <path class="brand-mark-wave" d="M72 34c7 5 10 11 10 18s-3 13-10 18" />
             <path class="brand-mark-wave wave-2" d="M80 25c10 8 15 17 15 27s-5 19-15 27" />
           </svg>
@@ -1173,20 +1214,12 @@
           <div class="tap-pill">Tap-ready card</div>
           <div class="nfc-card">
             <div class="card-top">
-              <span class="brand-mark brand-mark-landing wave-static" aria-hidden="true">
-                <svg viewBox="0 0 100 100">
-                  <path class="brand-mark-chip"
-                    d="M18 74V26c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H26c-4.4 0-8-3.6-8-8Z" />
-                  <path class="brand-mark-n" d="M29 72V29l42 43V28" stroke="currentColor" />
-                  <path class="brand-mark-wave" d="M72 34c7 5 10 11 10 18s-3 13-10 18" />
-                  <path class="brand-mark-wave wave-2" d="M80 25c10 8 15 17 15 27s-5 19-15 27" />
-                </svg>
-              </span>
+              <span></span>
               <span class="tap-symbol" aria-hidden="true"></span>
             </div>
-            <div class="card-name">
-              <strong>YourTeck</strong>
-              <span>Smart NFC Profile Card</span>
+            <div class="landing-card-brand">
+              <div class="landing-y">Y</div>
+              <div class="landing-wordmark">YourTeck</div>
             </div>
           </div>
 
@@ -1332,7 +1365,7 @@
           <div class="contact-demo" aria-label="Save contact preview">
             <div class="contact-card">
               <div class="contact-card-top">
-                <div class="contact-avatar">YT</div>
+                <div class="contact-avatar">Y</div>
                 <div>
                   <h4>Sarah Jones</h4>
                   <p>Saved from YourTeck profile</p>

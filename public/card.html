@@ -155,7 +155,15 @@
     }
 
     .product-stage {
-      min-height: 420px;
+      min-height: 590px;
+      position: relative;
+    }
+
+    .card-pair {
+      display: grid;
+      gap: 22px;
+      margin: 32px auto 0;
+      max-width: 560px;
       position: relative;
     }
 
@@ -170,12 +178,9 @@
         0 36px 110px rgba(0, 0, 0, 0.58),
         0 0 54px rgba(20, 184, 154, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      height: 270px;
-      margin: 60px auto 0;
-      max-width: 480px;
+      height: 290px;
       padding: 30px;
       position: relative;
-      transform: rotate(-5deg);
       width: 100%;
     }
 
@@ -191,29 +196,103 @@
       width: 94px;
     }
 
-    .card-logo {
-      color: var(--accent);
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: -0.08em;
+    .premium-card.front {
+      display: grid;
+      place-items: center;
+      transform: rotate(-3deg);
     }
 
-    .card-copy {
-      bottom: 30px;
-      left: 30px;
+    .premium-card.back {
+      margin-top: -48px;
+      transform: rotate(2deg);
+    }
+
+    .card-face-center {
+      text-align: center;
+    }
+
+    .yourteck-y {
+      color: #e7e7e2;
+      font-size: 74px;
+      font-weight: 900;
+      letter-spacing: -0.12em;
+      line-height: 0.9;
+      margin-bottom: 24px;
+      text-shadow: 0 8px 16px rgba(0, 0, 0, 0.52), 0 0 18px rgba(255, 255, 255, 0.12);
+    }
+
+    .yourteck-wordmark {
+      color: #d8d8d4;
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .nfc-waves {
+      height: 46px;
+      position: absolute;
+      right: 34px;
+      top: 28px;
+      width: 42px;
+    }
+
+    .nfc-waves span {
+      border: 3px solid rgba(238, 238, 234, 0.72);
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+      border-top-color: transparent;
+      border-radius: 50%;
+      display: block;
+      height: 100%;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 100%;
+    }
+
+    .nfc-waves span:nth-child(2) {
+      height: 70%;
+      top: 15%;
+      width: 70%;
+    }
+
+    .nfc-waves span:nth-child(3) {
+      height: 42%;
+      top: 29%;
+      width: 42%;
+    }
+
+    .back-tagline {
+      color: #d8d8d4;
+      font-size: clamp(30px, 5vw, 52px);
+      font-weight: 300;
+      left: 34px;
+      letter-spacing: 0.03em;
+      position: absolute;
+      top: 94px;
+    }
+
+    .back-url {
+      bottom: 52px;
+      color: #c8c8c4;
+      font-size: clamp(22px, 3vw, 34px);
+      font-weight: 300;
+      left: 34px;
       position: absolute;
     }
 
-    .card-copy strong {
-      display: block;
-      font-size: 28px;
-      letter-spacing: -0.04em;
-    }
-
-    .card-copy span {
-      color: var(--muted);
-      display: block;
-      margin-top: 6px;
+    .qr-mark {
+      background:
+        linear-gradient(90deg, #e7e7e2 6px, transparent 6px) 0 0 / 12px 12px,
+        linear-gradient(#e7e7e2 6px, transparent 6px) 0 0 / 12px 12px,
+        #111;
+      border: 12px solid #080808;
+      bottom: 42px;
+      height: 82px;
+      position: absolute;
+      right: 42px;
+      width: 82px;
     }
 
     .content-grid {
@@ -340,12 +419,11 @@
       }
 
       .product-stage {
-        min-height: 340px;
+        min-height: 620px;
       }
 
-      .premium-card {
+      .card-pair {
         margin-top: 28px;
-        transform: rotate(-3deg);
       }
     }
 
@@ -359,7 +437,25 @@
       }
 
       .premium-card {
-        height: 230px;
+        height: 240px;
+      }
+
+      .premium-card.back {
+        margin-top: -30px;
+      }
+
+      .back-tagline {
+        top: 78px;
+      }
+
+      .back-url {
+        bottom: 44px;
+      }
+
+      .qr-mark {
+        height: 58px;
+        right: 24px;
+        width: 58px;
       }
     }
   </style>
@@ -372,7 +468,7 @@
         <span class="brand-mark brand-mark-card" aria-hidden="true">
           <svg viewBox="0 0 100 100">
             <path class="brand-mark-chip" d="M18 74V26c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H26c-4.4 0-8-3.6-8-8Z" />
-            <path class="brand-mark-n" d="M29 72V29l42 43V28" stroke="currentColor" />
+            <path class="brand-mark-n" d="M28 28L50 58L72 28M50 58V76" stroke="currentColor" />
             <path class="brand-mark-wave" d="M72 34c7 5 10 11 10 18s-3 13-10 18" />
             <path class="brand-mark-wave wave-2" d="M80 25c10 8 15 17 15 27s-5 19-15 27" />
           </svg>
@@ -395,11 +491,18 @@
         </div>
 
         <div class="product-stage" aria-label="YourTeck NFC card preview">
-          <div class="premium-card">
-            <div class="card-logo">YT</div>
-            <div class="card-copy">
-              <strong>YourTeck</strong>
-              <span>Tap. Share. Connect.</span>
+          <div class="card-pair">
+            <div class="premium-card front">
+              <div class="nfc-waves" aria-hidden="true"><span></span><span></span><span></span></div>
+              <div class="card-face-center">
+                <div class="yourteck-y">Y</div>
+                <div class="yourteck-wordmark">YourTeck</div>
+              </div>
+            </div>
+            <div class="premium-card back">
+              <div class="back-tagline">Tap. Share. Connect.</div>
+              <div class="back-url">yourteck.com/name</div>
+              <div class="qr-mark" aria-hidden="true"></div>
             </div>
           </div>
         </div>
