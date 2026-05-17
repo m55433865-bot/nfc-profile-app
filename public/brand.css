@@ -1,16 +1,16 @@
 .brand-mark {
   --brand-accent: var(--accent-color, #14b89a);
   --brand-cyan: var(--brand-secondary, #6fd8cf);
-  --brand-glow-soft: color-mix(in srgb, var(--brand-accent) 13%, transparent);
-  --brand-glow-medium: color-mix(in srgb, var(--brand-accent) 18%, transparent);
-  --brand-glow-ring: color-mix(in srgb, var(--brand-accent) 9%, transparent);
+  --brand-glow-soft: rgba(255, 255, 255, 0.08);
+  --brand-glow-medium: rgba(255, 255, 255, 0.12);
+  --brand-glow-ring: rgba(255, 255, 255, 0.08);
   align-items: center;
   aspect-ratio: 1;
   background:
-    radial-gradient(circle at 28% 18%, color-mix(in srgb, var(--brand-cyan) 13%, transparent), transparent 34%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.03)),
-    rgba(18, 24, 27, 0.84);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+    radial-gradient(circle at 48% 34%, rgba(255, 255, 255, 0.1), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.025)),
+    #101111;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 16px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
@@ -37,7 +37,7 @@
 
 .brand-mark::after {
   animation: brandGlowPulse 2.8s ease-in-out infinite;
-  border: 1px solid color-mix(in srgb, var(--brand-cyan) 24%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: inherit;
   content: "";
   inset: 5px;
@@ -89,8 +89,6 @@
 }
 
 .brand-mark-login {
-  --brand-accent: #14b89a;
-  --brand-cyan: #6fd8cf;
   height: 64px;
   margin-bottom: 14px;
   width: 64px;
