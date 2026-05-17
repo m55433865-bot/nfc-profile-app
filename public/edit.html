@@ -125,6 +125,9 @@
 
     <div id="editModeHint" class="edit-mode-hint">Tap your name or bio to edit</div>
     <div id="toastStack" class="app-toast-stack" aria-live="polite" aria-atomic="true"></div>
+    <div id="globalActivityIndicator" class="global-activity-indicator" aria-hidden="true">
+        <span></span>
+    </div>
 
     <script>
         let draggedIndex = null;
@@ -171,7 +174,6 @@
         let profileProgressCoachShown = false;
         let saveInProgress = false;
         let avatarUploadInProgress = false;
-        let avatarUploadMessage = "";
 
         const sharedThemeOptions = window.YourTeckThemeOptions || {};
         const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#14b89a" };
@@ -529,14 +531,27 @@
             }, type === "error" ? 4200 : 2200);
         }
 
-        function setButtonLoading(button, loading, label = "Saving...") {
+        function setGlobalActivity(active) {
+            const indicator = document.getElementById("globalActivityIndicator");
+            if (!indicator) return;
+
+            indicator.classList.toggle("show", Boolean(active));
+        }
+
+        function updateGlobalActivity() {
+            setGlobalActivity(saveInProgress || avatarUploadInProgress);
+        }
+
+        function setButtonLoading(button, loading) {
             if (!button) return;
 
             if (loading) {
-                button.dataset.originalHtml = button.innerHTML;
+                if (!button.dataset.originalHtml) {
+                    button.dataset.originalHtml = button.innerHTML;
+                }
                 button.disabled = true;
                 button.classList.add("is-loading");
-                button.innerHTML = `<span class="ui-spinner" aria-hidden="true"></span>${escapeHtml(label)}`;
+                button.innerHTML = `<span class="ui-spinner" aria-hidden="true"></span><span class="loading-button-content">${button.dataset.originalHtml}</span>`;
                 return;
             }
 
@@ -669,10 +684,6 @@
                             ? `
                                 <div class="avatar-upload-overlay">
                                     <span class="upload-orb" aria-hidden="true"></span>
-                                    <span class="upload-copy">
-                                        <span class="upload-title">${escapeHtml(avatarUploadMessage || "Uploading...")}</span>
-                                        <span class="upload-subtitle">Please keep this page open</span>
-                                    </span>
                                 </div>
                             `
                             : ""
@@ -1600,12 +1611,11 @@
             const password = storedPassword;
             const themeToSave = sanitizeTheme(currentUser.theme);
             const button = options.button || null;
-            const loadingText = options.loadingText || "Saving...";
             const successText = options.successText || "Saved";
 
             saveInProgress = true;
-            setButtonLoading(button, true, loadingText);
-            if (options.showSavingToast) showToast(options.savingText || "Saving your changes...", "success");
+            updateGlobalActivity();
+            setButtonLoading(button, true);
 
             try {
                 const data = await fetch(apiPath(`/${username}`), {
@@ -1637,6 +1647,7 @@
                 throw error;
             } finally {
                 saveInProgress = false;
+                updateGlobalActivity();
                 setButtonLoading(button, false);
             }
         }
@@ -1707,7 +1718,7 @@
             renderCurrentUser();
 
             try {
-                await saveUser({ loadingText: "Deleting...", successText: "Block deleted", showSavingToast: true, savingText: "Deleting block..." });
+                await saveUser({ successText: "Block deleted" });
             } catch (error) {
                 currentUser.links.splice(index, 0, removed);
                 renderCurrentUser();
@@ -1728,7 +1739,7 @@
             renderCurrentUser();
 
             try {
-                await saveUser({ loadingText: "Saving order...", successText: "Order saved", showSavingToast: true, savingText: "Saving order..." });
+                await saveUser({ successText: "Order saved" });
             } catch (error) {
                 currentUser.links = previousLinks;
                 renderCurrentUser();
@@ -1894,12 +1905,12 @@
                     if (field === "name") {
                         if (nextValue) {
                             currentUser.displayName = nextValue;
-                            saveUser({ loadingText: "Saving...", successText: "Name saved", showSavingToast: true }).catch(() => renderCurrentUser());
+                            saveUser({ successText: "Name saved" }).catch(() => renderCurrentUser());
                             return;
                         }
                     } else {
                         currentUser.bio = nextValue;
-                        saveUser({ loadingText: "Saving...", successText: "Bio saved", showSavingToast: true }).catch(() => renderCurrentUser());
+                        saveUser({ successText: "Bio saved" }).catch(() => renderCurrentUser());
                         return;
                     }
                 }
@@ -2413,7 +2424,8 @@
         async function changePassword(newPassword, button = null) {
             if (saveInProgress) return;
             saveInProgress = true;
-            setButtonLoading(button, true, "Saving...");
+            updateGlobalActivity();
+            setButtonLoading(button, true);
 
             try {
                 const data = await fetch(apiPath(`/${username}`), {
@@ -2446,6 +2458,7 @@
                 showToast(error.message || "Could not change password.", "error");
             } finally {
                 saveInProgress = false;
+                updateGlobalActivity();
                 setButtonLoading(button, false);
             }
         }
@@ -2475,23 +2488,22 @@
 
                 const previousAvatar = currentUser.avatar || "";
                 avatarUploadInProgress = true;
-                avatarUploadMessage = "Processing image...";
+                updateGlobalActivity();
                 renderCurrentUser();
 
                 const reader = new FileReader();
 
                 reader.onload = async function () {
                     currentUser.avatar = reader.result;
-                    avatarUploadMessage = "Uploading...";
                     renderCurrentUser();
 
                     try {
-                        await saveUser({ loadingText: "Uploading...", successText: "Photo uploaded", showSavingToast: true, savingText: "Uploading photo..." });
+                        await saveUser({ successText: "Photo uploaded" });
                     } catch (error) {
                         currentUser.avatar = previousAvatar;
                     } finally {
                         avatarUploadInProgress = false;
-                        avatarUploadMessage = "";
+                        updateGlobalActivity();
                         input.value = "";
                         renderCurrentUser();
                     }
@@ -2499,7 +2511,7 @@
 
                 reader.onerror = function () {
                     avatarUploadInProgress = false;
-                    avatarUploadMessage = "";
+                    updateGlobalActivity();
                     input.value = "";
                     currentUser.avatar = previousAvatar;
                     renderCurrentUser();
@@ -2548,16 +2560,16 @@
             const previousAvatar = currentUser.avatar || "";
             currentUser.avatar = "";
             avatarUploadInProgress = true;
-            avatarUploadMessage = "Removing...";
+            updateGlobalActivity();
             renderCurrentUser();
 
             try {
-                await saveUser({ loadingText: "Saving...", successText: "Photo removed", showSavingToast: true, savingText: "Removing photo..." });
+                await saveUser({ successText: "Photo removed" });
             } catch (error) {
                 currentUser.avatar = previousAvatar;
             } finally {
                 avatarUploadInProgress = false;
-                avatarUploadMessage = "";
+                updateGlobalActivity();
                 renderCurrentUser();
             }
         }
