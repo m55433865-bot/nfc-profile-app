@@ -124,6 +124,7 @@
     </div>
 
     <div id="editModeHint" class="edit-mode-hint">Tap your name or bio to edit</div>
+    <div id="toastStack" class="app-toast-stack" aria-live="polite" aria-atomic="true"></div>
 
     <script>
         let draggedIndex = null;
@@ -168,6 +169,9 @@
         let closingModalFromUi = false;
         let profileProgressExpanded = false;
         let profileProgressCoachShown = false;
+        let saveInProgress = false;
+        let avatarUploadInProgress = false;
+        let avatarUploadMessage = "";
 
         const sharedThemeOptions = window.YourTeckThemeOptions || {};
         const defaultTheme = sharedThemeOptions.defaultTheme || { mode: "dark", preset: "midnight", accent: "#14b89a" };
@@ -248,7 +252,6 @@
             root.style.setProperty("--button-bg", safeTheme.accent);
             root.style.setProperty("--button-text", mode === "light" ? "#ffffff" : "#07110e");
             root.style.setProperty("--shadow-color", mode === "light" ? "rgba(17, 24, 39, 0.14)" : "rgba(0, 0, 0, 0.42)");
-            console.log("applied theme", safeTheme);
         }
 
         function renderAppearanceOptions() {
@@ -417,7 +420,6 @@
 
             if (save && draftTheme) {
                 currentUser.theme = sanitizeTheme(draftTheme);
-                console.log("selected theme before save", currentUser.theme);
                 draftTheme = null;
                 if (!options.fromHistory) clearModalHistory("appearanceModal");
                 saveTheme(currentUser.theme);
@@ -511,6 +513,58 @@
             document.getElementById("tabSettings").style.display = isOwner ? "" : "none";
         }
 
+        function showToast(message, type = "success") {
+            const stack = document.getElementById("toastStack");
+            if (!stack) return;
+
+            const toast = document.createElement("div");
+            toast.className = `app-toast ${type}`;
+            toast.innerHTML = `<span class="toast-dot" aria-hidden="true"></span><span>${escapeHtml(message)}</span>`;
+            stack.appendChild(toast);
+
+            window.setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateY(8px) scale(0.98)";
+                window.setTimeout(() => toast.remove(), 180);
+            }, type === "error" ? 4200 : 2200);
+        }
+
+        function setButtonLoading(button, loading, label = "Saving...") {
+            if (!button) return;
+
+            if (loading) {
+                button.dataset.originalHtml = button.innerHTML;
+                button.disabled = true;
+                button.classList.add("is-loading");
+                button.innerHTML = `<span class="ui-spinner" aria-hidden="true"></span>${escapeHtml(label)}`;
+                return;
+            }
+
+            button.disabled = false;
+            button.classList.remove("is-loading");
+            if (button.dataset.originalHtml) {
+                button.innerHTML = button.dataset.originalHtml;
+                delete button.dataset.originalHtml;
+            }
+        }
+
+        async function readJsonResponse(response) {
+            const text = await response.text();
+            let data = {};
+
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (error) {
+                throw new Error(text || "Unexpected server response");
+            }
+
+            if (!response.ok || data.error) {
+                throw new Error(data.error || "Save failed");
+            }
+
+            return data;
+        }
+
         async function resolveOwnerForProfile(profileUser) {
             loggedInUser = await getLoggedInUser();
 
@@ -561,7 +615,6 @@
                 currentUser = user;
 
                 if (!options.skipThemeApply) {
-                    console.log("loaded user.theme", user.theme);
                     applyTheme(user.theme);
                 }
 
@@ -607,6 +660,16 @@
                                         <path d="M9 5 7.5 7H5a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3h-2.5L15 5H9Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
                                         <circle cx="12" cy="13.5" r="3.2" stroke="currentColor" stroke-width="1.9"/>
                                     </svg>
+                                </div>
+                            `
+                            : ""
+                        }
+
+                            ${avatarUploadInProgress
+                            ? `
+                                <div class="avatar-upload-overlay">
+                                    <span class="inline-loader"><span class="ui-spinner" aria-hidden="true"></span>${escapeHtml(avatarUploadMessage || "Uploading...")}</span>
+                                    <div class="upload-progress" aria-hidden="true"><span></span></div>
                                 </div>
                             `
                             : ""
@@ -710,14 +773,17 @@
                             if (!file) return;
 
                             iconMessage.innerText = "";
+                            setButtonLoading(uploadIconBtn, true, "Processing...");
 
                             if (!file.type.startsWith("image/")) {
+                                setButtonLoading(uploadIconBtn, false);
                                 iconMessage.innerText = "Please choose an image file.";
                                 iconInput.value = "";
                                 return;
                             }
 
                             if (file.size > customIconMaxBytes) {
+                                setButtonLoading(uploadIconBtn, false);
                                 iconMessage.innerText = "Image is too large. Please use an image under 800 KB.";
                                 iconInput.value = "";
                                 return;
@@ -729,12 +795,20 @@
                                 image.onload = () => {
                                     pendingCustomIcon = reader.result;
                                     renderIconPreview();
+                                    iconMessage.innerText = "Icon ready. Press Save to apply it.";
+                                    setButtonLoading(uploadIconBtn, false);
                                 };
                                 image.onerror = () => {
                                     iconMessage.innerText = "This image could not be loaded.";
                                     iconInput.value = "";
+                                    setButtonLoading(uploadIconBtn, false);
                                 };
                                 image.src = reader.result;
+                            };
+                            reader.onerror = () => {
+                                iconMessage.innerText = "This image could not be processed.";
+                                iconInput.value = "";
+                                setButtonLoading(uploadIconBtn, false);
                             };
                             reader.readAsDataURL(file);
                         };
@@ -791,7 +865,7 @@
                         saveBtn.onclick = (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            saveEditedLink(index, nameInput.value, urlInput.value, pendingCustomIcon);
+                            saveEditedLink(index, nameInput.value, urlInput.value, pendingCustomIcon, saveBtn);
                         };
 
                         actions.appendChild(cancelBtn);
@@ -1515,87 +1589,78 @@
             menu.style.right = "auto";
         }
 
-        function saveUser() {
+        async function saveUser(options = {}) {
+            if (saveInProgress && !options.allowParallel) {
+                return Promise.reject(new Error("A save is already in progress."));
+            }
+
             const password = storedPassword;
             const themeToSave = sanitizeTheme(currentUser.theme);
-            console.log("selected theme before save", themeToSave);
+            const button = options.button || null;
+            const loadingText = options.loadingText || "Saving...";
+            const successText = options.successText || "Saved";
 
-            fetch(apiPath(`/${username}`), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    password: password,
-                    displayName: currentUser.displayName,
-                    bio: currentUser.bio,
-                    avatar: currentUser.avatar,   // ✅ THIS LINE
-                    links: currentUser.links,
-                    theme: themeToSave
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("save response", data);
-                    if (data.error) {
-                        console.error(data.error);
-                    } else {
-                        console.log("returned updated theme", data.user ? data.user.theme : data.theme);
-                        if (data.user) {
-                            loadUser(data.user);
-                        } else {
-                            currentUser.theme = sanitizeTheme(data.theme || themeToSave);
-                            applyTheme(currentUser.theme);
-                        }
-                    }
-                });
+            saveInProgress = true;
+            setButtonLoading(button, true, loadingText);
+            if (options.showSavingToast) showToast(options.savingText || "Saving your changes...", "success");
+
+            try {
+                const data = await fetch(apiPath(`/${username}`), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        password: password,
+                        displayName: currentUser.displayName,
+                        bio: currentUser.bio,
+                        avatar: currentUser.avatar,
+                        links: currentUser.links,
+                        theme: themeToSave
+                    })
+                }).then(readJsonResponse);
+
+                if (data.user) {
+                    loadUser(data.user);
+                } else {
+                    currentUser.theme = sanitizeTheme(data.theme || themeToSave);
+                    applyTheme(currentUser.theme);
+                }
+
+                if (!options.silent) showToast(successText, "success");
+                return data;
+            } catch (error) {
+                if (!options.silentError) showToast(error.message || "Could not save changes.", "error");
+                throw error;
+            } finally {
+                saveInProgress = false;
+                setButtonLoading(button, false);
+            }
         }
 
-        function saveTheme(theme) {
+        async function saveTheme(theme) {
             const themeToSave = sanitizeTheme(theme);
-            console.log("selected theme before save", themeToSave);
 
-            fetch(apiPath(`/${username}/theme`), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    password: storedPassword,
-                    theme: themeToSave
-                })
-            })
-                .then(async res => {
-                    const text = await res.text();
-                    let data = null;
+            try {
+                const data = await fetch(apiPath(`/${username}/theme`), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        password: storedPassword,
+                        theme: themeToSave
+                    })
+                }).then(readJsonResponse);
 
-                    try {
-                        data = text ? JSON.parse(text) : {};
-                    } catch (error) {
-                        data = { error: text || "Theme save failed" };
-                    }
-
-                    if (!res.ok) {
-                        console.error("theme save failed", {
-                            status: res.status,
-                            statusText: res.statusText,
-                            response: data
-                        });
-                    }
-
-                    return data;
-                })
-                .then(data => {
-                    console.log("save response", data);
-                    if (data.error) {
-                        console.error(data);
-                        return;
-                    }
-
-                    currentUser.theme = sanitizeTheme(data.theme || themeToSave);
-                    console.log("returned updated theme", currentUser.theme);
-                    applyTheme(currentUser.theme);
-                });
+                currentUser.theme = sanitizeTheme(data.theme || themeToSave);
+                applyTheme(currentUser.theme);
+                showToast("Theme saved", "success");
+                return data;
+            } catch (error) {
+                showToast(error.message || "Could not save theme.", "error");
+                throw error;
+            }
         }
 
         window.addEventListener("DOMContentLoaded", updateOwnerTabs);
@@ -1607,11 +1672,12 @@
             renderCurrentUser();
         }
 
-        function saveEditedLink(index, name, url, customIcon) {
+        async function saveEditedLink(index, name, url, customIcon, button = null) {
             const cleanName = name.trim();
             const cleanUrl = normalizeUrl(url);
-            if (!cleanName || !cleanUrl) return;
+            if (!cleanName || !cleanUrl || saveInProgress) return;
 
+            const previousLink = { ...currentUser.links[index] };
             currentUser.links[index] = {
                 ...currentUser.links[index],
                 name: cleanName,
@@ -1619,26 +1685,51 @@
                 finalUrl: cleanUrl,
                 customIcon: customIcon || ""
             };
-            editingLinkIndex = null;
-            saveUser();
+
+            try {
+                editingLinkIndex = null;
+                await saveUser({ button, loadingText: "Saving...", successText: "Block saved" });
+            } catch (error) {
+                editingLinkIndex = index;
+                currentUser.links[index] = previousLink;
+                renderCurrentUser();
+            }
         }
 
-        function deleteLink(index) {
+        async function deleteLink(index) {
+            if (saveInProgress) return;
+            const removed = currentUser.links[index];
             currentUser.links.splice(index, 1);
             editingLinkIndex = null;
-            saveUser();
+            renderCurrentUser();
+
+            try {
+                await saveUser({ loadingText: "Deleting...", successText: "Block deleted", showSavingToast: true, savingText: "Deleting block..." });
+            } catch (error) {
+                currentUser.links.splice(index, 0, removed);
+                renderCurrentUser();
+            }
         }
 
-        function moveLink(index, direction) {
+        async function moveLink(index, direction) {
+            if (saveInProgress) return;
             const targetIndex = direction === "up" ? index - 1 : index + 1;
 
             if (targetIndex < 0 || targetIndex >= currentUser.links.length) return;
 
+            const previousLinks = currentUser.links.map(link => ({ ...link }));
             const currentLink = currentUser.links[index];
             currentUser.links[index] = currentUser.links[targetIndex];
             currentUser.links[targetIndex] = currentLink;
             editingLinkIndex = null;
-            saveUser();
+            renderCurrentUser();
+
+            try {
+                await saveUser({ loadingText: "Saving order...", successText: "Order saved", showSavingToast: true, savingText: "Saving order..." });
+            } catch (error) {
+                currentUser.links = previousLinks;
+                renderCurrentUser();
+            }
         }
 
         let selectedIndex = null;
@@ -1800,12 +1891,12 @@
                     if (field === "name") {
                         if (nextValue) {
                             currentUser.displayName = nextValue;
-                            saveUser();
+                            saveUser({ loadingText: "Saving...", successText: "Name saved", showSavingToast: true }).catch(() => renderCurrentUser());
                             return;
                         }
                     } else {
                         currentUser.bio = nextValue;
-                        saveUser();
+                        saveUser({ loadingText: "Saving...", successText: "Bio saved", showSavingToast: true }).catch(() => renderCurrentUser());
                         return;
                     }
                 }
@@ -2199,8 +2290,8 @@
             preview.appendChild(previewText);
         }
 
-        function submitSmartLink() {
-            if (!selectedSmartLink) return;
+        async function submitSmartLink(button = null) {
+            if (!selectedSmartLink || saveInProgress) return;
 
             const rawValue = document.getElementById('smartLinkValue').value.trim();
             const type = getActiveSmartLinkType(rawValue);
@@ -2210,17 +2301,23 @@
 
             if (!rawValue || !finalUrl) return;
 
-            currentUser.links.push({
+            const nextLink = {
                 name: label,
                 url: finalUrl,
                 type,
                 label,
                 value: rawValue,
                 finalUrl
-            });
+            };
 
-            closeSmartLinkModal();
-            saveUser();
+            currentUser.links.push(nextLink);
+
+            try {
+                await saveUser({ button, loadingText: "Saving...", successText: "Block added" });
+                closeSmartLinkModal();
+            } catch (error) {
+                currentUser.links.pop();
+            }
         }
 
         function openModal(action) {
@@ -2264,43 +2361,59 @@
             }
         }
 
-        function submitInput() {
+        async function submitInput(button = null) {
+            if (saveInProgress) return;
             const val1 = document.getElementById('input1').value.trim();
             const val2 = document.getElementById('input2').value.trim();
+            const previousUser = {
+                displayName: currentUser.displayName,
+                bio: currentUser.bio,
+                links: currentUser.links.map(link => ({ ...link }))
+            };
 
             if (currentAction === "link") {
                 if (!val1 || !val2) return;
 
                 currentUser.links.push({ name: val1, url: normalizeUrl(val2) });
-                saveUser();
             }
 
             if (currentAction === "bio") {
                 if (!val1) return;
 
                 currentUser.bio = val1;
-                saveUser();
             }
 
             if (currentAction === "name") {
                 if (!val1) return;
 
                 currentUser.displayName = val1;
-                saveUser();
             }
 
             if (currentAction === "password") {
                 if (!val1) return;
 
-                changePassword(val1);
+                changePassword(val1, button);
                 return;
             }
 
-            closeModal();
+            try {
+                await saveUser({ button, loadingText: "Saving...", successText: "Saved" });
+                closeModal();
+            } catch (error) {
+                currentUser.displayName = previousUser.displayName;
+                currentUser.bio = previousUser.bio;
+                currentUser.links = previousUser.links;
+                renderCurrentUser();
+            }
         }
 
-        function changePassword(newPassword) {
-            fetch(apiPath(`/${username}`), {
+        async function changePassword(newPassword, button = null) {
+            if (saveInProgress) return;
+            saveInProgress = true;
+            setButtonLoading(button, true, "Saving...");
+
+            try {
+                const data = await fetch(apiPath(`/${username}`), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -2314,26 +2427,24 @@
                     links: currentUser.links,
                     theme: sanitizeTheme(currentUser.theme)
                 })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("save response", data);
-                    if (data.error) {
-                        console.error(data.error);
-                        return;
-                    }
+                }).then(readJsonResponse);
 
-                    storedPassword = newPassword;
-                    localStorage.setItem('password', newPassword);
-                    closeModal();
-                    console.log("returned updated theme", data.user ? data.user.theme : data.theme);
-                    if (data.user) {
-                        loadUser(data.user);
-                    } else {
-                        currentUser.theme = sanitizeTheme(data.theme || currentUser.theme);
-                        applyTheme(currentUser.theme);
-                    }
-                });
+                storedPassword = newPassword;
+                localStorage.setItem('password', newPassword);
+                closeModal();
+                if (data.user) {
+                    loadUser(data.user);
+                } else {
+                    currentUser.theme = sanitizeTheme(data.theme || currentUser.theme);
+                    applyTheme(currentUser.theme);
+                }
+                showToast("Password changed", "success");
+            } catch (error) {
+                showToast(error.message || "Could not change password.", "error");
+            } finally {
+                saveInProgress = false;
+                setButtonLoading(button, false);
+            }
         }
 
         function closeModal(options = {}) {
@@ -2351,14 +2462,45 @@
 
             input.addEventListener('change', function () {
                 const file = this.files[0];
-                if (!file) return;
+                if (!file || avatarUploadInProgress || saveInProgress) return;
+
+                if (!file.type || !file.type.startsWith("image/")) {
+                    showToast("Please choose an image file.", "error");
+                    this.value = "";
+                    return;
+                }
+
+                const previousAvatar = currentUser.avatar || "";
+                avatarUploadInProgress = true;
+                avatarUploadMessage = "Processing image...";
+                renderCurrentUser();
 
                 const reader = new FileReader();
 
-                reader.onload = function () {
+                reader.onload = async function () {
                     currentUser.avatar = reader.result;
-                    saveUser();
-                    console.log("image loaded");
+                    avatarUploadMessage = "Uploading...";
+                    renderCurrentUser();
+
+                    try {
+                        await saveUser({ loadingText: "Uploading...", successText: "Photo uploaded", showSavingToast: true, savingText: "Uploading photo..." });
+                    } catch (error) {
+                        currentUser.avatar = previousAvatar;
+                    } finally {
+                        avatarUploadInProgress = false;
+                        avatarUploadMessage = "";
+                        input.value = "";
+                        renderCurrentUser();
+                    }
+                };
+
+                reader.onerror = function () {
+                    avatarUploadInProgress = false;
+                    avatarUploadMessage = "";
+                    input.value = "";
+                    currentUser.avatar = previousAvatar;
+                    renderCurrentUser();
+                    showToast("Could not process image.", "error");
                 };
 
                 reader.readAsDataURL(file);
@@ -2367,6 +2509,7 @@
 
         function handleAvatarClick(event) {
             if (!isOwner || currentTab !== "edit") return;
+            if (avatarUploadInProgress || saveInProgress) return;
 
             event.preventDefault();
             event.stopPropagation();
@@ -2390,15 +2533,30 @@
 
         function changeAvatarPhoto(event) {
             event.stopPropagation();
+            if (avatarUploadInProgress || saveInProgress) return;
             closeAvatarMenu();
             document.getElementById('avatarInput').click();
         }
 
-        function removeAvatarPhoto(event) {
+        async function removeAvatarPhoto(event) {
             event.stopPropagation();
+            if (avatarUploadInProgress || saveInProgress) return;
             closeAvatarMenu();
+            const previousAvatar = currentUser.avatar || "";
             currentUser.avatar = "";
-            saveUser();
+            avatarUploadInProgress = true;
+            avatarUploadMessage = "Removing...";
+            renderCurrentUser();
+
+            try {
+                await saveUser({ loadingText: "Saving...", successText: "Photo removed", showSavingToast: true, savingText: "Removing photo..." });
+            } catch (error) {
+                currentUser.avatar = previousAvatar;
+            } finally {
+                avatarUploadInProgress = false;
+                avatarUploadMessage = "";
+                renderCurrentUser();
+            }
         }
 
         function normalizeUrl(url) {
@@ -2922,7 +3080,7 @@
                         email, or link.</div>
                     <div class="form-actions">
                         <button type="button" class="ui-btn secondary" onclick="closeSmartLinkModal()">Cancel</button>
-                        <button type="button" class="ui-btn primary" onclick="submitSmartLink()">Save</button>
+                        <button type="button" class="ui-btn primary" onclick="submitSmartLink(this)">Save</button>
                     </div>
                 </div>
             </div>
@@ -3019,7 +3177,7 @@
 
                 <div class="form-actions">
                     <button type="button" class="ui-btn secondary" onclick="closeModal()">Cancel</button>
-                    <button type="button" class="ui-btn primary" onclick="submitInput()">Save</button>
+                    <button type="button" class="ui-btn primary" onclick="submitInput(this)">Save</button>
                 </div>
             </div>
 
