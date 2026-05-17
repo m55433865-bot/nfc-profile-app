@@ -832,7 +832,20 @@
       background: linear-gradient(135deg, var(--demo-a, #14b89a), var(--demo-b, #6fd8cf));
       border-radius: 50%;
       height: 54px;
+      position: relative;
       width: 54px;
+    }
+
+    .demo-avatar::before {
+      background: url("/nfc/yourteck-mark.svg?v=exact-2") center / contain no-repeat;
+      content: "";
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.34));
+      height: 28px;
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 28px;
     }
 
     .demo-card h4 {

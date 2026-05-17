@@ -185,15 +185,7 @@
     }
 
     .premium-card::after {
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 999px;
-      content: "";
-      height: 94px;
-      opacity: 0.42;
-      position: absolute;
-      right: 28px;
-      top: 24px;
-      width: 94px;
+      display: none;
     }
 
     .premium-card.front {
@@ -237,40 +229,6 @@
       text-transform: uppercase;
     }
 
-    .nfc-waves {
-      height: 46px;
-      position: absolute;
-      right: 34px;
-      top: 28px;
-      width: 42px;
-    }
-
-    .nfc-waves span {
-      border: 3px solid rgba(238, 238, 234, 0.72);
-      border-bottom-color: transparent;
-      border-left-color: transparent;
-      border-top-color: transparent;
-      border-radius: 50%;
-      display: block;
-      height: 100%;
-      position: absolute;
-      right: 0;
-      top: 0;
-      width: 100%;
-    }
-
-    .nfc-waves span:nth-child(2) {
-      height: 70%;
-      top: 15%;
-      width: 70%;
-    }
-
-    .nfc-waves span:nth-child(3) {
-      height: 42%;
-      top: 29%;
-      width: 42%;
-    }
-
     .back-tagline {
       color: #d8d8d4;
       font-size: clamp(30px, 5vw, 52px);
@@ -288,19 +246,6 @@
       font-weight: 300;
       left: 34px;
       position: absolute;
-    }
-
-    .qr-mark {
-      background:
-        linear-gradient(90deg, #e7e7e2 6px, transparent 6px) 0 0 / 12px 12px,
-        linear-gradient(#e7e7e2 6px, transparent 6px) 0 0 / 12px 12px,
-        #111;
-      border: 12px solid #080808;
-      bottom: 42px;
-      height: 82px;
-      position: absolute;
-      right: 42px;
-      width: 82px;
     }
 
     .content-grid {
@@ -460,11 +405,6 @@
         bottom: 44px;
       }
 
-      .qr-mark {
-        height: 58px;
-        right: 24px;
-        width: 58px;
-      }
     }
   </style>
 </head>
@@ -496,7 +436,6 @@
         <div class="product-stage" aria-label="YourTeck NFC card preview">
           <div class="card-pair">
             <div class="premium-card front">
-              <div class="nfc-waves" aria-hidden="true"><span></span><span></span><span></span></div>
               <div class="card-face-center">
                 <div class="yourteck-y"><span class="broken-y-logo" aria-hidden="true"></span></div>
                 <div class="yourteck-wordmark">YourTeck</div>
@@ -505,7 +444,6 @@
             <div class="premium-card back">
               <div class="back-tagline">Tap. Share. Connect.</div>
               <div class="back-url">yourteck.com/name</div>
-              <div class="qr-mark" aria-hidden="true"></div>
             </div>
           </div>
         </div>
