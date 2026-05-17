@@ -854,6 +854,8 @@
     let selectedPhoneCountryCode = "+1";
     let onboardingHistoryReady = false;
     let navigatingOnboardingHistory = false;
+    let isCheckingSession = true;
+    let hasRedirected = false;
 
     const state = {
       step: 0,
@@ -867,8 +869,36 @@
       starterLinks: []
     };
 
-    if (!email || !password) {
-      window.location.replace(appPath("/login"));
+    function clearStoredAuth() {
+      localStorage.removeItem("username");
+      localStorage.removeItem("email");
+      localStorage.removeItem("password");
+    }
+
+    function redirectOnce(target) {
+      if (hasRedirected) return;
+      if (window.location.pathname === target) return;
+      hasRedirected = true;
+      window.location.replace(target);
+    }
+
+    async function readJsonResponse(response) {
+      const text = await response.text();
+      let data = {};
+
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (error) {
+        throw new Error(text || "Unexpected server response");
+      }
+
+      if (!response.ok) {
+        const error = new Error(data.error || "Request failed");
+        Object.assign(error, data);
+        throw error;
+      }
+
+      return data;
     }
 
     function needsOnboarding(user) {
@@ -878,31 +908,35 @@
     }
 
     function loadUser() {
+      if (!email || !password) {
+        isCheckingSession = false;
+        redirectOnce(appPath("/login"));
+        return;
+      }
+
       // First, get the user by email to retrieve their username
       fetch(apiPath("/auth/user"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       })
-        .then(res => res.json())
+        .then(readJsonResponse)
         .then(user => {
-          if (user.error) {
-            window.location.replace(appPath("/login"));
-            return;
-          }
-
           username = user.username;
           if (!username) {
-            window.location.replace(appPath("/login"));
+            isCheckingSession = false;
+            redirectOnce(appPath("/login"));
             return;
           }
           localStorage.setItem("username", username);
 
           if (!needsOnboarding(user)) {
-            window.location.replace(appPath(`/profile/${username}`));
+            isCheckingSession = false;
+            redirectOnce(appPath(`/profile/${encodeURIComponent(username)}`));
             return;
           }
 
+          isCheckingSession = false;
           state.user = user;
           const loadedDisplayName = user.displayName || "";
           state.displayName = loadedDisplayName.trim().toLowerCase() === (user.username || "").trim().toLowerCase()
@@ -919,8 +953,10 @@
           setupOnboardingHistory();
           updatePreview();
         })
-        .catch(() => {
-          document.getElementById("setupError").innerText = "Could not load your profile.";
+        .catch((error) => {
+          isCheckingSession = false;
+          clearStoredAuth();
+          redirectOnce(appPath("/login"));
         });
     }
 

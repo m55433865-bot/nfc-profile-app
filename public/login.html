@@ -391,19 +391,50 @@
     const BASE_PATH = "/nfc";
     const appPath = (path = "") => `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
     const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
-    const storedEmail = localStorage.getItem("email");
-    const storedPassword = localStorage.getItem("password");
     let googleLoginInitialized = false;
     let authMode = "login";
     let pendingSignup = null;
     let resendTimer = null;
+    let isCheckingSession = false;
+    let hasRedirected = false;
 
     document.addEventListener("DOMContentLoaded", () => {
       setAuthMode("login");
+      checkStoredSession();
     });
 
-    if (storedEmail && storedPassword) {
-      routeAfterLogin(storedEmail, storedPassword);
+    function clearStoredAuth() {
+      localStorage.removeItem("username");
+      localStorage.removeItem("email");
+      localStorage.removeItem("password");
+    }
+
+    function redirectOnce(target) {
+      if (hasRedirected) return;
+      if (window.location.pathname === target) return;
+      hasRedirected = true;
+      window.location.replace(target);
+    }
+
+    function setSessionChecking(checking) {
+      isCheckingSession = checking;
+      const button = document.getElementById("primaryAuthBtn");
+      const error = document.getElementById("error");
+      if (button) {
+        button.disabled = checking;
+        button.innerText = checking ? "Checking..." : authMode === "signup" ? "Create account" : authMode === "verify" ? "Verify email" : authMode === "forgot" ? "Send reset link" : "Login";
+      }
+      if (error && checking) error.innerText = "";
+    }
+
+    function checkStoredSession() {
+      const storedEmail = localStorage.getItem("email");
+      const storedPassword = localStorage.getItem("password");
+      if (!storedEmail || !storedPassword) return;
+
+      setSessionChecking(true);
+      routeAfterLogin(storedEmail, storedPassword, { clearOnFailure: true, stayOnFailure: true })
+        .finally(() => setSessionChecking(false));
     }
 
     function needsOnboarding(user) {
@@ -412,37 +443,40 @@
       return displayName === userName && !(user.bio || "").trim() && (!Array.isArray(user.links) || user.links.length === 0);
     }
 
-    function routeAfterLogin(email, password) {
+    function getRedirectTargetForUser(user) {
+      if (!user || user.error) return "";
+      if (needsOnboarding(user)) return appPath("/onboarding");
+      if (user.username) return appPath(`/profile/${encodeURIComponent(user.username)}`);
+      return appPath("/onboarding");
+    }
+
+    function routeAfterLogin(email, password, options = {}) {
       const cleanEmail = (email || "").trim().toLowerCase();
       const ADMIN_EMAIL = "66546788@yourteck.com";
 
       if (cleanEmail === ADMIN_EMAIL) {
-        window.location.replace(appPath("/admin"));
-        return;
+        redirectOnce(appPath("/admin"));
+        return Promise.resolve();
       }
 
-      fetch(apiPath("/auth/user"), {
+      return fetch(apiPath("/auth/user"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ email: cleanEmail, password })
       })
-        .then(res => res.json())
+        .then(readJsonResponse)
         .then(user => {
           if (user && user.username) {
             localStorage.setItem("username", user.username);
-            if (user && !user.error && needsOnboarding(user)) {
-              window.location.replace(appPath("/onboarding"));
-              return;
-            }
-            window.location.replace(appPath(`/profile/${user.username}`));
-          } else {
-            window.location.replace(appPath("/onboarding"));
           }
+          redirectOnce(getRedirectTargetForUser(user));
         })
-        .catch(() => {
-          window.location.replace(appPath("/onboarding"));
+        .catch((error) => {
+          if (options.clearOnFailure) clearStoredAuth();
+          if (options.stayOnFailure) return;
+          throw error;
         });
     }
 
@@ -452,6 +486,8 @@
       const error = document.getElementById('error');
 
       error.innerText = "";
+
+      if (isCheckingSession) return;
 
       if (!email || !password) {
         error.innerText = "Enter your email and password.";
@@ -475,7 +511,9 @@
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
 
-          routeAfterLogin(email, password);
+          routeAfterLogin(email, password).catch((err) => {
+            error.innerText = err.message || "Login failed. Try again.";
+          });
         })
         .catch(() => {
           error.innerText = "Login failed. Try again.";
@@ -758,7 +796,7 @@
           if (data.created && data.username) {
             localStorage.removeItem(`onboardingComplete:${data.username}`);
           }
-          routeAfterLogin(data.email, data.password);
+          return routeAfterLogin(data.email, data.password);
         })
         .catch((err) => {
           error.innerText = err.message || "Google login failed. Try again.";
