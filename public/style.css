@@ -918,15 +918,28 @@ input,
 }
 
 .ui-spinner {
-  animation: uiSpinnerSpin 0.75s linear infinite;
-  border: 2px solid currentColor;
+  animation: uiSpinnerSpin 0.9s linear infinite;
+  background:
+    conic-gradient(from 0deg, transparent 0 38%, currentColor 44% 72%, transparent 78% 100%),
+    radial-gradient(circle, transparent 58%, currentColor 60% 64%, transparent 66%);
   border-radius: 50%;
-  border-right-color: transparent;
   display: inline-block;
   height: 14px;
   margin-right: 8px;
   opacity: 0.9;
+  position: relative;
   width: 14px;
+}
+
+.ui-spinner::after {
+  background: currentColor;
+  border-radius: 50%;
+  content: "";
+  height: 4px;
+  position: absolute;
+  right: 1px;
+  top: 2px;
+  width: 4px;
 }
 
 .inline-loader {
@@ -937,44 +950,70 @@ input,
   gap: 8px;
 }
 
-.upload-progress {
-  background: color-mix(in srgb, var(--text-color), transparent 88%);
-  border-radius: 999px;
-  height: 4px;
-  overflow: hidden;
-  position: relative;
-  width: 100%;
-}
-
-.upload-progress span {
-  animation: uploadProgressSweep 1.1s ease-in-out infinite;
-  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
-  border-radius: inherit;
-  height: 100%;
-  left: -45%;
-  position: absolute;
-  top: 0;
-  width: 45%;
-}
-
 .avatar-upload-overlay {
+  align-items: center;
   background: color-mix(in srgb, var(--card-color), transparent 8%);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: 18px;
   box-shadow: 0 14px 35px rgba(0, 0, 0, 0.28);
-  display: grid;
-  gap: 8px;
+  display: flex;
+  gap: 10px;
   left: 50%;
-  min-width: 170px;
-  padding: 10px 12px;
+  min-width: 192px;
+  padding: 12px 14px;
   position: absolute;
   top: calc(100% + 10px);
   transform: translateX(-50%);
   z-index: 20;
 }
 
-.avatar-upload-overlay .inline-loader {
+.upload-orb {
+  align-items: center;
+  background:
+    radial-gradient(circle, var(--card-color) 0 42%, transparent 43%),
+    conic-gradient(from 0deg, var(--accent-color), color-mix(in srgb, var(--accent-color), white 36%), transparent 72%);
+  border-radius: 50%;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent-color), transparent 70%);
+  display: inline-flex;
+  flex: 0 0 38px;
+  height: 38px;
   justify-content: center;
+  position: relative;
+  width: 38px;
+}
+
+.upload-orb::before {
+  animation: uiSpinnerSpin 1.05s linear infinite;
+  background: conic-gradient(from 0deg, transparent 0 34%, var(--accent-color) 46% 78%, transparent 86% 100%);
+  border-radius: inherit;
+  content: "";
+  inset: -2px;
+  position: absolute;
+}
+
+.upload-orb::after {
+  background: url("/nfc/yourteck-mark.svg?v=exact-2") center / contain no-repeat;
+  content: "";
+  height: 18px;
+  position: relative;
+  width: 18px;
+  z-index: 1;
+}
+
+.upload-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.upload-title {
+  color: var(--text-color);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.upload-subtitle {
+  color: var(--muted-text-color);
+  font-size: 12px;
 }
 
 .app-toast-stack {
@@ -1031,15 +1070,6 @@ input,
 @keyframes uiSpinnerSpin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes uploadProgressSweep {
-  0% {
-    left: -45%;
-  }
-  100% {
-    left: 100%;
   }
 }
 

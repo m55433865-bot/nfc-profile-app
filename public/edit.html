@@ -668,8 +668,11 @@
                             ${avatarUploadInProgress
                             ? `
                                 <div class="avatar-upload-overlay">
-                                    <span class="inline-loader"><span class="ui-spinner" aria-hidden="true"></span>${escapeHtml(avatarUploadMessage || "Uploading...")}</span>
-                                    <div class="upload-progress" aria-hidden="true"><span></span></div>
+                                    <span class="upload-orb" aria-hidden="true"></span>
+                                    <span class="upload-copy">
+                                        <span class="upload-title">${escapeHtml(avatarUploadMessage || "Uploading...")}</span>
+                                        <span class="upload-subtitle">Please keep this page open</span>
+                                    </span>
                                 </div>
                             `
                             : ""
