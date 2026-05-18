@@ -170,6 +170,9 @@
         let editingLinkIndex = null;
         let draftTheme = null;
         let closingModalFromUi = false;
+        let passwordSettingsOpen = false;
+        let passwordCodeEmail = "";
+        let passwordCodeVerified = false;
         let profileProgressExpanded = false;
         let profileProgressCoachShown = false;
         let saveInProgress = false;
@@ -359,6 +362,7 @@
                 "profileQrModal",
                 "logoutConfirmModal",
                 "smartLinkModal",
+                "passwordChangeModal",
                 "inputModal"
             ].find(id => {
                 const modal = document.getElementById(id);
@@ -377,6 +381,7 @@
             if (modalId === "profileQrModal") closeProfileQrModal({ fromHistory: true });
             if (modalId === "logoutConfirmModal") closeLogoutConfirm({ fromHistory: true });
             if (modalId === "smartLinkModal") closeSmartLinkModal({ fromHistory: true });
+            if (modalId === "passwordChangeModal") closePasswordChangeModal({ fromHistory: true });
             if (modalId === "inputModal") closeModal({ fromHistory: true });
         }
 
@@ -1121,6 +1126,7 @@
 
         function renderSettings() {
             const progressSection = renderProfileProgressSection();
+            const passwordPanel = renderPasswordSettingsPanel();
             linksEl.innerHTML = `
                 <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
                     Settings
@@ -1134,8 +1140,13 @@
                     <span>Profile QR</span>
                     <span>›</span>
                 </div>
-                <div class="link no-sort" onclick="openModal('password')" style="cursor:pointer;">
+                <div class="link no-sort" onclick="togglePasswordSettings()" style="cursor:pointer;">
                     <span>Change Password</span>
+                    <span>${passwordSettingsOpen ? "⌃" : "â€º"}</span>
+                </div>
+                ${passwordPanel}
+                <div class="link no-sort" onclick="logoutUser()" style="cursor:pointer;">
+                    <span>Logout</span>
                     <span>›</span>
                 </div>
                 <div class="link no-sort" onclick="logoutUser()" style="cursor:pointer;">
@@ -1144,6 +1155,57 @@
                 </div>
             `;
             maybeShowProfileProgressCoachMark();
+        }
+
+        function renderPasswordSettingsPanel() {
+            if (!passwordSettingsOpen) return "";
+
+            return `
+                <div class="settings-method-panel">
+                    <button type="button" class="settings-method-option" onclick="openOldPasswordChangeModal()">
+                        <span class="settings-method-title">Old password + new password</span>
+                        <span class="settings-method-copy">Use your current password to confirm the change immediately.</span>
+                    </button>
+                    <button type="button" class="settings-method-option" onclick="openEmailPasswordChangeModal()">
+                        <span class="settings-method-title">Email verification code</span>
+                        <span class="settings-method-copy">Send a 6-digit code to your account email, then set a new password.</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderSettings() {
+            const progressSection = renderProfileProgressSection();
+            const passwordPanel = renderPasswordSettingsPanel();
+            linksEl.innerHTML = `
+                <div style="text-align:left; font-weight:600; margin: 2px auto 12px; width:90%; max-width:320px;">
+                    Settings
+                </div>
+                ${progressSection}
+                <div class="link no-sort" onclick="openAppearanceModal()" style="cursor:pointer;">
+                    <span>Theme</span>
+                    <span>&gt;</span>
+                </div>
+                <div class="link no-sort" onclick="openProfileQrModal()" style="cursor:pointer;">
+                    <span>Profile QR</span>
+                    <span>&gt;</span>
+                </div>
+                <div class="link no-sort" onclick="togglePasswordSettings()" style="cursor:pointer;">
+                    <span>Change Password</span>
+                    <span>${passwordSettingsOpen ? "^" : ">"}</span>
+                </div>
+                ${passwordPanel}
+                <div class="link no-sort" onclick="logoutUser()" style="cursor:pointer;">
+                    <span>Logout</span>
+                    <span>&gt;</span>
+                </div>
+            `;
+            maybeShowProfileProgressCoachMark();
+        }
+
+        function togglePasswordSettings() {
+            passwordSettingsOpen = !passwordSettingsOpen;
+            renderSettings();
         }
 
         function getProfileProgressStorageKey(name) {
@@ -2421,6 +2483,218 @@
             }
         }
 
+        function getPasswordChangeEmail() {
+            return String((currentUser && currentUser.email) || storedEmail || "").trim().toLowerCase();
+        }
+
+        function setPasswordChangeStatus(message = "", type = "info") {
+            const status = document.getElementById("passwordChangeStatus");
+            if (!status) return;
+
+            status.innerText = message;
+            status.dataset.type = type;
+        }
+
+        function openPasswordChangeModal(mode) {
+            const modal = document.getElementById("passwordChangeModal");
+            const title = document.getElementById("passwordChangeTitle");
+            const copy = document.getElementById("passwordChangeCopy");
+            const oldForm = document.getElementById("oldPasswordChangeForm");
+            const emailForm = document.getElementById("emailPasswordChangeForm");
+
+            if (!modal || !title || !copy || !oldForm || !emailForm) return;
+
+            passwordCodeEmail = "";
+            passwordCodeVerified = false;
+            setPasswordChangeStatus("");
+
+            oldForm.style.display = mode === "old" ? "grid" : "none";
+            emailForm.style.display = mode === "email" ? "grid" : "none";
+            title.innerText = mode === "old" ? "Change password" : "Verify by email";
+            copy.innerText = mode === "old"
+                ? "Enter your current password and choose a new one."
+                : "We will send a 6-digit code to your account email. The new password field unlocks after the code is verified.";
+
+            document.getElementById("oldPasswordInput").value = "";
+            document.getElementById("oldPasswordNewInput").value = "";
+            document.getElementById("passwordCodeInput").value = "";
+            document.getElementById("emailPasswordNewInput").value = "";
+            document.getElementById("emailPasswordNewInput").disabled = true;
+            document.getElementById("emailPasswordSaveBtn").disabled = true;
+            document.getElementById("passwordEmailTarget").innerText = getPasswordChangeEmail() || "your email";
+
+            modal.style.display = "flex";
+            pushModalHistory("passwordChangeModal");
+
+            if (mode === "old") {
+                document.getElementById("oldPasswordInput").focus();
+            } else {
+                requestPasswordChangeCode();
+                document.getElementById("passwordCodeInput").focus();
+            }
+        }
+
+        function openOldPasswordChangeModal() {
+            openPasswordChangeModal("old");
+        }
+
+        function openEmailPasswordChangeModal() {
+            openPasswordChangeModal("email");
+        }
+
+        function closePasswordChangeModal(options = {}) {
+            const modal = document.getElementById("passwordChangeModal");
+            if (modal) modal.style.display = "none";
+            passwordCodeEmail = "";
+            passwordCodeVerified = false;
+            if (!options.fromHistory) clearModalHistory("passwordChangeModal");
+        }
+
+        async function changePasswordWithOldPassword(button = null) {
+            const oldPassword = document.getElementById("oldPasswordInput").value.trim();
+            const newPassword = document.getElementById("oldPasswordNewInput").value.trim();
+
+            if (!oldPassword || !newPassword) {
+                setPasswordChangeStatus("Enter both old and new password.", "error");
+                return;
+            }
+
+            if (saveInProgress) return;
+            saveInProgress = true;
+            updateGlobalActivity();
+            setButtonLoading(button, true);
+            setPasswordChangeStatus("");
+
+            try {
+                const data = await fetch(apiPath(`/${username}`), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        password: oldPassword,
+                        newPassword,
+                        displayName: currentUser.displayName,
+                        bio: currentUser.bio,
+                        avatar: currentUser.avatar,
+                        links: currentUser.links,
+                        theme: sanitizeTheme(currentUser.theme)
+                    })
+                }).then(readJsonResponse);
+
+                storedPassword = newPassword;
+                localStorage.setItem("password", newPassword);
+                closePasswordChangeModal();
+                if (data.user) loadUser(data.user);
+                showToast("Password changed", "success");
+            } catch (error) {
+                setPasswordChangeStatus(error.message || "Could not change password.", "error");
+                showToast(error.message || "Could not change password.", "error");
+            } finally {
+                saveInProgress = false;
+                updateGlobalActivity();
+                setButtonLoading(button, false);
+            }
+        }
+
+        async function requestPasswordChangeCode(button = null) {
+            const email = getPasswordChangeEmail();
+            if (!email) {
+                setPasswordChangeStatus("No email is connected to this account.", "error");
+                return;
+            }
+
+            setButtonLoading(button, true);
+            setPasswordChangeStatus("Sending verification code...");
+
+            try {
+                const data = await fetch(apiPath("/password-change/request-code"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, username })
+                }).then(readJsonResponse);
+
+                passwordCodeEmail = data.email || email;
+                passwordCodeVerified = false;
+                document.getElementById("emailPasswordNewInput").disabled = true;
+                document.getElementById("emailPasswordSaveBtn").disabled = true;
+                setPasswordChangeStatus(`Code sent to ${passwordCodeEmail}.`, "success");
+            } catch (error) {
+                setPasswordChangeStatus(error.message || "Could not send code.", "error");
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        async function verifyPasswordChangeCode(button = null) {
+            const email = passwordCodeEmail || getPasswordChangeEmail();
+            const code = document.getElementById("passwordCodeInput").value.trim();
+
+            if (!/^\d{6}$/.test(code)) {
+                setPasswordChangeStatus("Enter the 6-digit verification code.", "error");
+                return;
+            }
+
+            setButtonLoading(button, true);
+            setPasswordChangeStatus("Checking code...");
+
+            try {
+                await fetch(apiPath("/password-change/verify-code"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, code })
+                }).then(readJsonResponse);
+
+                passwordCodeEmail = email;
+                passwordCodeVerified = true;
+                const passwordInput = document.getElementById("emailPasswordNewInput");
+                passwordInput.disabled = false;
+                document.getElementById("emailPasswordSaveBtn").disabled = false;
+                setPasswordChangeStatus("Code verified. Enter your new password.", "success");
+                passwordInput.focus();
+            } catch (error) {
+                passwordCodeVerified = false;
+                setPasswordChangeStatus(error.message || "Incorrect verification code.", "error");
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        async function completeEmailPasswordChange(button = null) {
+            const email = passwordCodeEmail || getPasswordChangeEmail();
+            const code = document.getElementById("passwordCodeInput").value.trim();
+            const password = document.getElementById("emailPasswordNewInput").value.trim();
+
+            if (!passwordCodeVerified) {
+                setPasswordChangeStatus("Verify the code first.", "error");
+                return;
+            }
+
+            if (!password) {
+                setPasswordChangeStatus("Enter a new password.", "error");
+                return;
+            }
+
+            setButtonLoading(button, true);
+            setPasswordChangeStatus("Changing password...");
+
+            try {
+                await fetch(apiPath("/password-change/complete"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, code, password })
+                }).then(readJsonResponse);
+
+                storedPassword = password;
+                localStorage.setItem("password", password);
+                closePasswordChangeModal();
+                showToast("Password changed", "success");
+            } catch (error) {
+                setPasswordChangeStatus(error.message || "Could not change password.", "error");
+                showToast(error.message || "Could not change password.", "error");
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
         async function changePassword(newPassword, button = null) {
             if (saveInProgress) return;
             saveInProgress = true;
@@ -3153,6 +3427,44 @@
 
             <button type="button" class="ui-btn secondary profile-qr-close-btn"
                 onclick="closeProfileQrModal()">Close</button>
+        </div>
+    </div>
+
+    <div id="passwordChangeModal" class="smart-modal" onclick="closePasswordChangeModal()">
+        <div class="modal-card password-change-card" onclick="event.stopPropagation()">
+            <div id="passwordChangeTitle" class="modal-title">Change password</div>
+            <div id="passwordChangeCopy" class="password-dialog-copy"></div>
+
+            <div id="oldPasswordChangeForm" class="link-edit-fields">
+                <input id="oldPasswordInput" class="theme-input" type="password" autocomplete="current-password"
+                    placeholder="Old password">
+                <input id="oldPasswordNewInput" class="theme-input" type="password" autocomplete="new-password"
+                    placeholder="New password">
+                <div class="form-actions">
+                    <button type="button" class="ui-btn secondary" onclick="closePasswordChangeModal()">Cancel</button>
+                    <button type="button" class="ui-btn primary"
+                        onclick="changePasswordWithOldPassword(this)">Change</button>
+                </div>
+            </div>
+
+            <div id="emailPasswordChangeForm" class="link-edit-fields">
+                <div class="password-dialog-copy">Code will be sent to <strong id="passwordEmailTarget"></strong>.</div>
+                <div class="password-code-row">
+                    <input id="passwordCodeInput" class="theme-input" inputmode="numeric" pattern="[0-9]*"
+                        autocomplete="one-time-code" maxlength="6" placeholder="Verification code">
+                    <button type="button" class="ui-btn secondary" onclick="verifyPasswordChangeCode(this)">Verify</button>
+                </div>
+                <input id="emailPasswordNewInput" class="theme-input" type="password" autocomplete="new-password"
+                    placeholder="New password" disabled>
+                <div class="password-disabled-note">New password unlocks after the verification code is correct.</div>
+                <div class="form-actions">
+                    <button type="button" class="ui-btn secondary" onclick="requestPasswordChangeCode(this)">Resend</button>
+                    <button id="emailPasswordSaveBtn" type="button" class="ui-btn primary"
+                        onclick="completeEmailPasswordChange(this)" disabled>Change</button>
+                </div>
+            </div>
+
+            <div id="passwordChangeStatus" class="setup-error"></div>
         </div>
     </div>
 

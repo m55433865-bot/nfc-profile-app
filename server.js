@@ -36,6 +36,7 @@ const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   : null;
 const supabaseServer = supabaseAdmin || supabaseAnon;
 const pendingEmailSignups = new Map();
+const pendingPasswordChanges = new Map();
 
 app.set("trust proxy", true);
 app.use(express.json({ limit: '10mb' }));
@@ -372,6 +373,15 @@ function cleanupExpiredVerificationCodes() {
   }
 }
 
+function cleanupExpiredPasswordChangeCodes() {
+  const now = Date.now();
+  for (const [email, record] of pendingPasswordChanges.entries()) {
+    if (!record || record.expiresAt <= now) {
+      pendingPasswordChanges.delete(email);
+    }
+  }
+}
+
 function getVerificationCooldown(record) {
   if (!record || !record.lastSentAt) return 0;
   const remaining = VERIFICATION_RESEND_COOLDOWN_MS - (Date.now() - record.lastSentAt);
@@ -406,6 +416,45 @@ async function sendVerificationEmail(email, code) {
         </div>
       `,
       text: `Your YourTeck verification code is ${code}. It expires in 10 minutes.`
+    })
+  });
+
+  if (!response.ok) {
+    const details = await response.text().catch(() => "");
+    const error = new Error(details || "Verification email could not be sent");
+    error.status = 502;
+    throw error;
+  }
+}
+
+async function sendPasswordChangeVerificationEmail(email, code) {
+  if (!RESEND_API_KEY || !EMAIL_FROM) {
+    const error = new Error("Email verification is not configured");
+    error.status = 500;
+    throw error;
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: [email],
+      subject: "Your YourTeck password change code",
+      html: `
+        <div style="font-family:Arial,sans-serif;background:#0f0f0f;color:#ffffff;padding:28px;">
+          <div style="max-width:440px;margin:0 auto;background:#1f1f1f;border:1px solid #333;border-radius:16px;padding:24px;">
+            <h1 style="font-size:22px;margin:0 0 10px;">Change your password</h1>
+            <p style="color:#bdbdbd;margin:0 0 18px;">Use this code to confirm your password change.</p>
+            <div style="font-size:34px;letter-spacing:8px;font-weight:700;color:#00c896;background:#141414;border:1px solid #333;border-radius:12px;padding:16px;text-align:center;">${code}</div>
+            <p style="color:#888;font-size:13px;margin:18px 0 0;">This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>
+          </div>
+        </div>
+      `,
+      text: `Your YourTeck password change code is ${code}. It expires in 10 minutes.`
     })
   });
 
@@ -781,6 +830,131 @@ apiRouter.post('/password-reset/complete', async (req, res) => {
     if (usedError) throw usedError;
 
     res.json({ success: true });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.post('/password-change/request-code', async (req, res) => {
+  try {
+    cleanupExpiredPasswordChangeCodes();
+
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const username = String(req.body.username || "").trim().toLowerCase();
+
+    if (!email && !username) {
+      return res.status(400).json({ error: "Email or username is required" });
+    }
+
+    const user = email
+      ? await getUserByEmail(email, supabaseAdmin || supabaseServer)
+      : await getUser(username, supabaseAdmin || supabaseServer);
+
+    if (!user || !user.email) {
+      return res.status(404).json({ error: "User email was not found" });
+    }
+
+    if (String(user.password || "").startsWith("google:")) {
+      return res.status(400).json({ error: "Google accounts cannot change password here" });
+    }
+
+    const cleanEmail = String(user.email || "").trim().toLowerCase();
+    const existing = pendingPasswordChanges.get(cleanEmail);
+    const cooldownSeconds = getVerificationCooldown(existing);
+    if (cooldownSeconds > 0) {
+      return res.status(429).json({
+        error: `Please wait ${cooldownSeconds}s before requesting another code`
+      });
+    }
+
+    const code = generateVerificationCode();
+    await sendPasswordChangeVerificationEmail(cleanEmail, code);
+
+    pendingPasswordChanges.set(cleanEmail, {
+      username: user.username,
+      codeHash: hashVerificationCode(cleanEmail, code),
+      expiresAt: Date.now() + VERIFICATION_CODE_TTL_MS,
+      attempts: 0,
+      lastSentAt: Date.now()
+    });
+
+    res.json({ success: true, email: cleanEmail, message: "Verification code sent" });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.post('/password-change/verify-code', async (req, res) => {
+  try {
+    cleanupExpiredPasswordChangeCodes();
+
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const code = String(req.body.code || "").trim();
+    const record = pendingPasswordChanges.get(email);
+
+    if (!email || !/^\d{6}$/.test(code)) {
+      return res.status(400).json({ error: "Enter the 6-digit verification code" });
+    }
+
+    if (!record || record.expiresAt <= Date.now()) {
+      return res.status(400).json({ error: "Verification code expired. Please request a new code." });
+    }
+
+    if (record.attempts >= VERIFICATION_MAX_ATTEMPTS) {
+      pendingPasswordChanges.delete(email);
+      return res.status(429).json({ error: "Too many incorrect attempts. Please request a new code." });
+    }
+
+    const receivedHash = hashVerificationCode(email, code);
+    if (receivedHash !== record.codeHash) {
+      record.attempts += 1;
+      pendingPasswordChanges.set(email, record);
+      return res.status(400).json({ error: "Incorrect verification code" });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.post('/password-change/complete', async (req, res) => {
+  try {
+    cleanupExpiredPasswordChangeCodes();
+
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const code = String(req.body.code || "").trim();
+    const password = String(req.body.password || "").trim();
+    const record = pendingPasswordChanges.get(email);
+
+    if (!email || !/^\d{6}$/.test(code) || !password) {
+      return res.status(400).json({ error: "Email, verification code, and new password are required" });
+    }
+
+    if (password.length < 3) {
+      return res.status(400).json({ error: "Password must be at least 3 characters" });
+    }
+
+    if (!record || record.expiresAt <= Date.now()) {
+      return res.status(400).json({ error: "Verification code expired. Please request a new code." });
+    }
+
+    const receivedHash = hashVerificationCode(email, code);
+    if (receivedHash !== record.codeHash) {
+      record.attempts += 1;
+      pendingPasswordChanges.set(email, record);
+      return res.status(400).json({ error: "Incorrect verification code" });
+    }
+
+    const user = await getUser(record.username, supabaseAdmin || supabaseServer);
+    if (!user || String(user.email || "").trim().toLowerCase() !== email) {
+      return res.status(400).json({ error: "Verification code expired. Please request a new code." });
+    }
+
+    await updateUser(user.username, { password }, supabaseAdmin || supabaseServer);
+    pendingPasswordChanges.delete(email);
+
+    res.json({ success: true, username: user.username });
   } catch (error) {
     sendSupabaseError(res, error);
   }
