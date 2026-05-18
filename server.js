@@ -198,21 +198,81 @@ function sanitizeOrderStatus(status) {
   return ["pending", "underprocess", "delivered"].includes(status) ? status : "pending";
 }
 
+function formatOrderReference(number) {
+  const parsed = Number.parseInt(number, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? `YT-${String(parsed).padStart(6, "0")}` : "";
+}
+
+function buildDeliveryAddress(order) {
+  const parts = [
+    order.deliveryArea ? `Area: ${order.deliveryArea}` : "",
+    order.block ? `Block: ${order.block}` : "",
+    order.street ? `Street: ${order.street}` : "",
+    order.buildingNumber ? `Building/house: ${order.buildingNumber}` : "",
+    order.floorApartment ? `Floor/apartment: ${order.floorApartment}` : ""
+  ].filter(Boolean);
+
+  return parts.join(", ") || String(order.address || "").trim();
+}
+
 function normalizeOrder(order) {
   if (!order || typeof order !== "object") return null;
 
-  return {
+  const normalized = {
     id: String(order.id || ""),
-    fullName: String(order.fullName || "").trim(),
-    phoneNumber: String(order.phoneNumber || "").trim(),
+    invoiceReference: String(order.invoiceReference || order.invoice_reference || order.orderReference || order.order_reference || "").trim(),
+    fullName: String(order.fullName || order.full_name || "").trim(),
+    phoneNumber: String(order.phoneNumber || order.phone_number || "").trim(),
     email: String(order.email || "").trim().toLowerCase(),
+    deliveryArea: String(order.deliveryArea || order.delivery_area || "").trim(),
+    block: String(order.block || "").trim(),
+    street: String(order.street || "").trim(),
+    buildingNumber: String(order.buildingNumber || order.building_number || "").trim(),
+    floorApartment: String(order.floorApartment || order.floor_apartment || "").trim(),
+    deliveryNotes: String(order.deliveryNotes || order.delivery_notes || "").trim(),
     address: String(order.address || "").trim(),
-    designPreference: String(order.designPreference || "Default YourTeck design").trim(),
+    designPreference: String(order.designPreference || order.design_preference || "Default YourTeck design").trim(),
     notes: String(order.notes || "").trim(),
     status: sanitizeOrderStatus(order.status),
-    createdAt: order.createdAt || new Date().toISOString(),
-    updatedAt: order.updatedAt || order.createdAt || new Date().toISOString()
+    createdAt: order.createdAt || order.created_at || new Date().toISOString(),
+    updatedAt: order.updatedAt || order.updated_at || order.createdAt || order.created_at || new Date().toISOString()
   };
+
+  return {
+    ...normalized,
+    address: normalized.address || buildDeliveryAddress(normalized)
+  };
+}
+
+function isMissingOrdersTableError(error) {
+  const text = [
+    error?.message,
+    error?.details,
+    error?.hint,
+    error?.code
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return text.includes("orders") && (
+    text.includes("does not exist") ||
+    text.includes("could not find") ||
+    text.includes("schema cache") ||
+    text.includes("42p01") ||
+    text.includes("pgrst205")
+  );
+}
+
+function getOrderReferenceNumber(order) {
+  const reference = String(order?.invoiceReference || order?.invoice_reference || "").trim();
+  const match = reference.match(/^YT-(\d{6,})$/i);
+  if (match) return Number.parseInt(match[1], 10);
+
+  const id = Number.parseInt(order?.id, 10);
+  return Number.isFinite(id) ? id : 0;
+}
+
+function getNextFileOrderReference(orders) {
+  const max = orders.reduce((highest, order) => Math.max(highest, getOrderReferenceNumber(order)), 0);
+  return formatOrderReference(max + 1);
 }
 
 async function readOrders() {
@@ -231,8 +291,101 @@ async function writeOrders(orders) {
   await fs.writeFile(ordersFilePath, JSON.stringify({ orders }, null, 2));
 }
 
-function createOrderId() {
-  return `ord_${Date.now().toString(36)}_${crypto.randomBytes(4).toString("hex")}`;
+async function readOrdersFromDatabase() {
+  if (!supabaseAdmin) return null;
+
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    if (isMissingOrdersTableError(error)) return null;
+    throw error;
+  }
+
+  return (data || []).map(normalizeOrder).filter(Boolean);
+}
+
+async function readAllOrders() {
+  const databaseOrders = await readOrdersFromDatabase();
+  const fileOrders = await readOrders();
+
+  if (!databaseOrders) return fileOrders;
+
+  const seen = new Set(databaseOrders.map(order => `${order.id}:${order.invoiceReference}`));
+  const legacyFileOrders = fileOrders.filter(order => !seen.has(`${order.id}:${order.invoiceReference}`));
+  return [...databaseOrders, ...legacyFileOrders];
+}
+
+async function createOrderInDatabase(orderInput) {
+  if (!supabaseAdmin) return null;
+
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .insert({
+      full_name: orderInput.fullName,
+      email: orderInput.email,
+      phone_number: orderInput.phoneNumber,
+      delivery_area: orderInput.deliveryArea,
+      block: orderInput.block,
+      street: orderInput.street,
+      building_number: orderInput.buildingNumber,
+      floor_apartment: orderInput.floorApartment,
+      delivery_notes: orderInput.deliveryNotes,
+      design_preference: orderInput.designPreference,
+      notes: orderInput.notes,
+      status: "pending"
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    if (isMissingOrdersTableError(error)) return null;
+    throw error;
+  }
+
+  return normalizeOrder(data);
+}
+
+async function updateOrderStatusInDatabase(id, status) {
+  if (!supabaseAdmin) return null;
+
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .update({
+      status,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
+
+  if (error) {
+    if (isMissingOrdersTableError(error)) return null;
+    throw error;
+  }
+
+  return data ? normalizeOrder(data) : null;
+}
+
+async function createOrderInFile(orderInput) {
+  const now = new Date().toISOString();
+  const orders = await readOrders();
+  const invoiceReference = getNextFileOrderReference(orders);
+  const id = String(getOrderReferenceNumber({ invoiceReference }));
+  const order = normalizeOrder({
+    id,
+    invoiceReference,
+    ...orderInput,
+    status: "pending",
+    createdAt: now,
+    updatedAt: now
+  });
+
+  orders.unshift(order);
+  await writeOrders(orders);
+  return order;
 }
 
 function isMissingEmailColumnError(error) {
@@ -1012,35 +1165,39 @@ apiRouter.post('/orders', async (req, res) => {
     const fullName = String(req.body.fullName || "").trim();
     const phoneNumber = String(req.body.phoneNumber || "").trim();
     const email = String(req.body.email || "").trim().toLowerCase();
-    const address = String(req.body.address || "").trim();
+    const deliveryArea = String(req.body.deliveryArea || "").trim();
+    const block = String(req.body.block || "").trim();
+    const street = String(req.body.street || "").trim();
+    const buildingNumber = String(req.body.buildingNumber || "").trim();
+    const floorApartment = String(req.body.floorApartment || "").trim();
+    const deliveryNotes = String(req.body.deliveryNotes || "").trim();
     const designPreference = String(req.body.designPreference || "Default YourTeck design").trim();
     const notes = String(req.body.notes || "").trim();
 
-    if (!fullName || !phoneNumber || !email || !address) {
-      return res.status(400).json({ error: "Name, phone, email, and address are required" });
+    if (!fullName || !phoneNumber || !email || !deliveryArea || !block || !street || !buildingNumber) {
+      return res.status(400).json({
+        error: "Full name, email, phone number, area, block, street, and building/house number are required"
+      });
     }
 
     if (!isValidEmail(email)) {
       return res.status(400).json({ error: "Enter a valid email address" });
     }
 
-    const now = new Date().toISOString();
-    const order = normalizeOrder({
-      id: createOrderId(),
+    const orderInput = {
       fullName,
       phoneNumber,
       email,
-      address,
+      deliveryArea,
+      block,
+      street,
+      buildingNumber,
+      floorApartment,
+      deliveryNotes,
       designPreference,
-      notes,
-      status: "pending",
-      createdAt: now,
-      updatedAt: now
-    });
-
-    const orders = await readOrders();
-    orders.unshift(order);
-    await writeOrders(orders);
+      notes
+    };
+    const order = await createOrderInDatabase(orderInput) || await createOrderInFile(orderInput);
 
     res.json({ success: true, order });
   } catch (error) {
@@ -1052,7 +1209,7 @@ apiRouter.get('/admin/orders', async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
   try {
-    const orders = await readOrders();
+    const orders = await readAllOrders();
     res.json({ orders });
   } catch (error) {
     sendSupabaseError(res, error);
@@ -1065,6 +1222,12 @@ apiRouter.patch('/admin/orders/:id', async (req, res) => {
   try {
     const id = String(req.params.id || "").trim();
     const status = sanitizeOrderStatus(req.body.status);
+    const databaseOrder = await updateOrderStatusInDatabase(id, status);
+
+    if (databaseOrder) {
+      return res.json({ success: true, order: databaseOrder });
+    }
+
     const orders = await readOrders();
     const index = orders.findIndex(order => order.id === id);
 

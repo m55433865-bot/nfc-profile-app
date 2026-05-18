@@ -302,12 +302,30 @@
       gap: 13px;
     }
 
+    .field-grid {
+      display: grid;
+      gap: 13px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     label {
       color: var(--muted);
       display: grid;
       font-size: 13px;
       gap: 7px;
       text-align: left;
+    }
+
+    .required {
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .label-title {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     input,
@@ -377,6 +395,7 @@
 
     @media (max-width: 860px) {
       .hero,
+      .field-grid,
       .content-grid {
         grid-template-columns: 1fr;
       }
@@ -476,22 +495,48 @@
 
         <div class="panel">
           <h2>Place an order</h2>
-          <form id="orderForm">
+          <form id="orderForm" novalidate>
             <label>
-              Full name
-              <input id="fullName" name="fullName" type="text" autocomplete="name" required>
+              <span class="label-title">Full name <span class="required">Required</span></span>
+              <input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="Customer full name" required>
+            </label>
+            <div class="field-grid">
+              <label>
+                <span class="label-title">Phone number <span class="required">Required</span></span>
+                <input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+965 0000 0000" required>
+              </label>
+              <label>
+                <span class="label-title">Email <span class="required">Required</span></span>
+                <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" required>
+              </label>
+            </div>
+            <div class="field-grid">
+              <label>
+                <span class="label-title">Kuwait delivery area <span class="required">Required</span></span>
+                <input id="deliveryArea" name="deliveryArea" type="text" autocomplete="address-level2" placeholder="e.g. Salmiya" required>
+              </label>
+              <label>
+                <span class="label-title">Block <span class="required">Required</span></span>
+                <input id="block" name="block" type="text" autocomplete="address-line1" placeholder="e.g. Block 10" required>
+              </label>
+            </div>
+            <div class="field-grid">
+              <label>
+                <span class="label-title">Street <span class="required">Required</span></span>
+                <input id="street" name="street" type="text" autocomplete="address-line2" placeholder="e.g. Salem Al Mubarak Street" required>
+              </label>
+              <label>
+                <span class="label-title">Building / house number <span class="required">Required</span></span>
+                <input id="buildingNumber" name="buildingNumber" type="text" autocomplete="address-line3" placeholder="e.g. Building 25 or House 8" required>
+              </label>
+            </div>
+            <label>
+              Floor / apartment number
+              <input id="floorApartment" name="floorApartment" type="text" placeholder="Optional, e.g. Floor 3, Apt 12">
             </label>
             <label>
-              Phone number
-              <input id="phoneNumber" name="phoneNumber" type="tel" autocomplete="tel" required>
-            </label>
-            <label>
-              Email
-              <input id="email" name="email" type="email" autocomplete="email" required>
-            </label>
-            <label>
-              Delivery address
-              <textarea id="address" name="address" autocomplete="street-address" placeholder="Area, block, street, building, floor, apartment" required></textarea>
+              Delivery notes
+              <textarea id="deliveryNotes" name="deliveryNotes" placeholder="Optional, e.g. call before delivery or nearest landmark."></textarea>
             </label>
             <label>
               Card design preference
@@ -501,8 +546,8 @@
               </select>
             </label>
             <label>
-              Notes
-              <textarea id="notes" name="notes" placeholder="Tell us anything you want on the card or profile."></textarea>
+              Card notes
+              <textarea id="notes" name="notes" placeholder="Optional, tell us anything you want on the card or profile."></textarea>
             </label>
             <button id="placeOrderButton" class="submit-button" type="submit">Place Order</button>
             <p id="successMessage" class="success">Order request received. We will contact you soon.</p>
@@ -515,16 +560,56 @@
   <script>
     const BASE_PATH = "/nfc";
     const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
+    const requiredOrderFields = [
+      ["fullName", "full name"],
+      ["phoneNumber", "phone number"],
+      ["email", "email"],
+      ["deliveryArea", "Kuwait delivery area"],
+      ["block", "block"],
+      ["street", "street"],
+      ["buildingNumber", "building / house number"]
+    ];
+
+    function showOrderMessage(message, isError = false) {
+      const messageElement = document.getElementById("successMessage");
+      messageElement.classList.remove("show", "error");
+      messageElement.innerText = message || "";
+
+      if (message) {
+        if (isError) messageElement.classList.add("error");
+        messageElement.classList.add("show");
+      }
+    }
+
+    function validateOrderForm() {
+      for (const [id, label] of requiredOrderFields) {
+        const field = document.getElementById(id);
+        if (!field.value.trim()) {
+          showOrderMessage(`Please enter the ${label}.`, true);
+          field.focus();
+          return false;
+        }
+      }
+
+      const email = document.getElementById("email");
+      if (!email.validity.valid) {
+        showOrderMessage("Please enter a valid email address.", true);
+        email.focus();
+        return false;
+      }
+
+      return true;
+    }
 
     document.getElementById("orderForm").addEventListener("submit", async function (event) {
       event.preventDefault();
       const form = event.currentTarget;
       const button = document.getElementById("placeOrderButton");
-      const message = document.getElementById("successMessage");
       const formData = new FormData(form);
 
-      message.classList.remove("show", "error");
-      message.innerText = "";
+      if (!validateOrderForm()) return;
+
+      showOrderMessage("");
       button.disabled = true;
       button.innerText = "Placing...";
 
@@ -540,13 +625,10 @@
           throw new Error(data.error || "Order could not be placed. Please try again.");
         }
 
-        message.innerText = "Order request received. We will contact you soon.";
-        message.classList.add("show");
+        showOrderMessage("Order request received. We will contact you soon.");
         form.reset();
       } catch (error) {
-        message.innerText = error.message || "Order could not be placed. Please try again.";
-        message.classList.add("error");
-        message.classList.add("show");
+        showOrderMessage(error.message || "Order could not be placed. Please try again.", true);
       } finally {
         button.disabled = false;
         button.innerText = "Place Order";

@@ -263,7 +263,7 @@
 
         row.innerHTML = `
           <span class="admin-user-summary">
-            <span class="admin-row-name">${escapeHtml(order.fullName || "Unnamed order")}</span>
+            <span class="admin-row-name">${escapeHtml(order.invoiceReference || "No reference")} - ${escapeHtml(order.fullName || "Unnamed order")}</span>
             <span class="admin-row-subtitle">${escapeHtml(order.email || "")} - ${escapeHtml(order.phoneNumber || "")}</span>
           </span>
           <span class="admin-row-actions">
@@ -304,16 +304,28 @@
     function renderOrderDetails(order) {
       return `
         <div class="admin-detail-grid">
+          ${renderOrderDetailItem("Reference", order.invoiceReference || "Not assigned")}
           ${renderOrderDetailItem("Full name", order.fullName)}
           ${renderOrderDetailItem("Phone number", order.phoneNumber)}
           ${renderOrderDetailItem("Email", order.email)}
-          ${renderOrderDetailItem("Address", order.address, true)}
+          ${renderOrderDetailItem("Area", order.deliveryArea || getLegacyAddressPart(order.address, "Area"))}
+          ${renderOrderDetailItem("Block", order.block || getLegacyAddressPart(order.address, "Block"))}
+          ${renderOrderDetailItem("Street", order.street || getLegacyAddressPart(order.address, "Street"))}
+          ${renderOrderDetailItem("Building / house", order.buildingNumber || getLegacyAddressPart(order.address, "Building/house"))}
+          ${renderOrderDetailItem("Floor / apartment", order.floorApartment || getLegacyAddressPart(order.address, "Floor/apartment") || "None")}
+          ${renderOrderDetailItem("Delivery notes", order.deliveryNotes || "None", true)}
+          ${renderOrderDetailItem("Address summary", order.address, true)}
           ${renderOrderDetailItem("Design", order.designPreference)}
-          ${renderOrderDetailItem("Notes", order.notes || "None", true)}
+          ${renderOrderDetailItem("Card notes", order.notes || "None", true)}
           ${renderOrderDetailItem("Status", formatOrderStatus(order.status))}
           ${renderOrderDetailItem("Placed", formatDate(order.createdAt))}
         </div>
       `;
+    }
+
+    function getLegacyAddressPart(address, label) {
+      const match = String(address || "").match(new RegExp(`${label}:\\\\s*([^,]+)`, "i"));
+      return match ? match[1].trim() : "";
     }
 
     function renderOrderDetailItem(label, value, allowWrap = false) {
