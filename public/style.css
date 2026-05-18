@@ -1900,6 +1900,37 @@ input,
   text-align: left;
 }
 
+.admin-tabs {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 12px;
+}
+
+.admin-tab {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--muted-text-color);
+  cursor: pointer;
+  font: inherit;
+  min-height: 42px;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.admin-tab.active,
+.admin-tab:hover,
+.admin-tab:focus-visible {
+  background: var(--surface-hover-color);
+  border-color: color-mix(in srgb, var(--accent-color), transparent 42%);
+  color: var(--text-color);
+  outline: none;
+}
+
+.admin-tab.active {
+  box-shadow: 0 0 0 3px var(--accent-faint);
+}
+
 .admin-search {
   background: var(--input-bg);
   border-color: var(--border-color);
@@ -1917,6 +1948,11 @@ input,
 }
 
 .admin-user-card.expanded {
+  border-color: var(--accent-soft);
+  box-shadow: 0 8px 20px var(--shadow-color);
+}
+
+.admin-order-card.expanded {
   border-color: var(--accent-soft);
   box-shadow: 0 8px 20px var(--shadow-color);
 }
@@ -2017,6 +2053,32 @@ input,
   opacity: 1;
   padding: 0 14px 12px;
   transform: translateY(0);
+}
+
+.admin-order-card.expanded .admin-user-details {
+  max-height: 680px;
+  opacity: 1;
+  padding: 0 14px 12px;
+  transform: translateY(0);
+}
+
+.admin-order-status {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-color);
+  font: inherit;
+  min-height: 36px;
+  padding: 6px 8px;
+}
+
+.admin-order-row {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-order-details-text {
+  white-space: normal !important;
 }
 
 .admin-detail-grid {

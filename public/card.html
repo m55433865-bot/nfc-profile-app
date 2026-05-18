@@ -353,6 +353,12 @@
       transform: translateY(-1px);
     }
 
+    .submit-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.68;
+      transform: none;
+    }
+
     .success {
       color: #8ff7d8;
       display: none;
@@ -363,6 +369,10 @@
 
     .success.show {
       display: block;
+    }
+
+    .success.error {
+      color: #ff9b9b;
     }
 
     @media (max-width: 860px) {
@@ -480,6 +490,10 @@
               <input id="email" name="email" type="email" autocomplete="email" required>
             </label>
             <label>
+              Delivery address
+              <textarea id="address" name="address" autocomplete="street-address" placeholder="Area, block, street, building, floor, apartment" required></textarea>
+            </label>
+            <label>
               Card design preference
               <select id="designPreference" name="designPreference">
                 <option>Default YourTeck design</option>
@@ -490,7 +504,7 @@
               Notes
               <textarea id="notes" name="notes" placeholder="Tell us anything you want on the card or profile."></textarea>
             </label>
-            <button class="submit-button" type="submit">Place Order</button>
+            <button id="placeOrderButton" class="submit-button" type="submit">Place Order</button>
             <p id="successMessage" class="success">Order request received. We will contact you soon.</p>
           </form>
         </div>
@@ -499,10 +513,44 @@
   </div>
 
   <script>
-    document.getElementById("orderForm").addEventListener("submit", function (event) {
+    const BASE_PATH = "/nfc";
+    const apiPath = (path = "") => `${BASE_PATH}/api${path.startsWith("/") ? path : `/${path}`}`;
+
+    document.getElementById("orderForm").addEventListener("submit", async function (event) {
       event.preventDefault();
-      document.getElementById("successMessage").classList.add("show");
-      event.currentTarget.reset();
+      const form = event.currentTarget;
+      const button = document.getElementById("placeOrderButton");
+      const message = document.getElementById("successMessage");
+      const formData = new FormData(form);
+
+      message.classList.remove("show", "error");
+      message.innerText = "";
+      button.disabled = true;
+      button.innerText = "Placing...";
+
+      try {
+        const response = await fetch(apiPath("/orders"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(Object.fromEntries(formData.entries()))
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || "Order could not be placed. Please try again.");
+        }
+
+        message.innerText = "Order request received. We will contact you soon.";
+        message.classList.add("show");
+        form.reset();
+      } catch (error) {
+        message.innerText = error.message || "Order could not be placed. Please try again.";
+        message.classList.add("error");
+        message.classList.add("show");
+      } finally {
+        button.disabled = false;
+        button.innerText = "Place Order";
+      }
     });
   </script>
 </body>

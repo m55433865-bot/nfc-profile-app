@@ -10,6 +10,7 @@ const app = express();
 const PORT = 3000;
 const BASE_PATH = "/nfc";
 const publicDir = path.join(__dirname, "public");
+const ordersFilePath = path.join(__dirname, "orders.json");
 const ADMIN_USERNAME = "66546788";
 const ADMIN_EMAIL = "66546788@yourteck.com";
 const ADMIN_PASSWORD = "yourteck@66546788";
@@ -191,6 +192,47 @@ async function listUsers(client = supabaseServer) {
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+}
+
+function sanitizeOrderStatus(status) {
+  return ["pending", "underprocess", "delivered"].includes(status) ? status : "pending";
+}
+
+function normalizeOrder(order) {
+  if (!order || typeof order !== "object") return null;
+
+  return {
+    id: String(order.id || ""),
+    fullName: String(order.fullName || "").trim(),
+    phoneNumber: String(order.phoneNumber || "").trim(),
+    email: String(order.email || "").trim().toLowerCase(),
+    address: String(order.address || "").trim(),
+    designPreference: String(order.designPreference || "Default YourTeck design").trim(),
+    notes: String(order.notes || "").trim(),
+    status: sanitizeOrderStatus(order.status),
+    createdAt: order.createdAt || new Date().toISOString(),
+    updatedAt: order.updatedAt || order.createdAt || new Date().toISOString()
+  };
+}
+
+async function readOrders() {
+  try {
+    const raw = await fs.readFile(ordersFilePath, "utf8");
+    const parsed = JSON.parse(raw);
+    const orders = Array.isArray(parsed.orders) ? parsed.orders : [];
+    return orders.map(normalizeOrder).filter(Boolean);
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
+}
+
+async function writeOrders(orders) {
+  await fs.writeFile(ordersFilePath, JSON.stringify({ orders }, null, 2));
+}
+
+function createOrderId() {
+  return `ord_${Date.now().toString(36)}_${crypto.randomBytes(4).toString("hex")}`;
 }
 
 function isMissingEmailColumnError(error) {
@@ -939,6 +981,11 @@ apiRouter.post('/password-change/complete', async (req, res) => {
       return res.status(400).json({ error: "Verification code expired. Please request a new code." });
     }
 
+    if (record.attempts >= VERIFICATION_MAX_ATTEMPTS) {
+      pendingPasswordChanges.delete(email);
+      return res.status(429).json({ error: "Too many incorrect attempts. Please request a new code." });
+    }
+
     const receivedHash = hashVerificationCode(email, code);
     if (receivedHash !== record.codeHash) {
       record.attempts += 1;
@@ -955,6 +1002,84 @@ apiRouter.post('/password-change/complete', async (req, res) => {
     pendingPasswordChanges.delete(email);
 
     res.json({ success: true, username: user.username });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.post('/orders', async (req, res) => {
+  try {
+    const fullName = String(req.body.fullName || "").trim();
+    const phoneNumber = String(req.body.phoneNumber || "").trim();
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const address = String(req.body.address || "").trim();
+    const designPreference = String(req.body.designPreference || "Default YourTeck design").trim();
+    const notes = String(req.body.notes || "").trim();
+
+    if (!fullName || !phoneNumber || !email || !address) {
+      return res.status(400).json({ error: "Name, phone, email, and address are required" });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
+    }
+
+    const now = new Date().toISOString();
+    const order = normalizeOrder({
+      id: createOrderId(),
+      fullName,
+      phoneNumber,
+      email,
+      address,
+      designPreference,
+      notes,
+      status: "pending",
+      createdAt: now,
+      updatedAt: now
+    });
+
+    const orders = await readOrders();
+    orders.unshift(order);
+    await writeOrders(orders);
+
+    res.json({ success: true, order });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.get('/admin/orders', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    const orders = await readOrders();
+    res.json({ orders });
+  } catch (error) {
+    sendSupabaseError(res, error);
+  }
+});
+
+apiRouter.patch('/admin/orders/:id', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    const id = String(req.params.id || "").trim();
+    const status = sanitizeOrderStatus(req.body.status);
+    const orders = await readOrders();
+    const index = orders.findIndex(order => order.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    orders[index] = {
+      ...orders[index],
+      status,
+      updatedAt: new Date().toISOString()
+    };
+
+    await writeOrders(orders);
+    res.json({ success: true, order: orders[index] });
   } catch (error) {
     sendSupabaseError(res, error);
   }

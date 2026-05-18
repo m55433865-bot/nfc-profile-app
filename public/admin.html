@@ -25,8 +25,13 @@
       </div>
 
       <div id="adminMessage" class="admin-message"></div>
+      <div class="admin-tabs" role="tablist" aria-label="Admin sections">
+        <button id="adminUsersTab" class="admin-tab active" type="button" onclick="switchAdminTab('users')">Users</button>
+        <button id="adminOrdersTab" class="admin-tab" type="button" onclick="switchAdminTab('orders')">Orders</button>
+      </div>
       <input id="adminSearchInput" class="theme-input admin-search" placeholder="Search users by email, username, or phone">
       <div id="usersList" class="admin-list"></div>
+      <div id="ordersList" class="admin-list" style="display:none;"></div>
     </div>
   </div>
 
@@ -99,6 +104,7 @@
     const isAdmin = storedEmail === ADMIN_EMAIL && storedPassword === ADMIN_PASSWORD;
 
     const usersList = document.getElementById("usersList");
+    const ordersList = document.getElementById("ordersList");
     const userMenu = document.getElementById("userMenu");
     const adminMessage = document.getElementById("adminMessage");
     const adminModal = document.getElementById("adminModal");
@@ -111,7 +117,10 @@
     let resetUsername = null;
     let modalMode = "add";
     let allUsers = [];
+    let allOrders = [];
     let expandedUsername = null;
+    let expandedOrderId = null;
+    let activeAdminTab = "users";
 
     function adminHeaders() {
       return {
@@ -123,6 +132,22 @@
 
     function showMessage(message) {
       adminMessage.innerText = message || "";
+    }
+
+    function switchAdminTab(tab) {
+      activeAdminTab = tab === "orders" ? "orders" : "users";
+      document.getElementById("adminUsersTab").classList.toggle("active", activeAdminTab === "users");
+      document.getElementById("adminOrdersTab").classList.toggle("active", activeAdminTab === "orders");
+      usersList.style.display = activeAdminTab === "users" ? "flex" : "none";
+      ordersList.style.display = activeAdminTab === "orders" ? "flex" : "none";
+      adminSearchInput.style.display = activeAdminTab === "users" ? "block" : "none";
+      closeUserMenu();
+
+      if (activeAdminTab === "orders") {
+        loadOrders();
+      } else {
+        renderUsers(allUsers);
+      }
     }
 
     function loadUsers() {
@@ -139,6 +164,23 @@
           allUsers = data.users || [];
           renderUsers(allUsers);
         });
+    }
+
+    function loadOrders() {
+      fetch(apiPath("/admin/orders"), {
+        headers: adminHeaders()
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error);
+            return;
+          }
+
+          allOrders = data.orders || [];
+          renderOrders(allOrders);
+        })
+        .catch(() => showMessage("Orders could not be loaded."));
     }
 
     function renderUsers(users) {
@@ -193,6 +235,133 @@
       closeUserMenu();
       expandedUsername = expandedUsername === username ? null : username;
       renderUsers(allUsers);
+    }
+
+    function renderOrders(orders) {
+      ordersList.innerHTML = "";
+
+      if (!orders.length) {
+        ordersList.innerHTML = `<div class="admin-empty">No orders yet.</div>`;
+        return;
+      }
+
+      orders.forEach(order => {
+        const item = document.createElement("div");
+        item.className = `admin-user-card admin-order-card ${expandedOrderId === order.id ? "expanded" : ""}`;
+
+        const row = document.createElement("div");
+        row.role = "button";
+        row.tabIndex = 0;
+        row.className = "admin-user-row admin-order-row";
+        row.onclick = () => toggleOrderDetails(order.id);
+        row.onkeydown = (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleOrderDetails(order.id);
+          }
+        };
+
+        row.innerHTML = `
+          <span class="admin-user-summary">
+            <span class="admin-row-name">${escapeHtml(order.fullName || "Unnamed order")}</span>
+            <span class="admin-row-subtitle">${escapeHtml(order.email || "")} - ${escapeHtml(order.phoneNumber || "")}</span>
+          </span>
+          <span class="admin-row-actions">
+            <select class="admin-order-status" onclick="event.stopPropagation()" onchange="updateOrderStatus('${escapeAttr(order.id)}', this.value)">
+              ${renderOrderStatusOptions(order.status)}
+            </select>
+            <span class="admin-chevron">v</span>
+          </span>
+        `;
+
+        const details = document.createElement("div");
+        details.className = "admin-user-details";
+        details.innerHTML = renderOrderDetails(order);
+
+        item.appendChild(row);
+        item.appendChild(details);
+        ordersList.appendChild(item);
+      });
+    }
+
+    function toggleOrderDetails(orderId) {
+      expandedOrderId = expandedOrderId === orderId ? null : orderId;
+      renderOrders(allOrders);
+    }
+
+    function renderOrderStatusOptions(currentStatus) {
+      const statuses = [
+        ["pending", "Pending"],
+        ["underprocess", "Underprocess"],
+        ["delivered", "Delivered"]
+      ];
+
+      return statuses
+        .map(([value, label]) => `<option value="${value}" ${currentStatus === value ? "selected" : ""}>${label}</option>`)
+        .join("");
+    }
+
+    function renderOrderDetails(order) {
+      return `
+        <div class="admin-detail-grid">
+          ${renderOrderDetailItem("Full name", order.fullName)}
+          ${renderOrderDetailItem("Phone number", order.phoneNumber)}
+          ${renderOrderDetailItem("Email", order.email)}
+          ${renderOrderDetailItem("Address", order.address, true)}
+          ${renderOrderDetailItem("Design", order.designPreference)}
+          ${renderOrderDetailItem("Notes", order.notes || "None", true)}
+          ${renderOrderDetailItem("Status", formatOrderStatus(order.status))}
+          ${renderOrderDetailItem("Placed", formatDate(order.createdAt))}
+        </div>
+      `;
+    }
+
+    function renderOrderDetailItem(label, value, allowWrap = false) {
+      return `
+        <div class="admin-detail-item">
+          <span>${escapeHtml(label)}</span>
+          <strong class="${allowWrap ? "admin-order-details-text" : ""}">${escapeHtml(value || "")}</strong>
+        </div>
+      `;
+    }
+
+    function formatOrderStatus(status) {
+      return {
+        pending: "Pending",
+        underprocess: "Underprocess",
+        delivered: "Delivered"
+      }[status] || "Pending";
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleString();
+    }
+
+    function updateOrderStatus(orderId, status) {
+      fetch(apiPath(`/admin/orders/${orderId}`), {
+        method: "PATCH",
+        headers: adminHeaders(),
+        body: JSON.stringify({ status })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error);
+            renderOrders(allOrders);
+            return;
+          }
+
+          allOrders = allOrders.map(order => order.id === orderId ? data.order : order);
+          showMessage("Order status updated");
+          renderOrders(allOrders);
+        })
+        .catch(() => {
+          showMessage("Order status could not be updated.");
+          renderOrders(allOrders);
+        });
     }
 
     function renderUserDetails(user) {
