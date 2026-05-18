@@ -155,65 +155,133 @@
     }
 
     .product-stage {
-      min-height: 590px;
+      min-height: 620px;
+      perspective: 1200px;
       position: relative;
     }
 
+    .product-stage::before,
+    .product-stage::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .product-stage::before {
+      background:
+        radial-gradient(ellipse at 58% 32%, rgba(20, 184, 154, 0.2), transparent 36%),
+        radial-gradient(ellipse at 42% 68%, rgba(111, 216, 207, 0.11), transparent 42%),
+        linear-gradient(145deg, transparent 0%, rgba(255, 255, 255, 0.035) 42%, transparent 64%);
+      filter: blur(2px);
+      inset: -70px -42px 16px -72px;
+      opacity: 0.86;
+    }
+
+    .product-stage::after {
+      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.62), transparent 68%);
+      bottom: 10px;
+      filter: blur(22px);
+      height: 120px;
+      left: 6%;
+      opacity: 0.74;
+      transform: rotate(-5deg);
+      width: 88%;
+    }
+
     .card-pair {
-      display: grid;
-      gap: 22px;
-      margin: 32px auto 0;
-      max-width: 560px;
+      height: 560px;
+      margin: 2px -18px 0 auto;
+      max-width: 640px;
       position: relative;
+      transform: rotateX(8deg) rotateY(-13deg) rotateZ(-1deg);
+      transform-style: preserve-3d;
     }
 
     .premium-card {
       background:
-        linear-gradient(115deg, rgba(255, 255, 255, 0.16), transparent 18%, rgba(255, 255, 255, 0.035) 44%, transparent 72%),
-        radial-gradient(circle at 18% 20%, rgba(111, 216, 207, 0.08), transparent 34%),
-        linear-gradient(145deg, #171817, #050505 58%, #0a0c0b);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: 34px;
+        linear-gradient(116deg, rgba(255, 255, 255, 0.13), transparent 18%, rgba(255, 255, 255, 0.026) 46%, transparent 72%),
+        radial-gradient(circle at 52% 42%, rgba(255, 255, 255, 0.048), transparent 16%),
+        radial-gradient(circle at 18% 12%, rgba(20, 184, 154, 0.075), transparent 32%),
+        linear-gradient(155deg, #1b1c1b 0%, #080908 44%, #101211 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 26px;
       box-shadow:
-        0 36px 110px rgba(0, 0, 0, 0.58),
-        0 0 54px rgba(20, 184, 154, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      height: 290px;
-      padding: 30px;
-      position: relative;
-      width: 100%;
+        0 46px 92px rgba(0, 0, 0, 0.56),
+        0 14px 34px rgba(0, 0, 0, 0.42),
+        0 0 46px rgba(20, 184, 154, 0.105),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 -22px 34px rgba(0, 0, 0, 0.32);
+      height: 260px;
+      overflow: hidden;
+      padding: 28px 32px;
+      position: absolute;
+      width: min(94%, 590px);
+      will-change: transform;
+    }
+
+    .premium-card::before {
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 20%, transparent 78%, rgba(255, 255, 255, 0.035)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 4px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.01) 0 1px, transparent 1px 5px);
+      content: "";
+      inset: 0;
+      opacity: 0.48;
+      pointer-events: none;
+      position: absolute;
     }
 
     .premium-card::after {
-      display: none;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.14), transparent 54%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 28%, rgba(0, 0, 0, 0.2) 100%);
+      content: "";
+      inset: 1px;
+      opacity: 0.55;
+      pointer-events: none;
+      position: absolute;
     }
 
     .premium-card.front {
-      display: grid;
-      place-items: center;
-      transform: rotate(-3deg);
+      display: block;
+      left: 28px;
+      top: 20px;
+      transform: translate3d(0, 0, 34px) rotateZ(-2.5deg);
+      z-index: 2;
     }
 
     .premium-card.back {
-      margin-top: -48px;
-      transform: rotate(2deg);
+      left: 76px;
+      top: 260px;
+      transform: translate3d(-6px, -44px, -18px) rotateZ(3.5deg) scale(0.94);
+      z-index: 1;
     }
 
     .card-face-center {
+      left: 50%;
+      position: absolute;
       text-align: center;
+      top: 52%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
     }
 
     .yourteck-y {
-      margin-bottom: 24px;
+      margin-bottom: 18px;
     }
 
     .broken-y-logo {
       background: url("/nfc/yourteck-mark.svg?v=exact-2") center / contain no-repeat;
       display: inline-block;
-      filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
-      height: var(--logo-size, 74px);
+      filter:
+        brightness(1.24)
+        saturate(0.7)
+        drop-shadow(0 8px 16px rgba(0, 0, 0, 0.62))
+        drop-shadow(0 0 18px rgba(255, 255, 255, 0.18))
+        drop-shadow(0 0 30px rgba(20, 184, 154, 0.12));
+      height: var(--logo-size, 68px);
       position: relative;
-      width: var(--logo-size, 74px);
+      width: var(--logo-size, 68px);
     }
 
     .broken-y-logo::before,
@@ -222,30 +290,126 @@
     }
 
     .yourteck-wordmark {
-      color: #d8d8d4;
-      font-size: 28px;
+      color: rgba(236, 238, 235, 0.86);
+      font-size: 25px;
       font-weight: 300;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 16px rgba(255, 255, 255, 0.16);
       text-transform: uppercase;
     }
 
-    .back-tagline {
-      color: #d8d8d4;
-      font-size: clamp(30px, 5vw, 52px);
-      font-weight: 300;
-      left: 34px;
-      letter-spacing: 0.03em;
+    .nfc-glyph {
+      height: 42px;
       position: absolute;
-      top: 94px;
+      right: 30px;
+      top: 28px;
+      width: 42px;
+      z-index: 1;
+    }
+
+    .nfc-glyph span {
+      border: 2px solid rgba(236, 238, 235, 0.74);
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+      border-radius: 50%;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.12);
+      display: block;
+      height: 100%;
+      position: absolute;
+      right: 0;
+      top: 0;
+      transform: rotate(45deg);
+      width: 100%;
+    }
+
+    .nfc-glyph span:nth-child(2) {
+      height: 70%;
+      opacity: 0.76;
+      right: 7px;
+      top: 7px;
+      width: 70%;
+    }
+
+    .nfc-glyph span:nth-child(3) {
+      height: 42%;
+      opacity: 0.58;
+      right: 13px;
+      top: 13px;
+      width: 42%;
+    }
+
+    .back-tagline {
+      color: rgba(236, 238, 235, 0.84);
+      font-size: clamp(30px, 4vw, 43px);
+      font-weight: 300;
+      left: 54px;
+      letter-spacing: 0.04em;
+      position: absolute;
+      text-shadow: 0 0 16px rgba(255, 255, 255, 0.09);
+      top: 74px;
+      z-index: 1;
     }
 
     .back-url {
-      bottom: 52px;
-      color: #c8c8c4;
-      font-size: clamp(22px, 3vw, 34px);
+      bottom: 54px;
+      color: rgba(224, 226, 221, 0.72);
+      font-size: clamp(20px, 2.3vw, 30px);
       font-weight: 300;
-      left: 34px;
+      left: 56px;
+      letter-spacing: 0.02em;
       position: absolute;
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.08);
+      z-index: 1;
+    }
+
+    .qr-plate {
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(0, 0, 0, 0.42)),
+        #070808;
+      border: 1px solid rgba(255, 255, 255, 0.035);
+      bottom: 50px;
+      box-shadow:
+        0 12px 22px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
+      display: grid;
+      height: 74px;
+      place-items: center;
+      position: absolute;
+      right: 58px;
+      width: 74px;
+      z-index: 1;
+    }
+
+    .qr-code {
+      background:
+        linear-gradient(90deg, #e7e7e1 12px, transparent 12px 16px, #e7e7e1 16px 20px, transparent 20px 28px, #e7e7e1 28px 34px, transparent 34px),
+        linear-gradient(#e7e7e1 9px, transparent 9px 15px, #e7e7e1 15px 20px, transparent 20px 27px, #e7e7e1 27px 34px, transparent 34px),
+        conic-gradient(from 90deg, #e7e7e1 0 25%, transparent 0 50%, #e7e7e1 0 75%, transparent 0) 0 0 / 12px 12px;
+      height: 45px;
+      image-rendering: pixelated;
+      opacity: 0.88;
+      position: relative;
+      width: 45px;
+    }
+
+    .qr-code::before,
+    .qr-code::after {
+      background: #080909;
+      border: 5px solid #e7e7e1;
+      content: "";
+      height: 9px;
+      position: absolute;
+      width: 9px;
+    }
+
+    .qr-code::before {
+      left: 4px;
+      top: 4px;
+    }
+
+    .qr-code::after {
+      bottom: 4px;
+      right: 4px;
     }
 
     .content-grid {
@@ -401,11 +565,13 @@
       }
 
       .product-stage {
-        min-height: 620px;
+        min-height: 560px;
       }
 
       .card-pair {
-        margin-top: 28px;
+        height: 520px;
+        margin: 16px auto 0;
+        transform: rotateX(7deg) rotateY(-8deg) rotateZ(-1deg);
       }
     }
 
@@ -419,19 +585,43 @@
       }
 
       .premium-card {
-        height: 240px;
+        border-radius: 20px;
+        height: 204px;
+        padding: 22px;
+        width: 96%;
       }
 
       .premium-card.back {
-        margin-top: -30px;
+        left: 22px;
+        top: 232px;
       }
 
       .back-tagline {
-        top: 78px;
+        left: 28px;
+        top: 60px;
       }
 
       .back-url {
         bottom: 44px;
+        left: 30px;
+      }
+
+      .qr-plate {
+        bottom: 34px;
+        height: 56px;
+        right: 30px;
+        width: 56px;
+      }
+
+      .qr-code {
+        height: 34px;
+        width: 34px;
+      }
+
+      .nfc-glyph {
+        right: 20px;
+        top: 20px;
+        transform: scale(0.78);
       }
 
     }
@@ -465,6 +655,7 @@
         <div class="product-stage" aria-label="YourTeck NFC card preview">
           <div class="card-pair">
             <div class="premium-card front">
+              <div class="nfc-glyph" aria-hidden="true"><span></span><span></span><span></span></div>
               <div class="card-face-center">
                 <div class="yourteck-y"><span class="broken-y-logo" aria-hidden="true"></span></div>
                 <div class="yourteck-wordmark">YourTeck</div>
@@ -473,6 +664,7 @@
             <div class="premium-card back">
               <div class="back-tagline">Tap. Share. Connect.</div>
               <div class="back-url">yourteck.com/name</div>
+              <div class="qr-plate" aria-hidden="true"><div class="qr-code"></div></div>
             </div>
           </div>
         </div>
