@@ -619,6 +619,7 @@
 
       .yt-language-toggle {
         align-items: center;
+        appearance: none;
         backdrop-filter: blur(18px);
         background: rgba(17, 17, 20, 0.88);
         border: 1px solid rgba(20, 184, 154, 0.24);
@@ -630,8 +631,11 @@
         flex: 0 0 auto;
         font: 800 13px/1 "Alexandria", "IBM Plex Sans Arabic", "Cairo", "Tajawal", Arial, sans-serif;
         gap: 7px;
+        height: 38px;
+        justify-content: center;
         min-height: 38px;
         max-width: max-content;
+        min-width: 0;
         padding: 0 13px;
         position: fixed;
         inset-block-start: 16px;
@@ -639,6 +643,16 @@
         transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
         width: auto !important;
         z-index: 5000;
+      }
+
+      button.yt-language-toggle,
+      #yourteckLanguageToggle {
+        display: inline-flex !important;
+        height: 38px !important;
+        max-width: max-content !important;
+        min-width: 0 !important;
+        position: fixed !important;
+        width: auto !important;
       }
 
       .yt-language-toggle:hover {
@@ -800,6 +814,13 @@
           inset-inline-end: 10px;
           min-height: 38px;
           padding: 0;
+          width: 38px !important;
+        }
+
+        button.yt-language-toggle,
+        #yourteckLanguageToggle {
+          max-width: 38px !important;
+          min-width: 38px !important;
           width: 38px !important;
         }
 
