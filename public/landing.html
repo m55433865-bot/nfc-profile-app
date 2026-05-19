@@ -6,25 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YourTeck NFC Cards</title>
   <meta name="description"
-    content="Your identity in one tap. Premium NFC smart profile cards for creators, entrepreneurs, and modern professionals.">
+    content="Premium NFC cards with editable profiles, QR fallback, contact saving, and setup included for early customers.">
   <link rel="icon" href="/nfc/favicon.ico" sizes="any">
   <link rel="icon" href="/nfc/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/nfc/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/nfc/apple-touch-icon.png">
   <link rel="manifest" href="/nfc/site.webmanifest">
-  <meta name="theme-color" content="#070807">
+  <meta name="theme-color" content="#0B0B0F">
   <link rel="stylesheet" href="/nfc/brand.css?v=broken-y-3">
-  <script src="/nfc/i18n.js?v=arabic-default-1" defer></script>
+  <script src="/nfc/i18n.js?v=arabic-primary-2" defer></script>
   <style>
     * {
       box-sizing: border-box;
     }
 
     :root {
-      --bg: #070807;
-      --bg-soft: #0d0f10;
-      --card: rgba(17, 19, 20, 0.82);
-      --card-solid: #111314;
+      --bg: #0b0b0f;
+      --bg-soft: #111114;
+      --card: rgba(22, 24, 29, 0.84);
+      --card-solid: #16181d;
       --text: #f6f4ef;
       --muted: #8f9996;
       --muted-strong: #c1c9c6;
@@ -32,16 +32,16 @@
       --cyan: #6fd8cf;
       --line: rgba(255, 255, 255, 0.105);
       --line-strong: rgba(20, 184, 154, 0.22);
-      --shadow: 0 34px 110px rgba(0, 0, 0, 0.62);
+      --shadow: 0 34px 110px rgba(0, 0, 0, 0.52);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       scroll-behavior: smooth;
     }
 
     body {
       background:
-        radial-gradient(circle at 16% 4%, rgba(20, 184, 154, 0.09), transparent 31%),
-        radial-gradient(circle at 82% 8%, rgba(111, 216, 207, 0.055), transparent 28%),
-        linear-gradient(180deg, #101110 0%, #070807 44%, #0a0b0a 100%);
+        radial-gradient(circle at 16% 4%, rgba(20, 184, 154, 0.08), transparent 31%),
+        radial-gradient(circle at 82% 8%, rgba(244, 217, 166, 0.045), transparent 28%),
+        linear-gradient(180deg, #16181d 0%, #0b0b0f 46%, #111114 100%);
       color: var(--text);
       margin: 0;
       min-height: 100vh;
@@ -289,7 +289,7 @@
         linear-gradient(115deg, rgba(255, 255, 255, 0.16), transparent 18%, rgba(255, 255, 255, 0.04) 44%, transparent 72%),
         radial-gradient(circle at 18% 20%, rgba(111, 216, 207, 0.08), transparent 34%),
         radial-gradient(circle at 86% 80%, rgba(20, 184, 154, 0.08), transparent 34%),
-        linear-gradient(145deg, #171817, #050505 58%, #0a0c0b);
+        linear-gradient(145deg, #171817, #0b0b0f 58%, #111114);
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 30px;
       box-shadow:
@@ -416,7 +416,7 @@
         linear-gradient(90deg, #e7e7e2 4px, transparent 4px) 0 0 / 8px 8px,
         linear-gradient(#e7e7e2 4px, transparent 4px) 0 0 / 8px 8px,
         #111;
-      border: 8px solid #080808;
+      border: 8px solid #111114;
       bottom: 24px;
       height: 56px;
       position: absolute;
@@ -427,7 +427,7 @@
     .phone-preview {
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
-        #0b0d0d;
+        #111114;
       border: 1px solid rgba(255, 255, 255, 0.13);
       border-radius: 42px;
       box-shadow: var(--shadow), 0 0 42px rgba(20, 184, 154, 0.08);
@@ -443,7 +443,7 @@
     .phone-screen {
       background:
         radial-gradient(circle at top, rgba(20, 184, 154, 0.08), transparent 32%),
-        #090a0a;
+        #0b0b0f;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 30px;
       min-height: 536px;
@@ -607,6 +607,8 @@
 
     .steps,
     .features,
+    .use-case-grid,
+    .included-grid,
     .why-grid,
     .faq-grid {
       display: grid;
@@ -618,6 +620,14 @@
     }
 
     .features {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .use-case-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .included-grid {
       grid-template-columns: repeat(3, 1fr);
     }
 
@@ -663,6 +673,58 @@
       margin: 0;
     }
 
+    .use-case-tile {
+      min-height: 150px;
+    }
+
+    .use-case-tile h4,
+    .included-grid .tile h4 {
+      margin-top: 0;
+    }
+
+    .comparison-table {
+      background:
+        radial-gradient(circle at 78% 0%, rgba(244, 217, 166, 0.055), transparent 30%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.022)),
+        rgba(22, 24, 29, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      box-shadow: 0 26px 82px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .comparison-row + .comparison-row {
+      border-top: 1px solid rgba(255, 255, 255, 0.075);
+    }
+
+    .comparison-cell {
+      padding: 20px 22px;
+    }
+
+    .comparison-cell + .comparison-cell {
+      border-left: 1px solid rgba(255, 255, 255, 0.075);
+    }
+
+    .comparison-cell strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .comparison-cell span {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .comparison-cell.yourteck strong {
+      color: #dffff7;
+    }
+
     .feature-icon {
       align-items: center;
       background: rgba(20, 184, 154, 0.075);
@@ -705,7 +767,7 @@
     .contact-card {
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
-        #0d131c;
+        #16181d;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 28px;
       box-shadow: 0 30px 90px rgba(0, 0, 0, 0.36);
@@ -923,7 +985,7 @@
     }
 
     .mini-browser {
-      background: #080b10;
+      background: #111114;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 28px;
       box-shadow: var(--shadow);
@@ -993,6 +1055,23 @@
       color: var(--muted);
       display: block;
       margin-top: 6px;
+    }
+
+    .pricing-list {
+      display: grid;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .pricing-list span {
+      color: var(--muted-strong);
+      line-height: 1.5;
+    }
+
+    .pricing-list span::before {
+      color: var(--accent);
+      content: "✓ ";
+      font-weight: 900;
     }
 
     .faq-grid {
@@ -1120,12 +1199,23 @@
 
       .steps,
       .features,
+      .use-case-grid,
+      .included-grid,
       .why-grid,
       .faq-grid,
       .preview-showcase,
       .save-contact-showcase,
       .demo-profiles {
         grid-template-columns: 1fr;
+      }
+
+      .comparison-row {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-cell + .comparison-cell {
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.075);
       }
 
       .pricing-card {
@@ -1206,7 +1296,7 @@
 
       <div class="nav-links">
         <a href="#how">How it works</a>
-        <a href="#features">Features</a>
+        <a href="#use-cases">Use cases</a>
         <a href="#pricing">Pricing</a>
         <a class="nav-cta" href="/nfc/login">Login</a>
       </div>
@@ -1215,22 +1305,22 @@
     <main>
       <section class="hero">
         <div>
-          <div class="eyebrow">NFC + QR smart profile cards</div>
-          <h1>Your identity <span class="hero-gradient">in one tap.</span></h1>
+          <div class="eyebrow">Smart NFC cards for real-world networking</div>
+          <h1>Stop handing out cards <span class="hero-gradient">people forget.</span></h1>
           <p class="hero-copy">
-            Premium NFC cards that open your live profile, socials, QR, and contact details instantly. No app. No
-            searching. Just tap, connect, and be remembered.
+            YourTeck gives you a premium NFC card and a live profile you can update anytime. Tap once and let people
+            save your number, open your links, or scan the QR when NFC is not the right moment.
           </p>
 
           <div class="hero-actions">
             <a class="btn btn-primary" href="/card">Get Your Card</a>
-            <a class="btn btn-secondary" href="#preview">View Demo</a>
+            <a class="btn btn-secondary" href="#preview">See Demo Profile</a>
           </div>
 
           <div class="hero-proof" aria-label="Product highlights">
-            <span>No app required</span>
-            <span>Edit anytime</span>
-            <span>iPhone + Android ready</span>
+            <span>Launch offer includes setup</span>
+            <span>Editable after printing</span>
+            <span>Works with QR fallback</span>
           </div>
         </div>
 
@@ -1252,7 +1342,7 @@
             <div class="phone-screen">
               <div class="profile-avatar"></div>
               <h2>Sarah Jones</h2>
-              <p>Creator, developer, and modern networking profile.</p>
+              <p>Real estate agent sharing listings, WhatsApp, and contact details.</p>
 
               <div class="profile-link">
                 <div class="profile-link-icon">
@@ -1299,8 +1389,8 @@
           </div>
 
           <div class="floating-stat">
-            <strong>1 tap</strong>
-            <span>to share everything</span>
+            <strong>1 card</strong>
+            <span>that stays updated</span>
           </div>
         </div>
       </section>
@@ -1308,99 +1398,95 @@
       <section class="section" id="how">
         <div class="section-head">
           <span class="section-kicker">How it works</span>
-          <h3>Networking without the awkward search.</h3>
-          <p>Tap the card, open the profile, and let people connect from the exact action they need.</p>
+          <h3>Share the right details in under a minute.</h3>
+          <p>No more spelling your Instagram username in loud events or waiting while someone types your number wrong.</p>
         </div>
 
         <div class="steps">
           <article class="tile">
             <span class="tile-number">01</span>
-            <h4>Tap</h4>
-            <p>Touch your NFC card to a phone or show your QR code when NFC is not available.</p>
+            <h4>Hand over the card</h4>
+            <p>Use NFC when the phone supports it. Use the QR code when scanning is easier.</p>
           </article>
           <article class="tile">
             <span class="tile-number">02</span>
-            <h4>Share</h4>
-            <p>Your profile opens instantly with your contact details, links, socials, and custom theme.</p>
+            <h4>They choose the action</h4>
+            <p>Call, WhatsApp, Instagram, website, location, booking link, or save contact.</p>
           </article>
           <article class="tile">
             <span class="tile-number">03</span>
-            <h4>Connect</h4>
-            <p>Visitors can save your contact, message you, follow you, or open your most important links.</p>
+            <h4>You update it later</h4>
+            <p>Change your links anytime without reprinting the card or wasting old stock.</p>
           </article>
         </div>
       </section>
 
-      <section class="section" id="features">
+      <section class="section" id="use-cases">
         <div class="section-head">
-          <span class="section-kicker">Features</span>
-          <h3>Everything your first impression needs.</h3>
-          <p>Made for real moments: meetings, events, stores, creator meetups, and sales conversations.</p>
+          <span class="section-kicker">Who it is for</span>
+          <h3>Useful when people meet you offline first.</h3>
+          <p>Different jobs need different actions. YourTeck keeps the card simple and lets the profile do the work.</p>
         </div>
 
-        <div class="features">
-          <article class="tile">
-            <div class="feature-icon">ID</div>
-            <h4>Digital profile</h4>
-            <p>Your contact details, links, and socials in one clean mobile page.</p>
+        <div class="use-case-grid">
+          <article class="tile use-case-tile">
+            <h4>Sales people</h4>
+            <p>Share phone, WhatsApp, email, and a product deck after a quick conversation.</p>
           </article>
-          <article class="tile">
-            <div class="feature-icon">FX</div>
-            <h4>Custom themes</h4>
-            <p>Choose a look that fits your identity and brand.</p>
+          <article class="tile use-case-tile">
+            <h4>Creators</h4>
+            <p>Send people to Instagram, TikTok, YouTube, bookings, and collaboration links.</p>
           </article>
-          <article class="tile">
-            <div class="feature-icon">QR</div>
-            <h4>QR ready</h4>
-            <p>Share from screens, cards, stickers, booths, or print.</p>
+          <article class="tile use-case-tile">
+            <h4>Real estate agents</h4>
+            <p>Put listings, map location, WhatsApp, and saved contact in one clean profile.</p>
           </article>
-          <article class="tile">
-            <div class="feature-icon">VCF</div>
-            <h4>Save Contact</h4>
-            <p>Let people add your name, phone, and email faster.</p>
+          <article class="tile use-case-tile">
+            <h4>Gym coaches</h4>
+            <p>Share packages, transformation photos, booking links, and direct messaging.</p>
           </article>
-          <article class="tile">
-            <div class="feature-icon">UP</div>
-            <h4>Edit anytime</h4>
-            <p>Change your profile without reprinting your card.</p>
+          <article class="tile use-case-tile">
+            <h4>Salons and barbers</h4>
+            <p>Send clients to prices, booking, location, Instagram, and WhatsApp.</p>
           </article>
-          <article class="tile">
-            <div class="feature-icon">APP</div>
-            <h4>No app required</h4>
-            <p>Visitors open your profile directly in the browser.</p>
+          <article class="tile use-case-tile">
+            <h4>Small business owners</h4>
+            <p>Turn walk-ins, events, and deliveries into repeat customers with one link hub.</p>
+          </article>
+          <article class="tile use-case-tile">
+            <h4>Students</h4>
+            <p>Share LinkedIn, portfolio, CV, projects, and email at career fairs.</p>
+          </article>
+          <article class="tile use-case-tile">
+            <h4>Freelancers</h4>
+            <p>Show work samples, pricing, contact details, and payment or booking links.</p>
           </article>
         </div>
       </section>
 
-      <section class="section" id="save-contact">
-        <div class="save-contact-showcase">
-          <div class="showcase-copy">
-            <span class="section-kicker">Save Contact</span>
-            <h3>Turn a quick meeting into a saved contact.</h3>
-            <p>
-              One tap can hand over the essentials: name, mobile, and email. It feels simple for visitors and valuable
-              for people who network every day.
-            </p>
-            <div class="hero-actions">
-              <a class="btn btn-primary" href="/card">Get Your Card</a>
-              <a class="btn btn-secondary" href="#demo-profiles">See Profiles</a>
-            </div>
-          </div>
+      <section class="section" id="compare">
+        <div class="section-head">
+          <span class="section-kicker">Why it is better</span>
+          <h3>Paper cards stop working the moment your details change.</h3>
+          <p>A printed card can look nice, but it cannot save a contact, open a booking link, or update itself.</p>
+        </div>
 
-          <div class="contact-demo" aria-label="Save contact preview">
-            <div class="contact-card">
-              <div class="contact-card-top">
-                <div class="contact-avatar">Y</div>
-                <div>
-                  <h4>Sarah Jones</h4>
-                  <p>Saved from YourTeck profile</p>
-                </div>
-              </div>
-              <div class="contact-row"><span>Mobile</span><strong>+XXX XXX XXXX</strong></div>
-              <div class="contact-row"><span>Email</span><strong>example@gmail.com</strong></div>
-              <div class="contact-row"><span>Profile</span><strong>yourteck.com/nfc</strong></div>
-            </div>
-            <div class="saved-badge">Ready to save to contacts</div>
+        <div class="comparison-table">
+          <div class="comparison-row">
+            <div class="comparison-cell"><strong>Normal business card</strong><span>Can be lost, damaged, or thrown away after the meeting.</span></div>
+            <div class="comparison-cell yourteck"><strong>YourTeck NFC card</strong><span>Gives people a live profile they can reopen from the link or QR.</span></div>
+          </div>
+          <div class="comparison-row">
+            <div class="comparison-cell"><strong>Outdated details</strong><span>New phone number, new role, or new link means another print run.</span></div>
+            <div class="comparison-cell yourteck"><strong>Edit anytime</strong><span>Update your contact details, links, photo, and theme from your profile.</span></div>
+          </div>
+          <div class="comparison-row">
+            <div class="comparison-cell"><strong>No clickable actions</strong><span>People still need to type your number, search your handle, or copy a URL.</span></div>
+            <div class="comparison-cell yourteck"><strong>Built for action</strong><span>Let visitors save your number instantly, message you, or open your links.</span></div>
+          </div>
+          <div class="comparison-row">
+            <div class="comparison-cell"><strong>One static design</strong><span>Great for a logo, weak for changing offers, campaigns, and services.</span></div>
+            <div class="comparison-cell yourteck"><strong>NFC plus QR fallback</strong><span>Use the card in person and the QR on booths, packaging, or printed material.</span></div>
           </div>
         </div>
       </section>
@@ -1408,12 +1494,16 @@
       <section class="section" id="preview">
         <div class="preview-showcase">
           <div class="showcase-copy">
-            <span class="section-kicker">Live profile preview</span>
-            <h3>A profile that looks like you meant it.</h3>
+            <span class="section-kicker">Product preview</span>
+            <h3>The card feels premium. The profile does the selling.</h3>
             <p>
-              YourTeck profiles are built for quick scanning: crisp blocks, polished icons, QR sharing, contact export,
-              and themes that make every card feel personal.
+              Use a clean profile for the details people actually ask for: your number, socials, booking links,
+              location, portfolio, and contact export.
             </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/card">Get Your Card</a>
+              <a class="btn btn-secondary" href="#pricing">Start with YourTeck</a>
+            </div>
           </div>
 
           <div class="mini-browser">
@@ -1423,106 +1513,59 @@
             </div>
             <div class="phone-screen">
               <div class="profile-avatar"></div>
-              <h2 id="demoPreviewName">Your Name</h2>
-              <p id="demoPreviewBio">Founder, creator, consultant, or anyone worth remembering.</p>
+              <h2 id="demoPreviewName">Noura Khalid</h2>
+              <p id="demoPreviewBio">Salon owner sharing bookings, location, Instagram, and direct contact.</p>
               <div class="profile-link">
-                <div class="profile-link-icon">TEL</div><span id="demoPreviewLinkOne">My Number</span>
+                <div class="profile-link-icon">TEL</div><span id="demoPreviewLinkOne">Save Contact</span>
               </div>
               <div class="profile-link">
-                <div class="profile-link-icon">@</div><span id="demoPreviewLinkTwo">Socials</span>
+                <div class="profile-link-icon">@</div><span id="demoPreviewLinkTwo">Instagram</span>
               </div>
               <div class="profile-link">
-                <div class="profile-link-icon">WEB</div><span id="demoPreviewLinkThree">Portfolio</span>
+                <div class="profile-link-icon">MAP</div><span id="demoPreviewLinkThree">Location</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="section" id="demo-profiles">
+      <section class="section" id="included">
         <div class="section-head">
-          <span class="section-kicker">Live demo profiles</span>
-          <h3>Different people. Same one-tap magic.</h3>
-          <p>Explore profile styles for creators, business owners, and minimal professional identities.</p>
+          <span class="section-kicker">What is included</span>
+          <h3>Everything you need to start using it on day one.</h3>
+          <p>The launch package is made to feel complete, not like a half-finished beta.</p>
         </div>
 
-        <div class="demo-profiles">
-          <a class="demo-card" style="--demo-a:#ff3d8b;--demo-b:#7c3aed;--demo-glow:rgba(255,61,139,0.2);" href="#preview" data-demo-name="Sara Visuals" data-demo-bio="Creator profile for social links, bookings, and content." data-link-one="Instagram" data-link-two="TikTok" data-link-three="Booking">
-            <div class="demo-card-header">
-              <div class="demo-avatar"></div>
-              <div>
-                <h4>Creator</h4>
-                <p>For influencers, artists, and content creators.</p>
-              </div>
-            </div>
-            <div class="demo-mini-profile">
-              <div class="demo-mini-row"><span class="demo-mini-icon">IG</span><span>Instagram</span></div>
-              <div class="demo-mini-row"><span class="demo-mini-icon">TT</span><span>TikTok</span></div>
-              <div class="demo-mini-row"><span class="demo-mini-icon">BK</span><span>Book a collab</span></div>
-            </div>
-            <div class="demo-link"><span>View demo</span><span>-></span></div>
-          </a>
-
-          <a class="demo-card" style="--demo-a:#14b89a;--demo-b:#6fd8cf;--demo-glow:rgba(20,184,154,0.12);" href="#preview" data-demo-name="YourTeck Studio" data-demo-bio="Business profile for contact, location, and customer action." data-link-one="Save Contact" data-link-two="Location" data-link-three="Website">
-            <div class="demo-card-header">
-              <div class="demo-avatar"></div>
-              <div>
-                <h4>Business</h4>
-                <p>For stores, sales teams, and service brands.</p>
-              </div>
-            </div>
-            <div class="demo-mini-profile">
-              <div class="demo-mini-row"><span class="demo-mini-icon">VCF</span><span>Save Contact</span></div>
-              <div class="demo-mini-row"><span class="demo-mini-icon">MAP</span><span>Location</span></div>
-              <div class="demo-mini-row"><span class="demo-mini-icon">WEB</span><span>Website</span></div>
-            </div>
-            <div class="demo-link"><span>View demo</span><span>-></span></div>
-          </a>
-
-          <a class="demo-card" style="--demo-a:#f4c542;--demo-b:#ffffff;--demo-glow:rgba(244,197,66,0.18);" href="#preview" data-demo-name="Adam Blake" data-demo-bio="Minimal professional profile with only the essentials." data-link-one="Mobile" data-link-two="Email" data-link-three="LinkedIn">
-            <div class="demo-card-header">
-              <div class="demo-avatar"></div>
-              <div>
-                <h4>Minimal</h4>
-                <p>For clean, direct professional networking.</p>
-              </div>
-            </div>
-            <div class="demo-mini-profile">
-              <div class="demo-mini-row"><span class="demo-mini-icon">TEL</span><span>Mobile</span></div>
-              <div class="demo-mini-row"><span class="demo-mini-icon">EM</span><span>Email</span></div>
-              <div class="demo-mini-row"><span class="demo-mini-icon">IN</span><span>LinkedIn</span></div>
-            </div>
-            <div class="demo-link"><span>View demo</span><span>-></span></div>
-          </a>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-head">
-          <span class="section-kicker">Why YourTeck</span>
-          <h3>Built for modern introductions.</h3>
-        </div>
-
-        <div class="why-grid">
+        <div class="included-grid">
           <article class="tile">
-            <h4>Stylish</h4>
-            <p>Premium dark UI with clean details that feel intentional.</p>
+            <div class="feature-icon">NFC</div>
+            <h4>Physical card</h4>
+            <p>A premium card connected to your YourTeck profile.</p>
           </article>
           <article class="tile">
-            <h4>Fast</h4>
-            <p>Open, scan, tap, and connect without slowing the moment down.</p>
+            <div class="feature-icon">SET</div>
+            <h4>Setup support</h4>
+            <p>We help you start with the right name, links, profile photo, and contact details.</p>
           </article>
           <article class="tile">
-            <h4>Custom</h4>
-            <p>Change themes, profile blocks, icons, and your contact details.</p>
+            <div class="feature-icon">1Y</div>
+            <h4>1 year profile access</h4>
+            <p>Your live profile stays online with editing access during the included year.</p>
           </article>
           <article class="tile">
-            <h4>NFC + QR</h4>
-            <p>Two ways to share, so your profile works in more situations.</p>
+            <div class="feature-icon">QR</div>
+            <h4>QR fallback</h4>
+            <p>Use the same profile when NFC is not available or when you want to print a code.</p>
           </article>
           <article class="tile">
-            <h4>Mobile-first</h4>
-            <p>Designed for the phone screen where introductions actually happen.</p>
+            <div class="feature-icon">VCF</div>
+            <h4>Save contact button</h4>
+            <p>Let people add your phone and email quickly instead of typing everything by hand.</p>
+          </article>
+          <article class="tile">
+            <div class="feature-icon">EDIT</div>
+            <h4>Profile editing</h4>
+            <p>Change links, socials, bio, theme, and details when your business changes.</p>
           </article>
         </div>
       </section>
@@ -1530,14 +1573,19 @@
       <section class="section" id="pricing">
         <div class="pricing-card">
           <div>
-            <span class="section-kicker">Pricing preview</span>
-            <h3>NFC card + 1 year included.</h3>
-            <p>Full pricing is coming soon. The first offer will include your physical NFC card and one year of profile
-              access.</p>
+            <span class="section-kicker">Launch offer</span>
+            <h3>NFC card + setup + 1 year profile access.</h3>
+            <p>Start with a complete package: the physical card, your live profile, QR fallback, and help setting up the
+              details people need most.</p>
+            <div class="pricing-list">
+              <span>Premium YourTeck NFC card</span>
+              <span>Profile setup with your links and contact details</span>
+              <span>1 year of editable profile access included</span>
+            </div>
           </div>
           <div class="price-pill">
-            <strong>Coming soon</strong>
-            <span>Simple launch pricing</span>
+            <strong>Launch offer</strong>
+            <span>Available for early customers</span>
           </div>
         </div>
       </section>
@@ -1551,30 +1599,38 @@
         <div class="faq-grid">
           <details>
             <summary>Works on iPhone and Android?</summary>
-            <p>Yes. NFC works on most modern phones, and every card can also be shared with a QR code.</p>
+            <p>Yes. NFC works on most modern phones. The QR fallback is there for phones, booths, print, and situations where scanning is easier.</p>
           </details>
           <details>
             <summary>Does the other person need an app?</summary>
-            <p>No. Your profile opens in the browser, so visitors can connect without installing anything.</p>
+            <p>No. The profile opens in the browser, so the other person can view your details without installing anything.</p>
           </details>
           <details>
-            <summary>Can I edit later?</summary>
-            <p>Yes. Update your name, bio, links, theme, QR, and contact details whenever you want.</p>
+            <summary>Can I change my links later?</summary>
+            <p>Yes. Update your phone, bio, socials, website, location, theme, and other links without printing a new card.</p>
           </details>
           <details>
             <summary>What happens if I lose the card?</summary>
-            <p>Your profile stays online. You can keep using your QR link and replace the physical card when needed.</p>
+            <p>Your profile stays online. You can keep using your profile link or QR while arranging a replacement card.</p>
+          </details>
+          <details>
+            <summary>Can I use it for my business?</summary>
+            <p>Yes. It works well for service businesses, sales teams, creators, real estate agents, coaches, salons, and freelancers.</p>
+          </details>
+          <details>
+            <summary>What should I put on my profile?</summary>
+            <p>Start with your phone, WhatsApp, Instagram or LinkedIn, location or booking link, and one clear action you want people to take.</p>
           </details>
         </div>
       </section>
 
       <section class="section">
         <div class="final-cta">
-          <span class="section-kicker">Ready?</span>
-          <h3>Ready to make your first tap count?</h3>
+          <span class="section-kicker">Start with YourTeck</span>
+          <h3>Get a card people can actually use after they meet you.</h3>
           <div class="hero-actions" style="justify-content:center;">
             <a class="btn btn-primary" href="/card">Get Your Card</a>
-            <a class="btn btn-secondary" href="#features">Explore Features</a>
+            <a class="btn btn-secondary" href="#preview">See Demo Profile</a>
           </div>
         </div>
       </section>
@@ -1582,7 +1638,7 @@
 
     <footer class="footer">
       <span>&copy; 2026 YourTeck. NFC smart profile cards.</span>
-      <span>Built for one-tap introductions.</span>
+      <span>Premium cards with editable digital profiles.</span>
     </footer>
   </div>
 

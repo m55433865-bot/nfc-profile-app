@@ -62,7 +62,7 @@
     "Socials": "الحسابات",
     "Portfolio": "الأعمال",
     "Live demo profiles": "نماذج ملفات مباشرة",
-    "Different people. Same one-tap magic.": "أشخاص مختلفون. نفس سحر اللمسة الواحدة.",
+    "Different people. Different needs.": "أشخاص مختلفون واحتياجات مختلفة.",
     "Explore profile styles for creators, business owners, and minimal professional identities.": "استكشف أنماط ملفات للمبدعين وأصحاب الأعمال والهويات المهنية البسيطة.",
     "Creator": "مبدع",
     "For influencers, artists, and content creators.": "للمؤثرين والفنانين وصناع المحتوى.",
@@ -286,6 +286,252 @@
     "URL": "الرابط"
   };
 
+  const gulfArabicOverrides = {
+    "Premium NFC smart profile cards for creators, entrepreneurs, and modern professionals.": "بطاقات NFC فاخرة مع ملف قابل للتعديل، مناسبة لأصحاب الأعمال والمبدعين وكل شخص يقابل عملاءه على أرض الواقع.",
+    "How it works": "طريقة الاستخدام",
+    "Features": "المزايا",
+    "Pricing": "العرض",
+    "Login": "الدخول",
+    "Logout": "تسجيل الخروج",
+    "Get Your Card": "اطلب بطاقتك",
+    "See Demo Profile": "شاهد نموذج الملف",
+    "Start with YourTeck": "ابدأ مع يورتيك",
+    "Use cases": "لمن تناسب؟",
+    "Smart NFC cards for real-world networking": "بطاقات NFC ذكية للتعارف والعمل اليومي",
+    "Stop handing out cards": "بدل الكروت اللي تنتهي في الدرج",
+    "people forget.": "خلّ معلوماتك جاهزة فوراً.",
+    "Stop handing out cards people forget.": "بدل الكروت اللي تنتهي في الدرج، خلّ معلوماتك جاهزة فوراً.",
+    "YourTeck gives you a premium NFC card and a live profile you can update anytime. Tap once and let people save your number, open your links, or scan the QR when NFC is not the right moment.": "يورتيك يعطيك بطاقة NFC أنيقة وملف مباشر تقدر تعدّله بأي وقت. بلمسة واحدة يقدر الشخص يحفظ رقمك، يفتح روابطك، أو يمسح رمز QR إذا كان المسح أسهل.",
+    "Launch offer includes setup": "عرض الإطلاق يشمل الإعداد",
+    "Editable after printing": "تعدّل بياناتك بعد الطباعة",
+    "Works with QR fallback": "يدعم QR كخيار إضافي",
+    "Tap-ready card": "بطاقة جاهزة للمشاركة",
+    "Real estate agent sharing listings, WhatsApp, and contact details.": "وكيل عقاري يشارك العقارات، الواتساب، وبيانات التواصل.",
+    "1 card": "بطاقة واحدة",
+    "that stays updated": "تتحدث معك",
+    "Share the right details in under a minute.": "شارك البيانات الصح خلال أقل من دقيقة.",
+    "No more spelling your Instagram username in loud events or waiting while someone types your number wrong.": "بدل ما تشرح حسابك في زحمة أو تنتظر أحد يكتب رقمك غلط، خلّ البطاقة تختصر الموضوع.",
+    "Hand over the card": "قرّب البطاقة",
+    "Use NFC when the phone supports it. Use the QR code when scanning is easier.": "استخدم NFC مع الهواتف الداعمة، أو خلّ الشخص يمسح QR إذا كان هذا أنسب للموقف.",
+    "They choose the action": "الشخص يختار اللي يحتاجه",
+    "Call, WhatsApp, Instagram, website, location, booking link, or save contact.": "اتصال، واتساب، إنستغرام، موقع، لوكيشن، حجز موعد، أو حفظ جهة الاتصال.",
+    "You update it later": "وأنت تعدّل لاحقاً",
+    "Change your links anytime without reprinting the card or wasting old stock.": "غيّر روابطك ومعلوماتك بأي وقت بدون إعادة طباعة أو تضييع كروت قديمة.",
+    "Who it is for": "لمن تناسب؟",
+    "Useful when people meet you offline first.": "مفيدة لكل شخص يقابل عملاءه أو جمهوره وجهاً لوجه.",
+    "Different jobs need different actions. YourTeck keeps the card simple and lets the profile do the work.": "كل مجال يحتاج روابط مختلفة. البطاقة تبقى بسيطة، والملف يعطي الناس كل الخيارات المهمة.",
+    "Sales people": "فرق المبيعات",
+    "Share phone, WhatsApp, email, and a product deck after a quick conversation.": "شارك رقمك، واتساب، البريد، وعرض المنتج بعد محادثة سريعة.",
+    "Creators": "صنّاع المحتوى",
+    "Send people to Instagram, TikTok, YouTube, bookings, and collaboration links.": "وجّه الناس إلى إنستغرام، تيك توك، يوتيوب، الحجوزات، وروابط التعاون.",
+    "Real estate agents": "العقاريون",
+    "Put listings, map location, WhatsApp, and saved contact in one clean profile.": "اجمع العقارات، اللوكيشن، الواتساب، وحفظ جهة الاتصال في ملف مرتب.",
+    "Gym coaches": "مدربو الجيم",
+    "Share packages, transformation photos, booking links, and direct messaging.": "اعرض الباقات، النتائج، رابط الحجز، وطريقة التواصل المباشر.",
+    "Salons and barbers": "الصالونات والحلاقين",
+    "Send clients to prices, booking, location, Instagram, and WhatsApp.": "خلّ العميل يشوف الأسعار، الحجز، اللوكيشن، إنستغرام، والواتساب بسرعة.",
+    "Small business owners": "أصحاب المشاريع الصغيرة",
+    "Turn walk-ins, events, and deliveries into repeat customers with one link hub.": "حوّل الزيارات والمعارض والتوصيل إلى عملاء يرجعون لك من رابط واحد.",
+    "Students": "الطلاب",
+    "Share LinkedIn, portfolio, CV, projects, and email at career fairs.": "شارك لينكدإن، الأعمال، السيرة الذاتية، المشاريع، والبريد في المعارض المهنية.",
+    "Freelancers": "المستقلون",
+    "Show work samples, pricing, contact details, and payment or booking links.": "اعرض نماذج أعمالك، الأسعار، بيانات التواصل، وروابط الدفع أو الحجز.",
+    "Why it is better": "ليش أفضل من الكرت العادي؟",
+    "Paper cards stop working the moment your details change.": "الكرت الورقي يضعف أول ما تتغير معلوماتك.",
+    "A printed card can look nice, but it cannot save a contact, open a booking link, or update itself.": "الكرت المطبوع ممكن يكون جميل، لكنه ما يحفظ رقمك، ما يفتح رابط حجز، وما يتحدث بعد الطباعة.",
+    "Normal business card": "كرت عمل عادي",
+    "Can be lost, damaged, or thrown away after the meeting.": "ينفقد، يتلف، أو ينحط على جنب بعد اللقاء.",
+    "YourTeck NFC card": "بطاقة يورتيك NFC",
+    "Gives people a live profile they can reopen from the link or QR.": "تعطي الشخص ملف مباشر يقدر يرجع له من الرابط أو QR.",
+    "Outdated details": "معلومات تنتهي بسرعة",
+    "New phone number, new role, or new link means another print run.": "رقم جديد أو رابط جديد يعني طباعة جديدة.",
+    "Update your contact details, links, photo, and theme from your profile.": "عدّل رقمك، روابطك، صورتك، وألوان ملفك من لوحة التحكم.",
+    "No clickable actions": "بدون أزرار مباشرة",
+    "People still need to type your number, search your handle, or copy a URL.": "الشخص يكتب الرقم، يبحث عن الحساب، أو ينسخ الرابط يدوياً.",
+    "Built for action": "مصممة للتصرف السريع",
+    "Let visitors save your number instantly, message you, or open your links.": "خلّ الزائر يحفظ رقمك فوراً، يراسلك، أو يفتح روابطك مباشرة.",
+    "One static design": "تصميم ثابت فقط",
+    "Great for a logo, weak for changing offers, campaigns, and services.": "ممتاز للشعار، لكنه ضعيف للعروض والخدمات اللي تتغير.",
+    "NFC plus QR fallback": "NFC مع QR احتياطي",
+    "Use the card in person and the QR on booths, packaging, or printed material.": "استخدم البطاقة وجهاً لوجه، وQR للمعارض، التغليف، أو المطبوعات.",
+    "Product preview": "معاينة المنتج",
+    "The card feels premium. The profile does the selling.": "البطاقة تعطي انطباع فاخر، والملف يكمّل البيع.",
+    "Use a clean profile for the details people actually ask for: your number, socials, booking links, location, portfolio, and contact export.": "استخدم ملفاً واضحاً للبيانات التي يسأل عنها الناس فعلاً: رقمك، حساباتك، روابط الحجز، اللوكيشن، أعمالك، وحفظ جهة الاتصال.",
+    "Noura Khalid": "نورة الخالد",
+    "Salon owner sharing bookings, location, Instagram, and direct contact.": "صاحبة صالون تشارك الحجز، اللوكيشن، إنستغرام، والتواصل المباشر.",
+    "What is included": "ماذا يشمل العرض؟",
+    "Everything you need to start using it on day one.": "كل ما تحتاجه لتبدأ من أول يوم.",
+    "The launch package is made to feel complete, not like a half-finished beta.": "باقة الإطلاق مجهزة كمنتج كامل، مو تجربة ناقصة.",
+    "Physical card": "بطاقة فعلية",
+    "A premium card connected to your YourTeck profile.": "بطاقة أنيقة مربوطة بملفك في يورتيك.",
+    "Setup support": "مساعدة في الإعداد",
+    "We help you start with the right name, links, profile photo, and contact details.": "نساعدك تضبط الاسم، الروابط، الصورة، وبيانات التواصل بشكل مرتب.",
+    "1 year profile access": "سنة دخول للملف",
+    "Your live profile stays online with editing access during the included year.": "ملفك يبقى شغال أونلاين مع إمكانية التعديل خلال السنة المشمولة.",
+    "QR fallback": "QR احتياطي",
+    "Use the same profile when NFC is not available or when you want to print a code.": "استخدم نفس الملف إذا لم تتوفر NFC أو إذا احتجت تطبع الرمز.",
+    "Save contact button": "زر حفظ جهة الاتصال",
+    "Let people add your phone and email quickly instead of typing everything by hand.": "خلّ الناس يحفظون رقمك وبريدك بسرعة بدل الكتابة اليدوية.",
+    "Profile editing": "تعديل الملف",
+    "Change links, socials, bio, theme, and details when your business changes.": "غيّر الروابط، الحسابات، النبذة، الألوان، والبيانات متى ما تغيّر عملك.",
+    "Launch offer": "عرض الإطلاق",
+    "NFC card + setup + 1 year profile access.": "بطاقة NFC + إعداد + سنة وصول للملف.",
+    "Start with a complete package: the physical card, your live profile, QR fallback, and help setting up the details people need most.": "ابدأ بباقة كاملة: البطاقة، الملف المباشر، QR احتياطي، ومساعدة في ترتيب أهم البيانات.",
+    "Premium YourTeck NFC card": "بطاقة يورتيك NFC فاخرة",
+    "Profile setup with your links and contact details": "إعداد الملف مع روابطك وبيانات التواصل",
+    "1 year of editable profile access included": "سنة وصول وتعديل على الملف مشمولة",
+    "Available for early customers": "متاح للعملاء الأوائل",
+    "Quick answers.": "إجابات مختصرة.",
+    "Works on iPhone and Android?": "هل تعمل مع الآيفون والأندرويد؟",
+    "Yes. NFC works on most modern phones. The QR fallback is there for phones, booths, print, and situations where scanning is easier.": "نعم. NFC تعمل مع أغلب الهواتف الحديثة، وQR موجود للحالات التي يكون فيها المسح أسهل.",
+    "Does the other person need an app?": "هل يحتاج الطرف الآخر إلى تطبيق؟",
+    "No. The profile opens in the browser, so the other person can view your details without installing anything.": "لا. الملف يفتح في المتصفح مباشرة بدون تحميل أي تطبيق.",
+    "Can I change my links later?": "هل أقدر أغيّر الروابط لاحقاً؟",
+    "Yes. Update your phone, bio, socials, website, location, theme, and other links without printing a new card.": "نعم. عدّل رقمك، النبذة، الحسابات، الموقع، اللوكيشن، والألوان بدون طباعة بطاقة جديدة.",
+    "What happens if I lose the card?": "ماذا لو ضاعت البطاقة؟",
+    "Your profile stays online. You can keep using your profile link or QR while arranging a replacement card.": "ملفك يبقى أونلاين. تقدر تستخدم الرابط أو QR إلى أن تطلب بطاقة بديلة.",
+    "Can I use it for my business?": "هل تناسب مشروعي؟",
+    "Yes. It works well for service businesses, sales teams, creators, real estate agents, coaches, salons, and freelancers.": "نعم. تناسب المشاريع الخدمية، المبيعات، صناع المحتوى، العقاريين، المدربين، الصالونات، والمستقلين.",
+    "What should I put on my profile?": "ما الذي أضعه في ملفي؟",
+    "Start with your phone, WhatsApp, Instagram or LinkedIn, location or booking link, and one clear action you want people to take.": "ابدأ برقمك، واتساب، إنستغرام أو لينكدإن، اللوكيشن أو رابط الحجز، وزر واضح تريد من الناس استخدامه.",
+    "Get a card people can actually use after they meet you.": "اطلب بطاقة يقدر الناس يستخدمونها فعلاً بعد ما يقابلونك.",
+    "Premium cards with editable digital profiles.": "بطاقات فاخرة مع ملفات رقمية قابلة للتعديل.",
+    "Main navigation": "التنقل الرئيسي",
+    "YourTeck NFC home": "الصفحة الرئيسية ليورتيك NFC",
+    "Product highlights": "أبرز المزايا",
+    "YourTeck NFC card and profile preview": "بطاقة يورتيك NFC ومعاينة الملف",
+    "Card page navigation": "التنقل في صفحة البطاقة",
+    "Loading profile": "تحميل الملف",
+    "Profile Setup": "إعداد الملف",
+    "Sarah Jones": "سارة جونز",
+    "Profile Login": "الدخول إلى ملفك",
+    "Access your profile": "ادخل وعدّل بياناتك",
+    "Authentication mode": "اختر طريقة الدخول",
+    "Create account": "إنشاء حساب",
+    "Create an account": "أنشئ حساباً",
+    "Use Google to sign up or log in. New users go to profile setup.": "استخدم Google للدخول أو إنشاء حساب. الحسابات الجديدة تنتقل مباشرة لإعداد الملف.",
+    "Enter your account email. If it exists, we will send a secure password reset link.": "اكتب بريد حسابك، وإذا كان مسجلاً سنرسل لك رابطاً آمناً لإعادة تعيين كلمة المرور.",
+    "Enter the 6-digit code sent to your email.": "اكتب رمز التحقق المرسل إلى بريدك والمكون من 6 أرقام.",
+    "Enter your email and password.": "اكتب بريدك وكلمة المرور.",
+    "Login failed. Try again.": "تعذر تسجيل الدخول. حاول مرة أخرى.",
+    "Enter a valid email address.": "اكتب بريداً إلكترونياً صحيحاً.",
+    "Passwords do not match.": "كلمتا المرور غير متطابقتين.",
+    "Enter your signup details again.": "أعد إدخال بيانات التسجيل.",
+    "Enter the 6-digit code.": "اكتب رمز التحقق المكون من 6 أرقام.",
+    "Build your profile": "جهّز ملفك",
+    "Create a polished NFC identity in a few quick steps.": "جهّز ملف يورتيك أنيق خلال خطوات بسيطة.",
+    "Start with your identity": "ابدأ ببياناتك الأساسية",
+    "Your profile link is already reserved. Add the name and bio people should see.": "رابط ملفك محجوز. أضف الاسم والنبذة التي تريد أن يراها الناس.",
+    "Choose a first impression": "اختر شكل ملفك",
+    "Pick a profile theme and accent. You can change this later from Settings.": "اختر الثيم ولون التمييز. تقدر تغيّرها لاحقاً من الإعدادات.",
+    "Add starter blocks": "أضف أول وسائل التواصل",
+    "Add one or a few ways people can reach you. Each block appears instantly in the live preview.": "أضف طريقة أو أكثر للتواصل معك. كل عنصر يظهر فوراً في المعاينة.",
+    "Your first contact block will appear here.": "سيظهر أول عنصر تواصل هنا.",
+    "Add a valid contact value first.": "أضف وسيلة تواصل صحيحة أولاً.",
+    "Add a display name to continue.": "أضف الاسم المعروض للمتابعة.",
+    "Add your phone number to finish setup.": "أضف رقم هاتفك لإكمال الإعداد.",
+    "Setup could not be saved. Try again.": "تعذر حفظ الإعداد. حاول مرة أخرى.",
+    "Preview": "معاينة",
+    "Edit": "تعديل",
+    "Settings": "الإعدادات",
+    "Add Block": "إضافة عنصر",
+    "Add Avatar": "إضافة صورة",
+    "Add Bio": "إضافة نبذة",
+    "Change Photo": "تغيير الصورة",
+    "Remove Photo": "إزالة الصورة",
+    "Tap your name or bio to edit": "اضغط على اسمك أو نبذتك للتعديل",
+    "Profile Progress": "اكتمال الملف",
+    "Use <strong>Profile Progress</strong> to finish the important details that make your profile feel ready to share.": "استخدم <strong>اكتمال الملف</strong> لإضافة التفاصيل المهمة قبل مشاركة بطاقتك.",
+    "<strong>Save Contact</strong> exports your name, phone, and email so visitors can add you to their phone quickly.": "زر <strong>حفظ جهة الاتصال</strong> يجهّز اسمك ورقمك وبريدك ليحفظها الزائر بسرعة.",
+    "Add to Profile": "إضافة إلى الملف",
+    "Choose what you want to add. Paste a number, username, email, or link and I will format it for you.": "اختر ما تريد إضافته، ثم الصق رقماً أو حساباً أو بريداً أو رابطاً وسنرتبه لك.",
+    "Paste value or link": "الصق الرقم أو الحساب أو الرابط",
+    "Choose a type, then paste a number, username, email, or link.": "اختر النوع، ثم الصق الرقم أو الحساب أو البريد أو الرابط.",
+    "Appearance": "المظهر",
+    "Choose how this profile looks for you and public visitors.": "اختر شكل ملفك كما يظهر لك وللزوار.",
+    "Theme Style": "نمط الثيم",
+    "Preset Themes": "ثيمات جاهزة",
+    "Accent Color": "لون التمييز",
+    "Profile preview": "معاينة الملف",
+    "QR unavailable": "رمز QR غير متاح",
+    "Change password": "تغيير كلمة المرور",
+    "Old password": "كلمة المرور الحالية",
+    "New password": "كلمة مرور جديدة",
+    "Code will be sent to": "سيتم إرسال الرمز إلى",
+    "Verification code": "رمز التحقق",
+    "Verify": "تحقق",
+    "New password unlocks after the verification code is correct.": "ستتمكن من كتابة كلمة المرور الجديدة بعد التحقق من الرمز.",
+    "Resend": "إعادة الإرسال",
+    "Are you sure you want to logout?": "هل تريد تسجيل الخروج؟",
+    "Yes": "نعم",
+    "No": "لا",
+    "Add link": "إضافة رابط",
+    "Name": "الاسم",
+    "URL": "الرابط",
+    "Please choose an image file.": "اختر ملف صورة.",
+    "Image is too large. Please use an image under 800 KB.": "الصورة كبيرة. استخدم صورة أقل من 800 كيلوبايت.",
+    "Icon ready. Press Save to apply it.": "الأيقونة جاهزة. اضغط حفظ لتطبيقها.",
+    "This image could not be loaded.": "تعذر تحميل هذه الصورة.",
+    "This image could not be processed.": "تعذرت معالجة هذه الصورة.",
+    "Could not process image.": "تعذرت معالجة الصورة.",
+    "Theme saved": "تم حفظ المظهر",
+    "Edit bio": "تعديل النبذة",
+    "Edit name": "تعديل الاسم",
+    "Enter both old and new password.": "اكتب كلمة المرور الحالية والجديدة.",
+    "Password changed": "تم تغيير كلمة المرور",
+    "No email is connected to this account.": "لا يوجد بريد مرتبط بهذا الحساب.",
+    "Enter the 6-digit verification code.": "اكتب رمز التحقق المكون من 6 أرقام.",
+    "Code verified. Enter your new password.": "تم التحقق من الرمز. اكتب كلمة المرور الجديدة.",
+    "Verify the code first.": "تحقق من الرمز أولاً.",
+    "Enter a new password.": "اكتب كلمة مرور جديدة.",
+    "Upload": "رفع",
+    "Reset": "إعادة ضبط",
+    "Icon": "الأيقونة",
+    "Close": "إغلاق",
+    "Cancel": "إلغاء",
+    "Save": "حفظ",
+    "Change": "تغيير",
+    "Add": "إضافة",
+    "+ Add": "+ إضافة",
+    "＋ Add": "＋ إضافة",
+    "Place an order": "اطلب بطاقتك",
+    "Place Order": "إرسال الطلب",
+    "Starting from 20 KD": "تبدأ من 20 د.ك",
+    "One tap. Share your profile, contact details, socials, and business links instantly.": "بلمسة واحدة شارك ملفك، بيانات التواصل، حساباتك، وروابط عملك.",
+    "Custom card design available on request.": "يتوفر تصميم مخصص للبطاقة عند الطلب.",
+    "Tap. Share. Connect.": "قرّب البطاقة. شارك بياناتك. خلّهم يتواصلون.",
+    "NFC smart profile card": "بطاقة NFC ذكية لملفك",
+    "NFC smart card": "بطاقة NFC ذكية",
+    "Custom digital profile": "ملف رقمي مخصص",
+    "QR code backup": "رمز QR احتياطي",
+    "Contact save option": "زر حفظ جهة الاتصال",
+    "Social links": "روابط الحسابات",
+    "Business links": "روابط العمل",
+    "Profile editing dashboard": "لوحة تعديل الملف",
+    "1 year free hosting/service": "سنة خدمة واستضافة مشمولة",
+    "Required": "مطلوب",
+    "Kuwait delivery area": "منطقة التوصيل داخل الكويت",
+    "Card design preference": "تفضيل تصميم البطاقة",
+    "Default YourTeck design": "تصميم يورتيك الافتراضي",
+    "Custom design": "تصميم مخصص",
+    "Card notes": "ملاحظات البطاقة",
+    "Placing...": "جاري إرسال الطلب...",
+    "Order request received. We will contact you soon.": "تم استلام طلبك. سنتواصل معك قريباً.",
+    "Please enter the full name.": "اكتب الاسم الكامل.",
+    "Please enter the phone number.": "اكتب رقم الهاتف.",
+    "Please enter the email.": "اكتب البريد الإلكتروني.",
+    "Please enter the Kuwait delivery area.": "اكتب منطقة التوصيل داخل الكويت.",
+    "Please enter the block.": "اكتب القطعة.",
+    "Please enter the street.": "اكتب الشارع.",
+    "Please enter the building / house number.": "اكتب رقم المبنى أو المنزل.",
+    "Please enter a valid email address.": "اكتب بريداً إلكترونياً صحيحاً.",
+    "Order could not be placed. Please try again.": "تعذر إرسال الطلب. حاول مرة أخرى.",
+    "Resetting...": "جاري إعادة الضبط...",
+    "Profile could not be reset. Try again.": "تعذرت إعادة ضبط الملف. حاول مرة أخرى."
+  };
+
+  Object.assign(translations, gulfArabicOverrides);
+
   const reverseTranslations = Object.fromEntries(
     Object.entries(translations).map(([english, arabic]) => [arabic, english])
   );
@@ -361,17 +607,19 @@
     const style = document.createElement("style");
     style.id = "yourteckLanguageStyles";
     style.textContent = `
+      @import url("https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap");
+
       .yt-language-toggle {
         align-items: center;
         backdrop-filter: blur(18px);
-        background: rgba(8, 10, 10, 0.82);
+        background: rgba(17, 17, 20, 0.88);
         border: 1px solid rgba(20, 184, 154, 0.24);
         border-radius: 999px;
         box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.07);
         color: #eafff8;
         cursor: pointer;
         display: inline-flex;
-        font: 800 13px/1 Arial, sans-serif;
+        font: 800 13px/1 "Alexandria", "IBM Plex Sans Arabic", "Cairo", "Tajawal", Arial, sans-serif;
         gap: 7px;
         min-height: 38px;
         padding: 0 13px;
@@ -402,12 +650,39 @@
 
       html[dir="rtl"] body {
         direction: rtl;
+        font-family: "Alexandria", "IBM Plex Sans Arabic", "Cairo", "Tajawal", Arial, sans-serif !important;
+        letter-spacing: 0;
+        line-height: 1.75;
         text-align: right;
       }
 
       html[dir="rtl"] input,
-      html[dir="rtl"] textarea {
+      html[dir="rtl"] textarea,
+      html[dir="rtl"] select {
+        font-family: "Alexandria", "IBM Plex Sans Arabic", "Cairo", "Tajawal", Arial, sans-serif !important;
         text-align: right;
+      }
+
+      html[dir="rtl"] h1,
+      html[dir="rtl"] h2,
+      html[dir="rtl"] h3,
+      html[dir="rtl"] h4,
+      html[dir="rtl"] .admin-title,
+      html[dir="rtl"] .modal-title,
+      html[dir="rtl"] .section-title {
+        letter-spacing: 0;
+        line-height: 1.2;
+      }
+
+      html[dir="rtl"] p,
+      html[dir="rtl"] .subtitle,
+      html[dir="rtl"] .section-copy,
+      html[dir="rtl"] .hero-copy,
+      html[dir="rtl"] .tile p,
+      html[dir="rtl"] details p,
+      html[dir="rtl"] .smart-add-subtitle,
+      html[dir="rtl"] .password-dialog-copy {
+        line-height: 1.85;
       }
 
       html[dir="rtl"] .brand,
@@ -446,7 +721,63 @@
       html[dir="rtl"] .hero-actions,
       html[dir="rtl"] .price-line,
       html[dir="rtl"] .label-title {
-        flex-direction: row-reverse;
+        flex-direction: row;
+      }
+
+      html[dir="rtl"] .hero-actions,
+      html[dir="rtl"] .price-line {
+        justify-content: flex-start;
+      }
+
+      html[dir="rtl"] .section-head {
+        margin-inline-start: 0;
+        margin-inline-end: auto;
+        text-align: right;
+      }
+
+      html[dir="rtl"] .section-head p {
+        margin-inline-start: 0;
+        margin-inline-end: 0;
+      }
+
+      html[dir="rtl"] .profile-link,
+      html[dir="rtl"] .link-main,
+      html[dir="rtl"] .settings-action,
+      html[dir="rtl"] .smart-add-option,
+      html[dir="rtl"] .admin-user-summary,
+      html[dir="rtl"] .contact-row,
+      html[dir="rtl"] .demo-mini-row {
+        text-align: right;
+      }
+
+      html[dir="rtl"] .landing-shell,
+      html[dir="rtl"] .setup-shell,
+      html[dir="rtl"] .login-shell,
+      html[dir="rtl"] .card-page,
+      html[dir="rtl"] .container {
+        word-spacing: 0.03em;
+      }
+
+      html[dir="rtl"] .tile,
+      html[dir="rtl"] details,
+      html[dir="rtl"] .pricing-card,
+      html[dir="rtl"] .preview-showcase,
+      html[dir="rtl"] .comparison-table,
+      html[dir="rtl"] .login-card,
+      html[dir="rtl"] .setup-card,
+      html[dir="rtl"] .modal-card {
+        background-color: color-mix(in srgb, #16181d, transparent 8%);
+      }
+
+      html[dir="rtl"] .nav-brand,
+      html[dir="rtl"] .profile-link,
+      html[dir="rtl"] .link-main,
+      html[dir="rtl"] .settings-action,
+      html[dir="rtl"] .admin-user-row,
+      html[dir="rtl"] .form-actions,
+      html[dir="rtl"] .password-code-row,
+      html[dir="rtl"] .phone-input-group {
+        direction: rtl;
       }
 
       @media (max-width: 560px) {
@@ -480,17 +811,27 @@
     if (!button) return;
     const target = language === "ar" ? "English" : "العربية";
     button.setAttribute("aria-label", language === "ar" ? "Switch to English" : "التبديل إلى العربية");
-    button.innerHTML = `<span class="yt-language-toggle-icon" aria-hidden="true">文</span><span>${target}</span>`;
+    button.innerHTML = `<span class="yt-language-toggle-icon" aria-hidden="true">ع</span><span>${target}</span>`;
   }
 
   function observeChanges() {
     const observer = new MutationObserver((mutations) => {
       if (isApplyingTranslations) return;
-      if (mutations.some((mutation) => [...mutation.addedNodes].some((node) => node.id !== "yourteckLanguageToggle"))) {
+      if (mutations.some((mutation) =>
+        mutation.type === "characterData" ||
+        mutation.type === "attributes" ||
+        [...mutation.addedNodes].some((node) => node.id !== "yourteckLanguageToggle")
+      )) {
         window.requestAnimationFrame(() => translatePage(getLanguage()));
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["placeholder", "title", "aria-label", "alt"],
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
