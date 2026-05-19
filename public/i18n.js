@@ -627,14 +627,17 @@
         color: #eafff8;
         cursor: pointer;
         display: inline-flex;
+        flex: 0 0 auto;
         font: 800 13px/1 "Alexandria", "IBM Plex Sans Arabic", "Cairo", "Tajawal", Arial, sans-serif;
         gap: 7px;
         min-height: 38px;
+        max-width: max-content;
         padding: 0 13px;
         position: fixed;
         inset-block-start: 16px;
         inset-inline-end: 16px;
         transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        width: auto !important;
         z-index: 5000;
       }
 
@@ -790,10 +793,24 @@
 
       @media (max-width: 560px) {
         .yt-language-toggle {
+          border-radius: 999px;
+          gap: 0;
+          height: 38px;
           inset-block-start: 10px;
           inset-inline-end: 10px;
-          min-height: 34px;
-          padding: 0 10px;
+          min-height: 38px;
+          padding: 0;
+          width: 38px !important;
+        }
+
+        .yt-language-toggle > span:not(.yt-language-toggle-icon) {
+          display: none;
+        }
+
+        .yt-language-toggle-icon {
+          border: 0;
+          height: 100%;
+          width: 100%;
         }
       }
     `;
