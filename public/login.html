@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
-  <title>Login</title>
+  <title>تسجيل الدخول</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="/nfc/favicon.ico" sizes="any">
   <link rel="icon" href="/nfc/favicon.svg" type="image/svg+xml">
@@ -11,7 +11,7 @@
   <link rel="manifest" href="/nfc/site.webmanifest">
   <meta name="theme-color" content="#070807">
   <link rel="stylesheet" href="/nfc/brand.css?v=broken-y-3">
-  <script src="/nfc/i18n.js?v=arabic-primary-6" defer></script>
+  <script src="/nfc/i18n.js?v=arabic-primary-7" defer></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     * {
@@ -317,18 +317,18 @@
 <body>
   <main class="login-shell">
     <section class="brand">
-      <div class="brand-mark brand-mark-login" aria-label="NFC Profile">
+      <div class="brand-mark brand-mark-login" aria-label="ملف NFC">
         <img src="/nfc/yourteck-mark.svg?v=exact-2" alt="" aria-hidden="true">
       </div>
-      <h1>Profile Login</h1>
-      <p class="subtitle">Access your profile</p>
+      <h1>الدخول إلى ملفك</h1>
+      <p class="subtitle">ادخل وعدّل بياناتك</p>
     </section>
 
     <section class="login-card">
       <form autocomplete="off">
         <div class="auth-toggle" role="tablist" aria-label="Authentication mode">
-          <button id="loginModeBtn" class="active" type="button" onclick="setAuthMode('login')">Login</button>
-          <button id="signupModeBtn" type="button" onclick="setAuthMode('signup')">Create account</button>
+          <button id="loginModeBtn" class="active" type="button" onclick="setAuthMode('login')">تسجيل الدخول</button>
+          <button id="signupModeBtn" type="button" onclick="setAuthMode('signup')">إنشاء حساب</button>
         </div>
 
         <div class="field">
@@ -371,7 +371,7 @@
 
         <div id="error" class="error"></div>
 
-        <button id="primaryAuthBtn" type="button" onclick="submitAuth()">Login</button>
+        <button id="primaryAuthBtn" type="button" onclick="submitAuth()">تسجيل الدخول</button>
 
         <div id="googleAuth" class="google-auth">
           <div class="auth-divider">or</div>
@@ -399,6 +399,18 @@
     let isCheckingSession = false;
     let hasRedirected = false;
 
+    function getUiLanguage() {
+      return localStorage.getItem("yourteckLanguage") || document.documentElement.lang || "ar";
+    }
+
+    function uiText(english, arabic) {
+      return getUiLanguage() === "ar" ? arabic : english;
+    }
+
+    function refreshPageTranslation() {
+      window.requestAnimationFrame(() => window.YourTeckTranslatePage?.(getUiLanguage()));
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       setAuthMode("login");
       checkStoredSession();
@@ -423,9 +435,15 @@
       const error = document.getElementById("error");
       if (button) {
         button.disabled = checking;
-        button.innerText = checking ? "Checking..." : authMode === "signup" ? "Create account" : authMode === "verify" ? "Verify email" : authMode === "forgot" ? "Send reset link" : "Login";
+        button.innerText = checking
+          ? uiText("Checking...", "جاري التحقق...")
+          : authMode === "signup" ? uiText("Create account", "إنشاء حساب")
+          : authMode === "verify" ? uiText("Verify email", "تحقق من البريد")
+          : authMode === "forgot" ? uiText("Send reset link", "إرسال رابط إعادة التعيين")
+          : uiText("Login", "تسجيل الدخول");
       }
       if (error && checking) error.innerText = "";
+      refreshPageTranslation();
     }
 
     function checkStoredSession() {
@@ -540,23 +558,30 @@
       document.getElementById("googleAuth").classList.toggle("hidden", isVerify || isForgot);
       document.getElementById("email").disabled = isVerify;
       document.getElementById("password").disabled = isVerify;
-      document.getElementById("primaryAuthBtn").innerText = isForgot ? "Send reset link" : isVerify ? "Verify email" : isSignup ? "Create account" : "Login";
+      document.getElementById("loginModeBtn").innerText = uiText("Login", "تسجيل الدخول");
+      document.getElementById("signupModeBtn").innerText = uiText("Create account", "إنشاء حساب");
+      document.getElementById("primaryAuthBtn").innerText = isForgot
+        ? uiText("Send reset link", "إرسال رابط إعادة التعيين")
+        : isVerify ? uiText("Verify email", "تحقق من البريد")
+        : isSignup ? uiText("Create account", "إنشاء حساب")
+        : uiText("Login", "تسجيل الدخول");
       document.getElementById("password").setAttribute("autocomplete", isSignup || isVerify ? "new-password" : "current-password");
       document.getElementById("googleNote").innerText = isSignup
-        ? "Use Google to sign up instantly, no extra form needed."
-        : "Use Google to sign up or log in. New users go to profile setup.";
+        ? uiText("Use Google to sign up instantly, no extra form needed.", "استخدم Google لإنشاء الحساب مباشرة بدون تعبئة نموذج إضافي.")
+        : uiText("Use Google to sign up or log in. New users go to profile setup.", "استخدم Google للدخول أو إنشاء حساب. الحسابات الجديدة تنتقل مباشرة لإعداد الملف.");
       document.getElementById("authSwitchCopy").innerHTML = isSignup
-        ? `Already have an account? <button type="button" onclick="setAuthMode('login')">Log in</button>`
+        ? `${uiText("Already have an account?", "لديك حساب؟")} <button type="button" onclick="setAuthMode('login')">${uiText("Log in", "تسجيل الدخول")}</button>`
         : isVerify
-          ? `Need a different email? <button type="button" onclick="setAuthMode('signup')">Edit signup details</button>`
+          ? `${uiText("Need a different email?", "تحتاج بريداً مختلفاً؟")} <button type="button" onclick="setAuthMode('signup')">${uiText("Edit signup details", "تعديل بيانات التسجيل")}</button>`
         : isForgot
-          ? `Remembered it? <button type="button" onclick="setAuthMode('login')">Back to login</button>`
-        : `New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button>`;
+          ? `${uiText("Remembered it?", "تذكرتها؟")} <button type="button" onclick="setAuthMode('login')">${uiText("Back to login", "العودة لتسجيل الدخول")}</button>`
+        : `${uiText("New here?", "جديد هنا؟")} <button type="button" onclick="setAuthMode('signup')">${uiText("Create an account", "أنشئ حساباً")}</button>`;
 
       if (!isVerify) {
         document.getElementById("email").disabled = false;
         document.getElementById("password").disabled = false;
       }
+      refreshPageTranslation();
     }
 
     function submitAuth() {
@@ -591,7 +616,8 @@
       success.innerText = "";
 
       if (!email || !isValidEmail(email)) {
-        error.innerText = "Enter a valid email address.";
+        error.innerText = uiText("Enter a valid email address.", "اكتب بريداً إلكترونياً صحيحاً.");
+        refreshPageTranslation();
         return;
       }
 
@@ -604,10 +630,12 @@
       })
         .then(readJsonResponse)
         .then(data => {
-          success.innerText = data.message || "If an account exists, we sent a reset link.";
+          success.innerText = data.message || uiText("If an account exists, we sent a reset link.", "إذا كان الحساب موجوداً، أرسلنا رابط إعادة التعيين.");
+          refreshPageTranslation();
         })
         .catch((err) => {
-          error.innerText = err.message || "Reset link could not be sent.";
+          error.innerText = err.message || uiText("Reset link could not be sent.", "تعذر إرسال رابط إعادة التعيين.");
+          refreshPageTranslation();
         });
     }
 
@@ -653,7 +681,10 @@
 
     function showVerificationStep(data = {}) {
       const email = pendingSignup?.email || document.getElementById('email').value.trim().toLowerCase();
-      document.getElementById("verificationCopy").innerText = `We sent a 6-digit code to ${email}. It expires in 10 minutes.`;
+      document.getElementById("verificationCopy").innerText = uiText(
+        `We sent a 6-digit code to ${email}. It expires in 10 minutes.`,
+        `أرسلنا رمز تحقق من 6 أرقام إلى ${email}. تنتهي صلاحيته خلال 10 دقائق.`
+      );
       document.getElementById("verificationCode").value = "";
       setAuthMode("verify");
       setResendCooldown(Number(data.cooldownSeconds || 60));
@@ -671,15 +702,17 @@
       const update = () => {
         if (remaining > 0) {
           button.disabled = true;
-          button.innerText = `Resend in ${remaining}s`;
+          button.innerText = uiText(`Resend in ${remaining}s`, `إعادة الإرسال خلال ${remaining}ث`);
           remaining -= 1;
+          refreshPageTranslation();
           return;
         }
 
         button.disabled = false;
-        button.innerText = "Resend code";
+        button.innerText = uiText("Resend code", "إعادة إرسال الرمز");
         clearInterval(resendTimer);
         resendTimer = null;
+        refreshPageTranslation();
       };
 
       update();
