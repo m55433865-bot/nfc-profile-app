@@ -914,7 +914,8 @@ input,
 }
 
 .ui-btn.is-loading {
-  opacity: 0.86;
+  color: transparent;
+  opacity: 0.9;
   pointer-events: none;
   position: relative;
 }
@@ -933,8 +934,17 @@ input,
   width: 14px;
 }
 
-.loading-button-content {
-  opacity: 0.82;
+.ui-btn.is-loading .ui-spinner {
+  color: var(--accent-color);
+  left: calc(50% - 7px);
+  margin: 0;
+  position: absolute;
+  top: calc(50% - 7px);
+}
+
+.ui-btn.is-loading .loading-button-content {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .ui-spinner::after {

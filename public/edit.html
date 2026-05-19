@@ -75,7 +75,7 @@
                 <img src="/nfc/yourteck-mark.svg?v=exact-2" alt="" aria-hidden="true">
             </div>
             <div id="avatarContainer"></div>
-            <h1 id="name">Loading...</h1>
+            <h1 id="name"></h1>
             <p id="bio"></p>
         </div>
 
@@ -793,7 +793,7 @@
                             if (!file) return;
 
                             iconMessage.innerText = "";
-                            setButtonLoading(uploadIconBtn, true, "Processing...");
+                            setButtonLoading(uploadIconBtn, true);
 
                             if (!file.type.startsWith("image/")) {
                                 setButtonLoading(uploadIconBtn, false);
@@ -1765,7 +1765,7 @@
 
             try {
                 editingLinkIndex = null;
-                await saveUser({ button, loadingText: "Saving...", successText: "Block saved" });
+                await saveUser({ button, successText: "Block saved" });
             } catch (error) {
                 editingLinkIndex = index;
                 currentUser.links[index] = previousLink;
@@ -2390,7 +2390,7 @@
             currentUser.links.push(nextLink);
 
             try {
-                await saveUser({ button, loadingText: "Saving...", successText: "Block added" });
+                await saveUser({ button, successText: "Block added" });
                 closeSmartLinkModal();
             } catch (error) {
                 currentUser.links.pop();
@@ -2474,7 +2474,7 @@
             }
 
             try {
-                await saveUser({ button, loadingText: "Saving...", successText: "Saved" });
+                await saveUser({ button, successText: "Saved" });
                 closeModal();
             } catch (error) {
                 currentUser.displayName = previousUser.displayName;
@@ -2604,7 +2604,7 @@
             }
 
             setButtonLoading(button, true);
-            setPasswordChangeStatus("Sending verification code...");
+            setPasswordChangeStatus("");
 
             try {
                 const data = await fetch(apiPath("/password-change/request-code"), {
@@ -2635,7 +2635,7 @@
             }
 
             setButtonLoading(button, true);
-            setPasswordChangeStatus("Checking code...");
+            setPasswordChangeStatus("");
 
             try {
                 await fetch(apiPath("/password-change/verify-code"), {
@@ -2675,7 +2675,7 @@
             }
 
             setButtonLoading(button, true);
-            setPasswordChangeStatus("Changing password...");
+            setPasswordChangeStatus("");
 
             try {
                 await fetch(apiPath("/password-change/complete"), {
