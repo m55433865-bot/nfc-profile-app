@@ -50,7 +50,7 @@
     </script>
     <link rel="stylesheet" href="/nfc/style.css?v=premium-black-1">
     <link rel="stylesheet" href="/nfc/brand.css?v=broken-y-3">
-    <script src="/nfc/i18n.js?v=arabic-primary-5" defer></script>
+    <script src="/nfc/i18n.js?v=arabic-primary-6" defer></script>
 
 </head>
 
@@ -322,6 +322,7 @@
 
             const custom = document.getElementById("customAccent");
             custom.value = draftTheme.accent;
+            window.requestAnimationFrame(() => window.YourTeckTranslatePage?.());
         }
 
         function getAppHistoryState(extra = {}) {

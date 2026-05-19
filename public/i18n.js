@@ -452,6 +452,39 @@
     "Theme Style": "نمط الثيم",
     "Preset Themes": "ثيمات جاهزة",
     "Accent Color": "لون التمييز",
+    "Dark": "داكن",
+    "Light": "فاتح",
+    "Midnight": "منتصف الليل",
+    "Midnight Light": "منتصف الليل الفاتح",
+    "Ocean": "المحيط",
+    "Ocean Light": "المحيط الفاتح",
+    "Purple": "بنفسجي",
+    "Purple Light": "بنفسجي فاتح",
+    "Gold": "ذهبي",
+    "Gold Light": "ذهبي فاتح",
+    "Forest": "غابة",
+    "Forest Light": "غابة فاتحة",
+    "Minimal White": "أبيض بسيط",
+    "Rose": "وردي",
+    "Rose Light": "وردي فاتح",
+    "Neon": "نيون",
+    "Neon Light": "نيون فاتح",
+    "Aurora": "شفق",
+    "Aurora Light": "شفق فاتح",
+    "Galaxy": "مجرة",
+    "Galaxy Light": "مجرة فاتحة",
+    "Sunset": "غروب",
+    "Sunset Light": "غروب فاتح",
+    "Candy": "كاندي",
+    "Candy Light": "كاندي فاتح",
+    "Fire": "ناري",
+    "Fire Light": "ناري فاتح",
+    "Ice": "ثلجي",
+    "Ice Light": "ثلجي فاتح",
+    "Blue": "أزرق",
+    "Green": "أخضر",
+    "Red": "أحمر",
+    "Pink": "وردي",
     "Profile preview": "معاينة الملف",
     "QR unavailable": "رمز QR غير متاح",
     "Change password": "تغيير كلمة المرور",
@@ -879,6 +912,8 @@
       subtree: true
     });
   }
+
+  window.YourTeckTranslatePage = translatePage;
 
   document.addEventListener("DOMContentLoaded", () => {
     injectStyles();
