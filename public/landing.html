@@ -1126,6 +1126,61 @@
       padding: 32px 0 18px;
     }
 
+    html[dir="rtl"] .landing-shell {
+      max-width: 1120px;
+    }
+
+    html[dir="rtl"] h1 {
+      font-size: clamp(38px, 5.4vw, 68px);
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1.16;
+      max-width: 700px;
+    }
+
+    html[dir="rtl"] .hero-copy {
+      font-size: clamp(16px, 1.45vw, 19px);
+      line-height: 1.9;
+      margin-top: 22px;
+      max-width: 620px;
+    }
+
+    html[dir="rtl"] h3 {
+      font-size: clamp(26px, 3.4vw, 42px);
+      font-weight: 850;
+      letter-spacing: 0;
+      line-height: 1.28;
+    }
+
+    html[dir="rtl"] .section-head {
+      max-width: 680px;
+    }
+
+    html[dir="rtl"] .section-head p,
+    html[dir="rtl"] .showcase-copy p {
+      font-size: 16px;
+      line-height: 1.9;
+    }
+
+    html[dir="rtl"] .tile h4 {
+      font-size: 20px;
+      letter-spacing: 0;
+      line-height: 1.35;
+    }
+
+    html[dir="rtl"] .tile p,
+    html[dir="rtl"] .comparison-cell span,
+    html[dir="rtl"] details p,
+    html[dir="rtl"] .pricing-card p {
+      font-size: 15px;
+      line-height: 1.85;
+    }
+
+    html[dir="rtl"] .section-kicker {
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
     @keyframes floatCard {
 
       0%,
@@ -1174,6 +1229,14 @@
         grid-template-columns: 1fr;
         min-height: auto;
         padding: 56px 0 40px;
+      }
+
+      html[dir="rtl"] h1 {
+        font-size: clamp(34px, 8vw, 52px);
+      }
+
+      html[dir="rtl"] h3 {
+        font-size: clamp(24px, 6vw, 34px);
       }
 
       .visual-stage {
@@ -1257,6 +1320,21 @@
         width: 100%;
       }
 
+      html[dir="rtl"] h1 {
+        font-size: clamp(31px, 10vw, 42px);
+        line-height: 1.22;
+      }
+
+      html[dir="rtl"] .hero-copy {
+        font-size: 15.5px;
+        line-height: 1.85;
+      }
+
+      html[dir="rtl"] .section-head p,
+      html[dir="rtl"] .showcase-copy p {
+        font-size: 15px;
+      }
+
       .visual-stage {
         min-height: 520px;
       }
@@ -1308,8 +1386,8 @@
           <div class="eyebrow">Smart NFC cards for real-world networking</div>
           <h1>Stop handing out cards <span class="hero-gradient">people forget.</span></h1>
           <p class="hero-copy">
-            YourTeck gives you a premium NFC card and a live profile you can update anytime. Tap once and let people
-            save your number, open your links, or scan the QR when NFC is not the right moment.
+            يورتيك يعطيك بطاقة NFC أنيقة وملف مباشر تقدر تعدّله بأي وقت. بلمسة واحدة يقدر الشخص يحفظ رقمك،
+            يفتح روابطك، أو يمسح رمز QR إذا كان المسح أسهل.
           </p>
 
           <div class="hero-actions">
@@ -1497,8 +1575,8 @@
             <span class="section-kicker">Product preview</span>
             <h3>The card feels premium. The profile does the selling.</h3>
             <p>
-              Use a clean profile for the details people actually ask for: your number, socials, booking links,
-              location, portfolio, and contact export.
+              استخدم ملفاً واضحاً للبيانات التي يسأل عنها الناس فعلاً: رقمك، حساباتك، روابط الحجز،
+              اللوكيشن، أعمالك، وحفظ جهة الاتصال.
             </p>
             <div class="hero-actions">
               <a class="btn btn-primary" href="/card">Get Your Card</a>

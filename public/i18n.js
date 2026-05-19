@@ -532,8 +532,15 @@
 
   Object.assign(translations, gulfArabicOverrides);
 
+  const normalizeTranslationKey = (value) => String(value || "").trim().replace(/\s+/g, " ");
+  const normalizedTranslations = Object.fromEntries(
+    Object.entries(translations).map(([english, arabic]) => [normalizeTranslationKey(english), arabic])
+  );
   const reverseTranslations = Object.fromEntries(
     Object.entries(translations).map(([english, arabic]) => [arabic, english])
+  );
+  const normalizedReverseTranslations = Object.fromEntries(
+    Object.entries(translations).map(([english, arabic]) => [normalizeTranslationKey(arabic), english])
   );
 
   function getLanguage() {
@@ -544,8 +551,9 @@
   function translateValue(value, language) {
     const clean = String(value || "").trim();
     if (!clean) return value;
-    if (language === "ar") return translations[clean] || value;
-    return reverseTranslations[clean] || value;
+    const normalized = normalizeTranslationKey(clean);
+    if (language === "ar") return translations[clean] || normalizedTranslations[normalized] || value;
+    return reverseTranslations[clean] || normalizedReverseTranslations[normalized] || value;
   }
 
   function translateTextNode(node, language) {
