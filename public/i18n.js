@@ -403,7 +403,7 @@
     "Card page navigation": "التنقل في صفحة البطاقة",
     "Loading profile": "تحميل الملف",
     "Profile Setup": "إعداد الملف",
-    "Sarah Jones": "سارة جونز",
+    "Mohamed Ali": "محمد علي",
     "Profile Login": "الدخول إلى ملفك",
     "Access your profile": "ادخل وعدّل بياناتك",
     "Authentication mode": "اختر طريقة الدخول",

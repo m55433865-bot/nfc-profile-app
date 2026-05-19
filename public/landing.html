@@ -185,6 +185,22 @@
       max-width: 800px;
     }
 
+    html[dir="rtl"] .hero-title {
+      display: grid;
+      gap: 10px;
+      font-size: unset;
+      line-height: 1.15;
+    }
+
+    html[dir="rtl"] .hero-title-main {
+      font-size: clamp(18px, 2.2vw, 28px);
+    }
+
+    html[dir="rtl"] .hero-title-sub {
+      font-size: clamp(18px, 2.2vw, 28px);
+    }
+
+
     .hero-gradient {
       background: linear-gradient(115deg, #ffffff 8%, #e7ebe7 42%, #6bd5c5 72%, var(--accent));
       -webkit-background-clip: text;
@@ -698,7 +714,7 @@
       grid-template-columns: 1fr 1fr;
     }
 
-    .comparison-row + .comparison-row {
+    .comparison-row+.comparison-row {
       border-top: 1px solid rgba(255, 255, 255, 0.075);
     }
 
@@ -706,7 +722,7 @@
       padding: 20px 22px;
     }
 
-    .comparison-cell + .comparison-cell {
+    .comparison-cell+.comparison-cell {
       border-left: 1px solid rgba(255, 255, 255, 0.075);
     }
 
@@ -1181,6 +1197,19 @@
       letter-spacing: 0.04em;
     }
 
+    html[dir="rtl"] .hero-title {
+      display: grid;
+      font-size: unset;
+      gap: 10px;
+      line-height: 1.15;
+    }
+
+    html[dir="rtl"] .hero-title-main,
+    html[dir="rtl"] .hero-title-sub {
+      display: block;
+      line-height: inherit;
+    }
+
     @keyframes floatCard {
 
       0%,
@@ -1276,7 +1305,7 @@
         grid-template-columns: 1fr;
       }
 
-      .comparison-cell + .comparison-cell {
+      .comparison-cell+.comparison-cell {
         border-left: 0;
         border-top: 1px solid rgba(255, 255, 255, 0.075);
       }
@@ -1384,9 +1413,13 @@
       <section class="hero">
         <div>
           <div class="eyebrow">Smart NFC cards for real-world networking</div>
-          <h1>Stop handing out cards <span class="hero-gradient">people forget.</span></h1>
+          <h1 class="hero-title">
+            <span class="hero-title-main">Stop handing out cards</span>
+            <span class="hero-title-sub hero-gradient">people forget.</span>
+          </h1>
+
           <p class="hero-copy">
-            يورتيك يعطيك بطاقة NFC أنيقة وملف مباشر تقدر تعدّله بأي وقت. بلمسة واحدة يقدر الشخص يحفظ رقمك،
+            يورتيك يعطيك بطاقة NFC أنيقة وملف مباشر تقدر تعدّله بأي وقت. بلمسة واحدة يقدر الشخص يحفظ رقمك，
             يفتح روابطك، أو يمسح رمز QR إذا كان المسح أسهل.
           </p>
 
@@ -1419,7 +1452,7 @@
           <div class="phone-preview">
             <div class="phone-screen">
               <div class="profile-avatar"></div>
-              <h2>Sarah Jones</h2>
+              <h2>Mohamed Ali</h2>
               <p>Real estate agent sharing listings, WhatsApp, and contact details.</p>
 
               <div class="profile-link">
@@ -1477,7 +1510,8 @@
         <div class="section-head">
           <span class="section-kicker">How it works</span>
           <h3>Share the right details in under a minute.</h3>
-          <p>No more spelling your Instagram username in loud events or waiting while someone types your number wrong.</p>
+          <p>No more spelling your Instagram username in loud events or waiting while someone types your number wrong.
+          </p>
         </div>
 
         <div class="steps">
@@ -1551,20 +1585,28 @@
 
         <div class="comparison-table">
           <div class="comparison-row">
-            <div class="comparison-cell"><strong>Normal business card</strong><span>Can be lost, damaged, or thrown away after the meeting.</span></div>
-            <div class="comparison-cell yourteck"><strong>YourTeck NFC card</strong><span>Gives people a live profile they can reopen from the link or QR.</span></div>
+            <div class="comparison-cell"><strong>Normal business card</strong><span>Can be lost, damaged, or thrown away
+                after the meeting.</span></div>
+            <div class="comparison-cell yourteck"><strong>YourTeck NFC card</strong><span>Gives people a live profile
+                they can reopen from the link or QR.</span></div>
           </div>
           <div class="comparison-row">
-            <div class="comparison-cell"><strong>Outdated details</strong><span>New phone number, new role, or new link means another print run.</span></div>
-            <div class="comparison-cell yourteck"><strong>Edit anytime</strong><span>Update your contact details, links, photo, and theme from your profile.</span></div>
+            <div class="comparison-cell"><strong>Outdated details</strong><span>New phone number, new role, or new link
+                means another print run.</span></div>
+            <div class="comparison-cell yourteck"><strong>Edit anytime</strong><span>Update your contact details, links,
+                photo, and theme from your profile.</span></div>
           </div>
           <div class="comparison-row">
-            <div class="comparison-cell"><strong>No clickable actions</strong><span>People still need to type your number, search your handle, or copy a URL.</span></div>
-            <div class="comparison-cell yourteck"><strong>Built for action</strong><span>Let visitors save your number instantly, message you, or open your links.</span></div>
+            <div class="comparison-cell"><strong>No clickable actions</strong><span>People still need to type your
+                number, search your handle, or copy a URL.</span></div>
+            <div class="comparison-cell yourteck"><strong>Built for action</strong><span>Let visitors save your number
+                instantly, message you, or open your links.</span></div>
           </div>
           <div class="comparison-row">
-            <div class="comparison-cell"><strong>One static design</strong><span>Great for a logo, weak for changing offers, campaigns, and services.</span></div>
-            <div class="comparison-cell yourteck"><strong>NFC plus QR fallback</strong><span>Use the card in person and the QR on booths, packaging, or printed material.</span></div>
+            <div class="comparison-cell"><strong>One static design</strong><span>Great for a logo, weak for changing
+                offers, campaigns, and services.</span></div>
+            <div class="comparison-cell yourteck"><strong>NFC plus QR fallback</strong><span>Use the card in person and
+                the QR on booths, packaging, or printed material.</span></div>
           </div>
         </div>
       </section>
@@ -1677,27 +1719,33 @@
         <div class="faq-grid">
           <details>
             <summary>Works on iPhone and Android?</summary>
-            <p>Yes. NFC works on most modern phones. The QR fallback is there for phones, booths, print, and situations where scanning is easier.</p>
+            <p>Yes. NFC works on most modern phones. The QR fallback is there for phones, booths, print, and situations
+              where scanning is easier.</p>
           </details>
           <details>
             <summary>Does the other person need an app?</summary>
-            <p>No. The profile opens in the browser, so the other person can view your details without installing anything.</p>
+            <p>No. The profile opens in the browser, so the other person can view your details without installing
+              anything.</p>
           </details>
           <details>
             <summary>Can I change my links later?</summary>
-            <p>Yes. Update your phone, bio, socials, website, location, theme, and other links without printing a new card.</p>
+            <p>Yes. Update your phone, bio, socials, website, location, theme, and other links without printing a new
+              card.</p>
           </details>
           <details>
             <summary>What happens if I lose the card?</summary>
-            <p>Your profile stays online. You can keep using your profile link or QR while arranging a replacement card.</p>
+            <p>Your profile stays online. You can keep using your profile link or QR while arranging a replacement card.
+            </p>
           </details>
           <details>
             <summary>Can I use it for my business?</summary>
-            <p>Yes. It works well for service businesses, sales teams, creators, real estate agents, coaches, salons, and freelancers.</p>
+            <p>Yes. It works well for service businesses, sales teams, creators, real estate agents, coaches, salons,
+              and freelancers.</p>
           </details>
           <details>
             <summary>What should I put on my profile?</summary>
-            <p>Start with your phone, WhatsApp, Instagram or LinkedIn, location or booking link, and one clear action you want people to take.</p>
+            <p>Start with your phone, WhatsApp, Instagram or LinkedIn, location or booking link, and one clear action
+              you want people to take.</p>
           </details>
         </div>
       </section>
