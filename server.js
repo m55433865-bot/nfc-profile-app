@@ -21,6 +21,7 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_AUTH_SECRET = process.env.GOOGLE_AUTH_SECRET || "";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const EMAIL_FROM = process.env.EMAIL_FROM || "";
+const ADSENSE_CLIENT_ID = (process.env.NEXT_PUBLIC_ADSENSE_ID || "").trim();
 const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000;
 const VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000;
 const VERIFICATION_MAX_ATTEMPTS = 6;
@@ -41,6 +42,12 @@ const pendingPasswordChanges = new Map();
 
 app.set("trust proxy", true);
 app.use(express.json({ limit: '10mb' }));
+app.get(/^\/nfc\/([^/]+\.html)$/i, (req, res) => {
+  sendHtmlFile(res, path.basename(req.params[0]));
+});
+app.get(/^\/([^/]+\.html)$/i, (req, res) => {
+  sendHtmlFile(res, path.basename(req.params[0]));
+});
 app.use(BASE_PATH, express.static(publicDir));
 app.use(express.static(publicDir));
 
@@ -108,6 +115,28 @@ function safeScriptJson(value) {
     .replace(/\u2029/g, "\\u2029");
 }
 
+function injectAdsenseScript(html) {
+  if (!ADSENSE_CLIENT_ID) return html;
+  if (html.includes("pagead/js/adsbygoogle.js") || html.includes(`client=${ADSENSE_CLIENT_ID}`)) return html;
+
+  const script = `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(ADSENSE_CLIENT_ID)}" crossorigin="anonymous"></script>`;
+  if (/<\/head>/i.test(html)) {
+    return html.replace(/<\/head>/i, `  ${script}\n</head>`);
+  }
+
+  return `${script}\n${html}`;
+}
+
+async function sendHtmlFile(res, filename, transform = (html) => html) {
+  try {
+    const html = await fs.readFile(path.join(publicDir, filename), "utf8");
+    res.type("html").send(injectAdsenseScript(transform(html)));
+  } catch (error) {
+    console.error(`${filename} read failed`, error);
+    res.status(500).send("Page unavailable");
+  }
+}
+
 async function sendProfilePage(req, res) {
   const username = (req.params.username || "").toLowerCase();
   let initialTheme = null;
@@ -125,17 +154,12 @@ async function sendProfilePage(req, res) {
     });
   }
 
-  try {
-    const html = await fs.readFile(path.join(publicDir, "edit.html"), "utf8");
-    const themedHtml = html.replace(
+  await sendHtmlFile(res, "edit.html", (html) =>
+    html.replace(
       "window.__INITIAL_PROFILE_THEME__ = null;",
       `window.__INITIAL_PROFILE_THEME__ = ${safeScriptJson(initialTheme)};`
-    );
-    res.type("html").send(themedHtml);
-  } catch (error) {
-    console.error("Profile page read failed", error);
-    res.status(500).send("Profile page unavailable");
-  }
+    )
+  );
 }
 
 function normalizeUser(row) {
@@ -1733,11 +1757,11 @@ app.get('/', (req, res) => {
 });
 
 app.get(`${BASE_PATH}`, (req, res) => {
-  res.sendFile(path.join(publicDir, 'landing.html'));
+  sendHtmlFile(res, "landing.html");
 });
 
 app.get(`${BASE_PATH}/login`, (req, res) => {
-  res.sendFile(path.join(publicDir, 'login.html'));
+  sendHtmlFile(res, "login.html");
 });
 
 app.get(`${BASE_PATH}/card`, (req, res) => {
@@ -1745,19 +1769,19 @@ app.get(`${BASE_PATH}/card`, (req, res) => {
 });
 
 app.get(`${BASE_PATH}/reset-password`, (req, res) => {
-  res.sendFile(path.join(publicDir, 'reset-password.html'));
+  sendHtmlFile(res, "reset-password.html");
 });
 
 app.get(`${BASE_PATH}/admin`, (req, res) => {
-  res.sendFile(path.join(publicDir, 'admin.html'));
+  sendHtmlFile(res, "admin.html");
 });
 
 app.get(`${BASE_PATH}/onboarding`, (req, res) => {
-  res.sendFile(path.join(publicDir, 'onboarding.html'));
+  sendHtmlFile(res, "onboarding.html");
 });
 
 app.get(`${BASE_PATH}/edit`, (req, res) => {
-  res.sendFile(path.join(publicDir, 'edit.html'));
+  sendHtmlFile(res, "edit.html");
 });
 
 app.get(`${BASE_PATH}/profile/:username`, sendProfilePage);
@@ -1771,7 +1795,7 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/card', (req, res) => {
-  res.sendFile(path.join(publicDir, 'card.html'));
+  sendHtmlFile(res, "card.html");
 });
 
 app.get('/reset-password', (req, res) => {
